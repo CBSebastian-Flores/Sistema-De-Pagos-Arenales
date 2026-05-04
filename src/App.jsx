@@ -1,7 +1,5 @@
+import Layout from './components/Layout'
+
 export default function App() {
-  return (
-    <h1 className="text-3xl font-bold text-blue-600">
-      Tailwind funciona 
-    </h1>
-  )
+  return <Layout />
 }
