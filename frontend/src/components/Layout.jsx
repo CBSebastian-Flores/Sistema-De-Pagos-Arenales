@@ -1,6 +1,6 @@
 import { useState } from "react"
 import Sidebar from "./Sidebar"
-import RegisterForm from "./RegisterForm"
+import RegisterForm from "../../../src/components/RegisterForm"
 
 function Placeholder({ titulo }) {
   return (
