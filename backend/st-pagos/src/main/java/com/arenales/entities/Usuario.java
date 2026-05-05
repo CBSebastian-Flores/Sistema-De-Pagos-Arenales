@@ -1,7 +1,18 @@
 package com.arenales.entities;
-import jakarta.persistence.*; // api para la persistencia
-import java.time.LocalDate; // para fechas
-import lombok.*;
+import java.time.LocalDate; // api para la persistencia
+
+import jakarta.persistence.Column; // para fechas
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity // para marcar que esta clase es una de la bd
 @Table(name = "Usuarios") // y aquí la nombro exactamente como está ahí
