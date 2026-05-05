@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { validarFormulario } from '../../frontend/src/utils/validaciones'
+import { validarFormulario } from '../utils/validaciones'
 
 const Campo = ({ nombre, tipo, placeholder, colSpan, valor, onChange, error, children }) => (
   <div className={colSpan ? "col-span-2" : ""}>
