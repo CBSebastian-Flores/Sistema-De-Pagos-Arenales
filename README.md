@@ -1,16 +1,38 @@
-# React + Vite
+## 🛠️ Configuración e Instalación
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+### Requisitos Previos
+*   **Node.js** (v18 o superior)
+*   **Java JDK 21**
+*   **Maven**
+*   **SQL Server Management Studio (SSMS)**
 
-Currently, two official plugins are available:
+### 🖥️ Ejecución del Frontend (React + Vite)
+Para levantar la interfaz de usuario, sigue estos pasos desde la terminal:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+1.  **Entrar a la carpeta:**
+    ```bash
+    cd frontend
+    ```
+2.  **Instalar las librerías necesarias:**
+    ```bash
+    npm install
+    ```
+3.  **Iniciar el servidor de desarrollo:**
+    ```bash
+    npm run dev
+    ```
+    *   *Por defecto, la aplicación será accesible en http://localhost:5173*
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### ⚙️ Ejecución del Backend (Spring Boot)
+1.  **Entrar a la carpeta:**
+    ```bash
+    cd backend
+    ```
+2.  **Configurar credenciales:** 
+    Modifica el archivo `src/main/resources/application.properties` con tus datos de SQL Server.
+3.  **Ejecutar el proyecto con Maven:**
+    
+```bash
+    ./mvnw spring-boot:run
+    ```
+    *   *La API estará disponible en http://localhost:8080*
