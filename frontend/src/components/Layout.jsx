@@ -10,13 +10,13 @@ function Placeholder({ titulo }) {
   )
 }
 
-export default function Layout() {
+export default function Layout({ onSubmit }) {
   const [paginaActiva, setPaginaActiva] = useState("Registro de Usuario")
 
   const renderPagina = () => {
     switch (paginaActiva) {
       case "Registro de Usuario":
-        return <RegisterForm onSubmit={(e) => e.preventDefault()} />
+        return <RegisterForm onSubmit={onSubmit} />
       default:
         return <Placeholder titulo={paginaActiva} />
     }
