@@ -21,11 +21,11 @@ import lombok.Setter;
 public class Usuario {  
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdUsuario") // aqui pongo el nombre exacto de la columna también
 
+    @Column(name = "IdUsuario") // aqui pongo el nombre exacto de la columna también
     private Integer idUsuario;
-    @Column(name = "Nombre", nullable = false, length = 100)
-    private String nombre;
+    @Column(name = "Nombres", nullable = false, length = 100)
+    private String nombres;
     @Column(name = "Apellidos", nullable = false, length = 100)
     private String apellidos;
     @Column(name = "DNI", nullable = false, unique = true, length = 8) // unique para no repetir
@@ -33,14 +33,16 @@ public class Usuario {
     @Column(name = "Correo", length = 150)
     private String correo;
     @Column(name = "Contrasena", nullable = false, length = 255) // dejo espacio para un hash largo
-    private String contrasena; 
+    private String contrasena;
     @Column(name = "FechaNacimiento", nullable = false)
     private LocalDate fechaNacimiento;
     @Column(name = "Genero", nullable = false, length = 20) 
     private String genero;
     @Column(name = "NroPuesto", nullable = false)
-    private Integer nroPuesto;
-
+    private String nroPuesto;
+    //@Column(name = "Estado", nullable = false)
+    //private Boolean estado;
+    
     @ManyToOne 
     @JoinColumn(name = "IdRol", nullable = false) // para la fk
     private Rol rol;
