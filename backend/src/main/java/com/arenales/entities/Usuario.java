@@ -24,7 +24,7 @@ public class Usuario {
 
     @Column(name = "IdUsuario") // aqui pongo el nombre exacto de la columna también
     private Integer idUsuario;
-    @Column(name = "Nombres", nullable = false, length = 100)
+    @Column(name = "Nombre", nullable = false, length = 100)
     private String nombres;
     @Column(name = "Apellidos", nullable = false, length = 100)
     private String apellidos;

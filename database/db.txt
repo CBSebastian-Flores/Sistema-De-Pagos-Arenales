@@ -1,0 +1,59 @@
+-- ============================================
+-- SCRIPT DE CREACIÓN - CC_Arenales
+-- Ejecutar en SQL Server Management Studio
+-- ============================================
+
+-- Crear base de datos
+IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'CC_Arenales')
+BEGIN
+    CREATE DATABASE CC_Arenales;
+END
+GO
+
+USE CC_Arenales;
+GO
+
+-- Eliminar tablas si existen (para reinstalación limpia)
+DROP TABLE IF EXISTS Usuarios;
+DROP TABLE IF EXISTS Rol;
+GO
+
+-- Crear tabla Rol
+CREATE TABLE Rol (
+    IdRol INT PRIMARY KEY IDENTITY(1,1),
+    TipoRol VARCHAR(50) NOT NULL,
+    CONSTRAINT CHK_TipoRol 
+    CHECK (TipoRol IN ('Directiva', 'Tesorero', 'Comerciante', 'Administrador'))
+);
+GO
+
+-- Crear tabla Usuarios
+CREATE TABLE Usuarios (
+    IdUsuario INT PRIMARY KEY IDENTITY(1,1),
+    Nombres VARCHAR(100) NOT NULL,
+    Apellidos VARCHAR(100) NOT NULL,
+    DNI CHAR(8) NOT NULL UNIQUE,
+    Correo VARCHAR(150) NULL,
+    Contrasena VARCHAR(255) NOT NULL,
+    FechaNacimiento DATE NOT NULL,
+    Genero VARCHAR(20) NOT NULL,
+    NroPuesto INT NOT NULL,
+    IdRol INT NOT NULL,
+    CONSTRAINT CHK_Genero 
+    CHECK (Genero IN ('Masculino', 'Femenino')),
+    CONSTRAINT FK_Usuarios_Rol FOREIGN KEY (IdRol)
+    REFERENCES Rol(IdRol)
+);
+GO
+
+-- Insertar roles iniciales
+INSERT INTO Rol (TipoRol) VALUES ('Directiva');
+INSERT INTO Rol (TipoRol) VALUES ('Tesorero');
+INSERT INTO Rol (TipoRol) VALUES ('Comerciante');
+INSERT INTO Rol (TipoRol) VALUES ('Administrador');
+GO
+
+-- Verificar
+SELECT * FROM Rol;
+SELECT * FROM Usuarios;
+GO

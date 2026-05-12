@@ -45,15 +45,30 @@ const [campos, setCampos] = useState({
     setErrores({ ...errores, [e.target.name]: null })
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    const nuevosErrores = validarFormulario(campos)
-    if (Object.keys(nuevosErrores).length > 0) {
-      setErrores(nuevosErrores)
-      return
-    }
-    onSubmit(campos)
+const handleSubmit = (e) => {
+  e.preventDefault()
+  const nuevosErrores = validarFormulario(campos)
+  if (Object.keys(nuevosErrores).length > 0) {
+    setErrores(nuevosErrores)
+    return
   }
+  
+  const datosParaBackend = {
+    nombres: campos.nombre,    // ← verifica que esta línea exista
+    apellidos: campos.apellidos,
+    dni: campos.dni,
+    correo: campos.correo,
+    contrasena: campos.contrasena,
+    fechaNacimiento: campos.fechaNacimiento,
+    genero: campos.genero,
+    nroPuesto: campos.nroPuesto,
+    estado: true,
+    idRol: 3
+  }
+  
+  console.log('📤 datosParaBackend:', JSON.stringify(datosParaBackend, null, 2))
+  onSubmit(datosParaBackend)
+}
 
   return (
     <div className="flex items-center justify-center p-6 h-full">

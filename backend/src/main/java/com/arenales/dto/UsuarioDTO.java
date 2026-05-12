@@ -7,7 +7,7 @@ import java.time.LocalDate;
 @Data
 public class UsuarioDTO {
     @NotBlank(message = "El nombre no puede estar vacío")
-    private String nombres;
+    private String nombre;
 
     @NotBlank(message = "El apellido no puede estar vacío")
     private String apellidos;

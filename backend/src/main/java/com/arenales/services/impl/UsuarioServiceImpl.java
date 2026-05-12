@@ -27,7 +27,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario usuario = new Usuario();
 
         // Mapeo de datos
-        usuario.setNombres(dto.getNombres());
+        usuario.setNombres(dto.getNombre());
         usuario.setApellidos(dto.getApellidos());
         usuario.setDni(dto.getDni());
         usuario.setCorreo(dto.getCorreo());
