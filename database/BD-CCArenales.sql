@@ -1,5 +1,5 @@
 -- ============================================
--- SCRIPT DE CREACIÓN - CC_Arenales
+-- SCRIPT DE CREACIÃ“N - CC_Arenales
 -- ============================================
 
 -- Crear base de datos
@@ -24,17 +24,16 @@ CREATE TABLE Usuario (
     nombres VARCHAR(100) NOT NULL,
     apellidos VARCHAR(100) NOT NULL,
     dni CHAR(8) NOT NULL UNIQUE,
-    correo VARCHAR(150) NOT NULL UNIQUE,
+    correo VARCHAR(150) NULL UNIQUE,
     contrasena VARCHAR(255) NOT NULL,
     fecha_nacimiento DATE NOT NULL,
     genero VARCHAR(20) NOT NULL
     CHECK (genero IN ('Masculino', 'Femenino', 'Otro')),
     nro_puesto INT NOT NULL,
-    estado VARCHAR(20) NOT NULL DEFAULT 'Activo'
-    CHECK (estado IN ('Activo', 'Inactivo')),
+    estado BIT NOT NULL DEFAULT 1,
     id_rol INT NOT NULL,
 
-    -- Llave foránea
+    -- Llave forÃ¡nea
     CONSTRAINT FK_Usuario_Rol FOREIGN KEY (id_rol) REFERENCES Rol(id_rol)
 );
 GO
@@ -57,7 +56,7 @@ CREATE TABLE Deuda (
     id_servicio INT NOT NULL,
     id_usuario INT NOT NULL,
 
-    -- Llaves foráneas
+    -- Llaves forÃ¡neas
     CONSTRAINT FK_Deuda_Servicio FOREIGN KEY (id_servicio) REFERENCES Servicio(id_servicio),
     CONSTRAINT FK_Deuda_Usuario FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario)
 );
@@ -73,7 +72,7 @@ CREATE TABLE Pago (
     voucher_url VARCHAR(255) NULL,
     id_deuda INT NOT NULL,
 
-    -- Llave foránea
+    -- Llave forÃ¡nea
     CONSTRAINT FK_Pago_Deuda FOREIGN KEY (id_deuda) REFERENCES Deuda(id_deuda)
 );
 GO
@@ -89,7 +88,7 @@ CREATE TABLE Egreso (
     beneficiario VARCHAR(150) NOT NULL,
     id_usuario INT NOT NULL,
 
-    -- Llave foránea
+    -- Llave forÃ¡nea
     CONSTRAINT FK_Egreso_Usuario FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario)
 );
 GO
