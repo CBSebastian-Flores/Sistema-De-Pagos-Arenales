@@ -27,14 +27,14 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario usuario = new Usuario();
 
         // Mapeo de datos
-        usuario.setNombres(dto.getNombre());
+        usuario.setNombres(dto.getNombres());
         usuario.setApellidos(dto.getApellidos());
         usuario.setDni(dto.getDni());
         usuario.setCorreo(dto.getCorreo());
         usuario.setFechaNacimiento(dto.getFechaNacimiento());
         usuario.setNroPuesto(dto.getNroPuesto());
         usuario.setGenero(dto.getGenero());
-        //usuario.setEstado(true); // Usuario activo por defecto
+        usuario.setEstado(true); // Usuario activo por defecto
 
         // LOGICA DE ENCRIPTACIÓN (Tu tarea principal)
         String passEncriptada = passwordEncoder.encode(dto.getContrasena());

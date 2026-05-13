@@ -9,9 +9,9 @@ import lombok.*;
 public class Rol {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // para que se genere automaticamente
-    @Column(name = "IdRol") // aqui pongo el nombre exacto de la columna también
+    @Column(name = "id_rol") // aqui pongo el nombre exacto de la columna también
     private Integer idRol;
 
-    @Column(name = "TipoRol", nullable = false, length = 50) // unas restricciones
+    @Column(name = "tipo_rol", nullable = false, length = 50) // unas restricciones
     private String tipoRol; 
 }
