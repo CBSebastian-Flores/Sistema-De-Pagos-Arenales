@@ -15,35 +15,35 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity // para marcar que esta clase es una de la bd
-@Table(name = "Usuarios") // y aquí la nombro exactamente como está ahí
+@Table(name = "Usuario") // y aquí la nombro exactamente como está ahí
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 
 public class Usuario {  
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
-    @Column(name = "IdUsuario") // aqui pongo el nombre exacto de la columna también
+    @Column(name = "id_usuario") // aqui pongo el nombre exacto de la columna también
     private Integer idUsuario;
-    @Column(name = "Nombre", nullable = false, length = 100)
+    @Column(name = "nombres", nullable = false, length = 100)
     private String nombres;
-    @Column(name = "Apellidos", nullable = false, length = 100)
+    @Column(name = "apellidos", nullable = false, length = 100)
     private String apellidos;
-    @Column(name = "DNI", nullable = false, unique = true, length = 8) // unique para no repetir
+    @Column(name = "dni", nullable = false, unique = true, length = 8) // unique para no repetir
     private String dni;
-    @Column(name = "Correo", length = 150)
+    @Column(name = "correo", length = 150)
     private String correo;
-    @Column(name = "Contrasena", nullable = false, length = 255) // dejo espacio para un hash largo
+    @Column(name = "contrasena", nullable = false, length = 255) // dejo espacio para un hash largo
     private String contrasena;
-    @Column(name = "FechaNacimiento", nullable = false)
+    @Column(name = "fecha_nacimiento ", nullable = false)
     private LocalDate fechaNacimiento;
-    @Column(name = "Genero", nullable = false, length = 20) 
+    @Column(name = "genero", nullable = false, length = 20)
     private String genero;
-    @Column(name = "NroPuesto", nullable = false)
+    @Column(name = "nro_puesto ", nullable = false)
     private String nroPuesto;
-    //@Column(name = "Estado", nullable = false)
-    //private Boolean estado;
+    @Column(name = "estado", nullable = false)
+    private Boolean estado;
     
     @ManyToOne 
-    @JoinColumn(name = "IdRol", nullable = false) // para la fk
+    @JoinColumn(name = "id_rol", nullable = false) // para la fk
     private Rol rol;
 }

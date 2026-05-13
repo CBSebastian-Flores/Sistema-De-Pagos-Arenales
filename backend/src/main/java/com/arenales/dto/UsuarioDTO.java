@@ -7,7 +7,7 @@ import java.time.LocalDate;
 @Data
 public class UsuarioDTO {
     @NotBlank(message = "El nombre no puede estar vacío")
-    private String nombre;
+    private String nombres;
 
     @NotBlank(message = "El apellido no puede estar vacío")
     private String apellidos;
@@ -31,8 +31,6 @@ public class UsuarioDTO {
     private String genero;
 
     private String nroPuesto;
-
-    private Boolean estado;
 
     @NotNull(message = "El ID de rol es obligatorio")
     private Integer idRol;
