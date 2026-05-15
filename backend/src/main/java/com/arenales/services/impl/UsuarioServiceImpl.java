@@ -34,13 +34,11 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setFechaNacimiento(dto.getFechaNacimiento());
         usuario.setNroPuesto(dto.getNroPuesto());
         usuario.setGenero(dto.getGenero());
-        //usuario.setEstado(true); // Usuario activo por defecto
+        //usuario.setEstado(true); // usuario activo por defecto
 
-        // LOGICA DE ENCRIPTACIÓN (Tu tarea principal)
         String passEncriptada = passwordEncoder.encode(dto.getContrasena());
         usuario.setContrasena(passEncriptada);
 
-        // Asignación de Rol
         Rol rol = rolRepository.findById(dto.getIdRol())
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
         usuario.setRol(rol);
