@@ -24,10 +24,22 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public Usuario registrarUsuario(UsuarioDTO dto) {
-        Usuario usuario = new Usuario();
+
+        // Validaciones
+        // VALIDACIÓN DE NEGOCIO: Evitar DNI duplicado
+        if (usuarioRepository.existsByDni(dto.getDni())) {
+            throw new RuntimeException("El DNI ya está registrado en el sistema.");
+        }
+
+        // VALIDACIÓN DE NEGOCIO: Evitar Correo duplicado
+        if (usuarioRepository.existsByCorreo(dto.getCorreo())) {
+            throw new RuntimeException("El correo electrónico ya está registrado.");
+        }
 
         // Mapeo de datos
-        usuario.setNombres(dto.getNombre());
+        Usuario usuario = new Usuario();
+
+        usuario.setNombres(dto.getNombres());
         usuario.setApellidos(dto.getApellidos());
         usuario.setDni(dto.getDni());
         usuario.setCorreo(dto.getCorreo());
@@ -41,9 +53,9 @@ public class UsuarioServiceImpl implements UsuarioService {
         String passEncriptada = passwordEncoder.encode(dto.getContrasena());
         usuario.setContrasena(passEncriptada);
 
-        // Asignación de Rol
+        // Asignación de Rol con Validación de rol existente
         Rol rol = rolRepository.findById(dto.getIdRol())
-                .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+                .orElseThrow(() -> new RuntimeException("El rol especificado no existe."));
         usuario.setRol(rol);
 
         return usuarioRepository.save(usuario);

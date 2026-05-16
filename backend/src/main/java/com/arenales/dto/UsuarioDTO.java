@@ -10,7 +10,7 @@ public class UsuarioDTO {
 
     @JsonProperty("nombres")
     @NotBlank(message = "El nombre no puede estar vacío")
-    private String nombre;
+    private String nombres;
 
     @NotBlank(message = "Los apellidos no pueden estar vacíos")
     private String apellidos;
