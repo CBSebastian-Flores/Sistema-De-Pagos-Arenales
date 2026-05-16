@@ -6,7 +6,7 @@ const Campo = ({ nombre, tipo, placeholder, colSpan, valor, onChange, error, chi
     <label className="block text-white font-semibold mb-2">
         {nombre === 'dni'             ? 'DNI' :
         nombre === 'correo'          ? 'Correo electrónico' :
-        nombre === 'nombre'          ? 'Nombre' :
+        nombre === 'nombres'          ? 'Nombres' :
         nombre === 'apellidos'       ? 'Apellidos' :
         nombre === 'fechaNacimiento' ? 'Fecha de nacimiento' :
         nombre === 'nroPuesto'       ? 'N° de Puesto' :
@@ -35,7 +35,7 @@ const Campo = ({ nombre, tipo, placeholder, colSpan, valor, onChange, error, chi
 
 export default function RegisterForm({ onSubmit }) {
 const [campos, setCampos] = useState({
-  nombre: '', apellidos: '', dni: '', correo: '',
+  nombres: '', apellidos: '', dni: '', correo: '',
   contrasena: '', fechaNacimiento: '', genero: '', nroPuesto: ''
 })
   const [errores, setErrores] = useState({})
@@ -45,15 +45,30 @@ const [campos, setCampos] = useState({
     setErrores({ ...errores, [e.target.name]: null })
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    const nuevosErrores = validarFormulario(campos)
-    if (Object.keys(nuevosErrores).length > 0) {
-      setErrores(nuevosErrores)
-      return
-    }
-    onSubmit(campos)
+const handleSubmit = (e) => {
+  e.preventDefault()
+  const nuevosErrores = validarFormulario(campos)
+  if (Object.keys(nuevosErrores).length > 0) {
+    setErrores(nuevosErrores)
+    return
   }
+  
+  const datosParaBackend = {
+    nombres: campos.nombres,    // ← verifica que esta línea exista
+    apellidos: campos.apellidos,
+    dni: campos.dni,
+    correo: campos.correo,
+    contrasena: campos.contrasena,
+    fechaNacimiento: campos.fechaNacimiento,
+    genero: campos.genero,
+    nroPuesto: campos.nroPuesto,
+    estado: true,
+    idRol: 3
+  }
+  
+  console.log('📤 datosParaBackend:', JSON.stringify(datosParaBackend, null, 2))
+  onSubmit(datosParaBackend)
+}
 
   return (
     <div className="flex items-center justify-center p-6 h-full">
@@ -65,8 +80,8 @@ const [campos, setCampos] = useState({
           <form onSubmit={handleSubmit} noValidate>
             <div className="grid grid-cols-2 gap-6">
 
-              <Campo nombre="nombre"          tipo="text"   placeholder="Juan"           valor={campos.nombre}          onChange={handleChange} error={errores.nombre} />
-                <Campo nombre="apellidos"       tipo="text"   placeholder="Pérez López"    valor={campos.apellidos}       onChange={handleChange} error={errores.apellidos} />
+              <Campo nombre="nombres"          tipo="text"   placeholder="Juan"     valor={campos.nombres}          onChange={handleChange} error={errores.nombres} />
+                <Campo nombre="apellidos" tipo="text"   placeholder="Pérez López"    valor={campos.apellidos}       onChange={handleChange} error={errores.apellidos} />
                 
                 {/* DNI - solo números */}
                 <div>

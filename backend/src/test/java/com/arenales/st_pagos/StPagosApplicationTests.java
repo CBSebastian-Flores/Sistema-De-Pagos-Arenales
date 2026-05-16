@@ -9,5 +9,4 @@ class StPagosApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }

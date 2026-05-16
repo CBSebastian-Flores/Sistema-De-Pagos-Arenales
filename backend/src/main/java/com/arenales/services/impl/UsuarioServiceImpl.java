@@ -13,6 +13,7 @@ import com.arenales.services.UsuarioService;
 
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
+
     @Autowired
     private UsuarioRepository usuarioRepository;
 
@@ -26,7 +27,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     public Usuario registrarUsuario(UsuarioDTO dto) {
         Usuario usuario = new Usuario();
 
-        // Mapeo de datos
+        // mapeo de datos
         usuario.setNombres(dto.getNombres());
         usuario.setApellidos(dto.getApellidos());
         usuario.setDni(dto.getDni());
@@ -34,11 +35,10 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setFechaNacimiento(dto.getFechaNacimiento());
         usuario.setNroPuesto(dto.getNroPuesto());
         usuario.setGenero(dto.getGenero());
-        //usuario.setEstado(true); // usuario activo por defecto
-
+        
+        usuario.setEstado(true); 
         String passEncriptada = passwordEncoder.encode(dto.getContrasena());
         usuario.setContrasena(passEncriptada);
-
         Rol rol = rolRepository.findById(dto.getIdRol())
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
         usuario.setRol(rol);

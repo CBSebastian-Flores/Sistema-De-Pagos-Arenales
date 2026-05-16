@@ -9,8 +9,16 @@ export default function App() {
       await registrarUsuario(datos)
       toast.success('¡Cuenta creada exitosamente!')
     } catch (error) {
-      const mensaje = error.response?.data?.message ?? 'Backend aún no disponible. Intenta más tarde.'
-      toast.error(mensaje)
+      if (error.response) {
+        // Error del backend (400, 500, etc.)
+        const mensaje = typeof error.response.data === 'string'
+          ? error.response.data
+          : error.response.data?.message ?? 'Error al registrar.'
+        toast.error(mensaje)
+      } else {
+        // Backend no disponible
+        toast.error('No se pudo conectar con el servidor. Verifica que el backend esté corriendo.')
+      }
     }
   }
 
