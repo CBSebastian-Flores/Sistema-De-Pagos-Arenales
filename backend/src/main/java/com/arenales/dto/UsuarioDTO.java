@@ -3,13 +3,16 @@ package com.arenales.dto;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import java.time.LocalDate;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
 public class UsuarioDTO {
+
+    @JsonProperty("nombres")
     @NotBlank(message = "El nombre no puede estar vacío")
     private String nombre;
 
-    @NotBlank(message = "El apellido no puede estar vacío")
+    @NotBlank(message = "Los apellidos no pueden estar vacíos")
     private String apellidos;
 
     @NotBlank(message = "El DNI es obligatorio")
@@ -18,7 +21,7 @@ public class UsuarioDTO {
     private String dni;
 
     @Email(message = "Debe proporcionar un correo electrónico válido")
-    private String correo;
+    private String correo; // opcional
 
     @NotBlank(message = "La contraseña es obligatoria")
     @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
@@ -28,11 +31,17 @@ public class UsuarioDTO {
     @Past(message = "La fecha de nacimiento debe ser una fecha pasada")
     private LocalDate fechaNacimiento;
 
+    @NotBlank(message = "El género es obligatorio")
+    @Pattern(regexp = "^(Masculino|Femenino|Otro)$", message = "Género inválido")
     private String genero;
 
-    private String nroPuesto;
+    @NotNull(message = "El número de puesto es obligatorio")
+    @Min(value = 1, message = "El número de puesto debe ser mayor a 0")
+    private Integer nroPuesto; // cambiado a Integer
 
-    private Boolean estado;
+    @NotBlank(message = "El teléfono es obligatorio")
+    @Pattern(regexp = "^\\d{9}$", message = "El teléfono debe tener exactamente 9 dígitos")
+    private String telefono;
 
     @NotNull(message = "El ID de rol es obligatorio")
     private Integer idRol;
