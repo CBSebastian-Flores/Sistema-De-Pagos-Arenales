@@ -45,7 +45,14 @@ export default function RegisterForm({ onSubmit }) {
   const [verContrasena, setVerContrasena] = useState(false)
   const [verConfirmar, setVerConfirmar] = useState(false)
 
-  const fechaMaxima = '2008-12-31'
+  // GESTIÓN DINÁMICA DE MAYORÍA DE EDAD (18 años atrás desde el día de hoy)
+  const obtenerFechaMaximaPermitida = () => {
+    const hoy = new Date()
+    const anioMaximo = hoy.getFullYear() - 18
+    const mes = String(hoy.getMonth() + 1).padStart(2, '0')
+    const dia = String(hoy.getDate()).padStart(2, '0')
+    return `${anioMaximo}-${mes}-${dia}` // Retorna formato YYYY-MM-DD de forma dinámica
+  }
 
   const handleChange = (e) => {
     setCampos({ ...campos, [e.target.name]: e.target.value })
@@ -163,7 +170,7 @@ export default function RegisterForm({ onSubmit }) {
                   name="fechaNacimiento"
                   value={campos.fechaNacimiento}
                   onChange={handleChange}
-                  max={fechaMaxima}
+                  max={cd ()}
                   className={`w-full rounded-lg px-4 py-3 text-gray-800 text-sm
                     focus:outline-none focus:ring-2
                     ${errores.fechaNacimiento ? 'bg-red-50 ring-2 ring-red-400 focus:ring-red-400' : 'bg-white focus:ring-blue-400'}`}
