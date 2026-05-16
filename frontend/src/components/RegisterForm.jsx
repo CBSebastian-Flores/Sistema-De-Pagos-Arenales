@@ -170,7 +170,7 @@ export default function RegisterForm({ onSubmit }) {
                   name="fechaNacimiento"
                   value={campos.fechaNacimiento}
                   onChange={handleChange}
-                  max={cd ()}
+                  max={obtenerFechaMaximaPermitida()} 
                   className={`w-full rounded-lg px-4 py-3 text-gray-800 text-sm
                     focus:outline-none focus:ring-2
                     ${errores.fechaNacimiento ? 'bg-red-50 ring-2 ring-red-400 focus:ring-red-400' : 'bg-white focus:ring-blue-400'}`}
