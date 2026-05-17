@@ -1,6 +1,7 @@
 package com.arenales.services.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -24,7 +25,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return User.builder()
                 .username(usuario.getDni())
                 .password(usuario.getContrasena())
-                .roles(usuario.getRol().getTipoRol()) 
+                // .authorities pasa el rol limpio ('Tesorero', 'Administrador') sin el prefijo automático "ROLE_"
+                .authorities(new SimpleGrantedAuthority(usuario.getRol().getTipoRol()))
                 .build();
     }
 }

@@ -30,6 +30,7 @@ CREATE TABLE Usuario (
     genero VARCHAR(20) NOT NULL
     CHECK (genero IN ('Masculino', 'Femenino', 'Otro')),
     nro_puesto INT NOT NULL,
+    telefono VARCHAR(9) NOT NULL,
     estado BIT NOT NULL DEFAULT 1,
     id_rol INT NOT NULL,
 

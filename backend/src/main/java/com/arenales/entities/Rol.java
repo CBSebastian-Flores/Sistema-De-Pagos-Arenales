@@ -15,10 +15,10 @@ import lombok.Setter;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class Rol {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) 
-    @Column(name = "id_rol") 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_rol")
     private Integer idRol;
 
-    @Column(name = "tipo_rol", nullable = false, unique = true, length = 50) 
-    private String tipoRol; 
+    @Column(name = "tipo_rol", nullable = false, unique = true, length = 50)
+    private String tipoRol;
 }

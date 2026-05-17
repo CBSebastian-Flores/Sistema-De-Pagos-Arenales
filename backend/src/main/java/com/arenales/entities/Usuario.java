@@ -1,7 +1,7 @@
 package com.arenales.entities;
-import java.time.LocalDate; // api para la persistencia
+import java.time.LocalDate;
 
-import jakarta.persistence.Column; // para fechas
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -14,36 +14,47 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity 
-@Table(name = "Usuario") // Sincronizado en singular
+@Entity
+@Table(name = "Usuario") // singular
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class Usuario {  
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_usuario") 
+    @Column(name = "id_usuario")
     private Integer idUsuario;
 
-    @Column(name = "nombres", nullable = false, length = 100) 
+    @Column(name = "nombres", nullable = false, length = 100)
     private String nombres;
-    @Column(name = "apellidos", nullable = false, length = 100) 
+
+    @Column(name = "apellidos", nullable = false, length = 100)
     private String apellidos;
-    @Column(name = "dni", nullable = false, unique = true, length = 8) 
+
+    @Column(name = "dni", nullable = false, unique = true, length = 8)
     private String dni;
-    @Column(name = "correo", length = 150, unique = true) 
+
+    @Column(name = "correo", length = 150)
     private String correo;
-    @Column(name = "contrasena", nullable = false, length = 255) 
+
+    @Column(name = "contrasena", nullable = false, length = 255)
     private String contrasena;
-    @Column(name = "fecha_nacimiento", nullable = false) 
+
+    @Column(name = "fecha_nacimiento", nullable = false)
     private LocalDate fechaNacimiento;
-    @Column(name = "genero", nullable = false, length = 20) 
+
+    @Column(name = "genero", nullable = false, length = 20)
     private String genero;
-    @Column(name = "nro_puesto", nullable = false) // Sincronizado como Integer/int
+
+    @Column(name = "nro_puesto", nullable = false)
     private Integer nroPuesto;
-    @Column(name = "estado", nullable = false) // Sincronizado con el BIT de SQL Server
+
+    @Column(name = "estado", nullable = false)
     private Boolean estado;
-    
+
+    @Column(name = "telefono", nullable = false, length = 9)
+    private String telefono;
+
     @ManyToOne 
-    @JoinColumn(name = "id_rol", nullable = false) // Sincronizado con la FK id_rol
+    @JoinColumn(name = "id_rol", nullable = false)
     private Rol rol;
 }
