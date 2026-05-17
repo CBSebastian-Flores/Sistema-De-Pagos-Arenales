@@ -102,7 +102,6 @@ export default function RegisterForm({ onSubmit }) {
         <div className="bg-[#1a2d4a] rounded-3xl p-8">
           <form onSubmit={handleSubmit} noValidate>
             <div className="grid grid-cols-2 gap-6">
-
               {/* Nombre */}
               <Campo nombre="nombre" tipo="text" placeholder="Juan" valor={campos.nombre} onChange={handleChange} error={errores.nombre} />
 

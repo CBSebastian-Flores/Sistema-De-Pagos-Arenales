@@ -13,6 +13,7 @@ import com.arenales.services.UsuarioService;
 
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
+
     @Autowired
     private UsuarioRepository usuarioRepository;
 

@@ -1,9 +1,10 @@
 package com.arenales.dto;
 
-import jakarta.validation.constraints.*;
-import lombok.Data;
 import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.validation.constraints.*;
+import lombok.Data;
 
 @Data
 public class UsuarioDTO {
