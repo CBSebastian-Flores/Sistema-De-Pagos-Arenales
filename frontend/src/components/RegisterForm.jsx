@@ -92,22 +92,6 @@ export default function RegisterForm({ onSubmit }) {
     console.log('📤 datosParaBackend:', JSON.stringify(datosParaBackend, null, 2))
     onSubmit(datosParaBackend)
   }
-  
-  const datosParaBackend = {
-    nombres: campos.nombres,    // ← verifica que esta línea exista
-    apellidos: campos.apellidos,
-    dni: campos.dni,
-    correo: campos.correo,
-    contrasena: campos.contrasena,
-    fechaNacimiento: campos.fechaNacimiento,
-    genero: campos.genero,
-    nroPuesto: campos.nroPuesto,
-    estado: true,
-    idRol: 3
-  }
-  
-  console.log('📤 datosParaBackend:', JSON.stringify(datosParaBackend, null, 2))
-  onSubmit(datosParaBackend)
 
   return (
     <div className="flex items-center justify-center p-6 h-full">
