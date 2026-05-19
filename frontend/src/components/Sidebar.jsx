@@ -5,7 +5,7 @@ const menuItems = [
   { section: "Configuración", items: ["Generación de Pagos", "Registro de Usuario"] },
 ]
 
-export default function Sidebar({ paginaActiva, setPaginaActiva }) {
+export default function Sidebar({ paginaActiva, setPaginaActiva, onCerrarSesion }) {
   return (
     <div className="w-56 min-h-screen bg-[#0f1b2d] border-r border-[#1e3a5f] flex flex-col">
 
@@ -39,9 +39,11 @@ export default function Sidebar({ paginaActiva, setPaginaActiva }) {
 
       {/* Cerrar sesión */}
       <div className="border-t border-[#1e3a5f] p-4">
-        <button className="text-gray-400 hover:text-white text-sm transition-colors">
-          Cerrar Sesión
-        </button>
+        <button
+  onClick={onCerrarSesion}
+  className="text-gray-400 hover:text-white text-sm transition-colors">
+  Cerrar Sesión
+</button>
       </div>
 
     </div>

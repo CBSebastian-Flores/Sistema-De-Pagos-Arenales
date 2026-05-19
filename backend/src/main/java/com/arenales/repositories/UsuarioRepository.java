@@ -1,16 +1,14 @@
 package com.arenales.repositories;
+
 import com.arenales.entities.Usuario;
-import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
-
-    // ve si existe el dni
     boolean existsByDni(String dni);
-    // busca por correo
     Optional<Usuario> findByCorreo(String correo);
-    // busca por dni
     Optional<Usuario> findByDni(String dni);
 }
