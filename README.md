@@ -7,7 +7,7 @@ Sistema web para la gestión de pagos del Centro Comercial Arenales, desarrollad
 ## 🛠️ Tecnologías utilizadas
 
 **Frontend**
-- React 18 + Vite
+- React 19 + Vite
 - Tailwind CSS
 - Axios
 - React Toastify
@@ -16,6 +16,8 @@ Sistema web para la gestión de pagos del Centro Comercial Arenales, desarrollad
 - Java 21
 - Spring Boot 4
 - Hibernate / JPA
+- JWT (JSON Web Tokens)
+- Spring Security
 
 **Base de datos**
 - SQL Server (SSMS)
@@ -26,7 +28,6 @@ Sistema web para la gestión de pagos del Centro Comercial Arenales, desarrollad
 
 - [Node.js](https://nodejs.org/) v18 o superior
 - [JDK 21](https://adoptium.net/)
-- [Maven](https://maven.apache.org/)
 - [SQL Server](https://www.microsoft.com/es-es/sql-server)
 - [SQL Server Management Studio (SSMS)](https://learn.microsoft.com/es-es/sql/ssms/download-sql-server-management-studio-ssms)
 - [VS Code](https://code.visualstudio.com/) con extensiones:
@@ -38,47 +39,46 @@ Sistema web para la gestión de pagos del Centro Comercial Arenales, desarrollad
 ## 🗄️ Configuración de la base de datos
 
 1. Abre **SSMS** y conéctate a tu instancia de SQL Server
-2. Abre el archivo `BD_CC_Arenales.sql` ubicado en la raíz del proyecto
+2. Abre el archivo `BD_CC_Arenales.sql` ubicado en la carpeta `database/`
 3. Ejecuta el script completo
-4. Verifica que la base de datos `CC_Arenales` fue creada con las tablas `Rol` y `Usuarios`
+4. Verifica que la base de datos `CC_Arenales` fue creada con las tablas `Rol` y `Usuario`
 
 ---
 
 ## 🚀 Configuración e Instalación
 
-### 🖥️ Ejecución del Frontend (React + Vite)
-
-1. **Entrar a la carpeta:**
-```bash
-    cd frontend
-```
-2. **Instalar las librerías necesarias:**
-```bash
-    npm install
-```
-3. **Iniciar el servidor de desarrollo:**
-```bash
-    npm run dev
-```
-    *Por defecto, la aplicación será accesible en http://localhost:5173*
-
 ### ⚙️ Ejecución del Backend (Spring Boot)
 
 1. **Entrar a la carpeta:**
 ```bash
-    cd backend
+cd backend
 ```
 2. **Configurar credenciales:**
    Modifica el archivo `src/main/resources/application.properties` con tus datos de SQL Server:
 ```properties
-    spring.datasource.username=TU_USUARIO
-    spring.datasource.password=TU_CONTRASEÑA
+spring.datasource.username=TU_USUARIO
+spring.datasource.password=TU_CONTRASEÑA
 ```
-3. **Ejecutar el proyecto:**
+3. **Ejecutar el proyecto desde VS Code:**
+   Abre `src/main/java/com/arenales/StPagosApplication.java` y haz clic en **▶ Run**
+
+   *La API estará disponible en http://localhost:8080/sistemapagoarenales*
+
+### 🖥️ Ejecución del Frontend (React + Vite)
+
+1. **Entrar a la carpeta:**
 ```bash
-    ./mvnw spring-boot:run
+cd frontend
 ```
-    *La API estará disponible en http://localhost:8080/sistemapagoarenales*
+2. **Instalar las librerías necesarias:**
+```bash
+npm install
+```
+3. **Iniciar el servidor de desarrollo:**
+```bash
+npm run dev
+```
+   *Por defecto, la aplicación será accesible en http://localhost:5173*
 
 ---
 
@@ -88,18 +88,21 @@ Sistema web para la gestión de pagos del Centro Comercial Arenales, desarrollad
 Sistema-De-Pagos-Arenales/
 ├── backend/
 │   └── src/main/java/com/arenales/
-│       ├── config/           # Configuración CORS y seguridad
+│       ├── config/           # Configuración CORS, seguridad y JWT
 │       ├── controllers/      # Endpoints REST
 │       ├── dto/              # Objetos de transferencia de datos
 │       ├── entities/         # Entidades JPA
 │       ├── repositories/     # Repositorios JPA
-│       └── services/         # Lógica de negocio
+│       ├── services/         # Lógica de negocio
+│       └── utils/            # Utilidades JWT
 ├── frontend/
 │   └── src/
 │       ├── components/       # RegisterForm, Sidebar, Layout
-│       ├── services/         # authService.js (Axios)
+│       ├── pages/            # Login
+│       ├── services/         # authService, loginService, axiosConfig
 │       └── utils/            # validaciones.js (Regex)
-└── BD_CC_Arenales.sql        # Script de creación de base de datos
+└── database/
+    └── BD_CC_Arenales.sql    # Script de creación de base de datos
 ```
 
 ---
@@ -111,9 +114,13 @@ Sistema-De-Pagos-Arenales/
 | SDPA-23 | Maquetado del formulario de registro con Tailwind CSS | ✅ |
 | SDPA-24 | Validación de campos con Regex en el cliente | ✅ |
 | SDPA-25 | Integración Axios + React Toastify + conexión con backend | ✅ |
+| SDPA-30 | Maquetado de la vista de Login | ✅ |
+| SDPA-31 | Guardado del token JWT en sessionStorage | ✅ |
+| SDPA-32 | Interceptor de Axios con token en header Authorization | ✅ |
+| SDPA-33 | Rutas protegidas — solo accesibles con sesión activa | ✅ |
 
 ---
 
 ## 👥 Equipo
 
-- **Yo5h1** — Frontend (React + Tailwind)
+- **Yo5h1** — Frontend (React + Tailwind) / Backend (Spring Boot)
