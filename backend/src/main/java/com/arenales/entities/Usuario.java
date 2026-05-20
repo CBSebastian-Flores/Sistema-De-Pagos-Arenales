@@ -51,10 +51,17 @@ public class Usuario {
     @Column(name = "estado", nullable = false)
     private Boolean estado;
 
+<<<<<<< HEAD
     @Column(name = "telefono", nullable = false, length = 9)
     private String telefono;
 
     @ManyToOne 
+=======
+    @Column(name = "telefono", length = 9)
+    private String telefono;
+
+    @ManyToOne
+>>>>>>> 03a6ead3f1b3b740a9c59a93467fa4de8d3eefb3
     @JoinColumn(name = "id_rol", nullable = false)
     private Rol rol;
 }

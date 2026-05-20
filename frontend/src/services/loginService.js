@@ -16,7 +16,7 @@ export function guardarSesion(data) {
   sessionStorage.setItem('dni', data.dni)
   sessionStorage.setItem('nombres', data.nombres)
   sessionStorage.setItem('rol', data.rol)
-  //SESION STORAGE
+  //LOCAL STORAGE
   /*localStorage.setItem('token', data.token)
   localStorage.setItem('dni', data.dni)
   localStorage.setItem('nombres', data.nombres)

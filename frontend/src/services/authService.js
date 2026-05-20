@@ -1,5 +1,5 @@
-// 🚀 importamos la instancia 'api' que SÍ tiene los interceptores configurados
-import api from './axiosConfig' 
+// importamos la instancia 'api' que tiene los interceptores configurados
+import api from './axiosConfig'
 
 export async function registrarUsuario(datos) {
   console.log('📦 Payload enviado:', JSON.stringify(datos, null, 2))
