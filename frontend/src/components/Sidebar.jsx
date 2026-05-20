@@ -77,7 +77,6 @@ export default function Sidebar({
       </nav>
 
       {/* Cerrar sesión */}
-      {/* Cerrar sesión */}
       <div className="border-t border-[#1e3a5f] p-4">
         <button
           onClick={onCerrarSesion}

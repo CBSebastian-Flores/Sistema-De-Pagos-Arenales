@@ -21,6 +21,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    // Inyectamos el filtro que lee los tokens (Asegúrate de tener la clase JwtFilter creada)
     @Autowired
     private JwtFilter jwtFilter;
 
@@ -33,9 +34,10 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/usuarios/registrar").permitAll()
-                        .anyRequest().authenticated());
+                        .anyRequest().authenticated())
 
+                //METEMOS EL FILTRO AL CIRCUITO ANTES QUE LA SEGURIDAD NATIVA
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

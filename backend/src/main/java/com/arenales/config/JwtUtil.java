@@ -14,14 +14,16 @@ import io.jsonwebtoken.security.Keys;
 public class JwtUtil {
     private static final String SECRET_KEY = "EstaEsUnaClaveSecretaMuyLargaYSeguraParaElSistemaArenales2026";
     private static final long EXPIRATION_TIME = 3600000 * 10; // 10 horas
+    // private static final long EXPIRATION_TIME = 60000 * 2; // 2 minutos
 
     private final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
     // Generacion de Toke JWT
-    public String generateToken(String dni, String rol) {
+    public String generateToken(String dni, String rol, String nombres) {
         return Jwts.builder()
                 .setSubject(dni)
                 .claim("rol", rol) // Guardamos el rol como un Claim personalizado
+                .claim("nombres", nombres) // Guardamos el rol como un Claim personalizado
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(key) // El algoritmo HS256 se infiere automáticamente de la llave de forma moderna
@@ -36,6 +38,11 @@ public class JwtUtil {
     // Extraccion del ROL del token
     public String extractRol(String token) {
         return extractAllClaims(token).get("rol", String.class);
+    }
+
+    // Extraccion de los Nombres del token
+    public String extractNombres(String token) {
+        return extractAllClaims(token).get("nombres", String.class);
     }
 
     // Validar si el token se puede usar todavia
