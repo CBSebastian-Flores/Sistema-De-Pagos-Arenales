@@ -1,31 +1,61 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import Login from './pages/Login'
 import Layout from './components/Layout'
+import ProtectedRoute from './components/ProtectedRoute'
 import { registrarUsuario } from './services/authService'
+import { loginUsuario, guardarSesion, cerrarSesion, estaAutenticado } from './services/loginService'
 
 export default function App() {
+
+  const handleLogin = async (datos) => {
+    try {
+      const respuesta = await loginUsuario(datos)
+      guardarSesion(respuesta)
+      toast.success(`¡Bienvenido, ${respuesta.nombres}!`)
+      window.location.href = '/dashboard'
+    } catch (error) {
+      const mensaje = typeof error.response?.data === 'string'
+        ? error.response.data
+        : 'DNI o contraseña incorrectos'
+      toast.error(mensaje)
+    }
+  }
+
   const handleSubmit = async (datos) => {
     try {
       await registrarUsuario(datos)
       toast.success('¡Cuenta creada exitosamente!')
     } catch (error) {
-      if (error.response) {
-        // Error del backend (400, 500, etc.)
-        const mensaje = typeof error.response.data === 'string'
-          ? error.response.data
-          : error.response.data?.message ?? 'Error al registrar.'
-        toast.error(mensaje)
-      } else {
-        // Backend no disponible
-        toast.error('No se pudo conectar con el servidor. Verifica que el backend esté corriendo.')
-      }
+      const mensaje = typeof error.response?.data === 'string'
+        ? error.response.data
+        : error.response?.data?.message ?? 'Error al registrar.'
+      toast.error(mensaje)
     }
   }
 
+  const handleCerrarSesion = () => {
+    cerrarSesion()
+    window.location.href = '/login'
+  }
+
   return (
-    <>
-      <Layout onSubmit={handleSubmit} />
+    <BrowserRouter>
       <ToastContainer position="top-right" autoClose={4000} />
-    </>
+      <Routes>
+        <Route path="/login" element={
+          estaAutenticado()
+            ? <Navigate to="/dashboard" replace />
+            : <Login onLogin={handleLogin} />
+        } />
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <Layout onSubmit={handleSubmit} onCerrarSesion={handleCerrarSesion} />
+          </ProtectedRoute>
+        } />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </BrowserRouter>
   )
 }

@@ -47,8 +47,8 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setFechaNacimiento(dto.getFechaNacimiento());
         usuario.setNroPuesto(dto.getNroPuesto()); 
         usuario.setGenero(dto.getGenero());
-        usuario.setEstado(true);
         usuario.setTelefono(dto.getTelefono());
+        usuario.setEstado(true);
 
         // Encriptación de contraseña
         String passEncriptada = passwordEncoder.encode(dto.getContrasena());

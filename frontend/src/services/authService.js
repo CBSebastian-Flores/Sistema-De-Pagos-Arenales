@@ -1,9 +1,5 @@
-import axios from 'axios'
-
-const api = axios.create({
-  baseURL: 'http://localhost:8080/sistemapagoarenales',
-  headers: { 'Content-Type': 'application/json' },
-})
+// 🚀 importamos la instancia 'api' que SÍ tiene los interceptores configurados
+import api from './axiosConfig' 
 
 export async function registrarUsuario(datos) {
   console.log('📦 Payload enviado:', JSON.stringify(datos, null, 2))

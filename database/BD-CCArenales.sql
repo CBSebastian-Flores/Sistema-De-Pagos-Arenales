@@ -13,7 +13,20 @@ GO
 USE CC_Arenales;
 GO
 
--- Creacion de tablas
+-- ============================================
+-- LIMPIEZA DE TABLAS (Orden por Foreign Keys)
+-- ============================================
+IF OBJECT_ID('Pago', 'U') IS NOT NULL DROP TABLE Pago;
+IF OBJECT_ID('Egreso', 'U') IS NOT NULL DROP TABLE Egreso;
+IF OBJECT_ID('Deuda', 'U') IS NOT NULL DROP TABLE Deuda;
+IF OBJECT_ID('Servicio', 'U') IS NOT NULL DROP TABLE Servicio;
+IF OBJECT_ID('Usuario', 'U') IS NOT NULL DROP TABLE Usuario;
+IF OBJECT_ID('Rol', 'U') IS NOT NULL DROP TABLE Rol;
+GO
+
+-- ============================================
+-- CREACION DE TABLAS - CC_Arenales
+-- ============================================
 CREATE TABLE Rol (
     id_rol INT PRIMARY KEY IDENTITY(1,1),
     tipo_rol VARCHAR(50) NOT NULL UNIQUE
@@ -101,6 +114,13 @@ GO
 INSERT INTO Rol (tipo_rol) VALUES ('Directiva');
 INSERT INTO Rol (tipo_rol) VALUES ('Tesorero');
 INSERT INTO Rol (tipo_rol) VALUES ('Administrador');
+GO
+
+INSERT INTO Usuario (nombres, apellidos, dni, correo, contrasena, fecha_nacimiento, genero, nro_puesto, telefono, estado, id_rol)
+VALUES 
+    ('Carlos Jose', 'Mendoza Lara', '11111111', 'carlos.dir@email.com', '$2a$10$x/LF/U65hVbXT1P2fEcwjuWI8fvQZKP8aAP.aK3l2Lg7WatJtnHMC', '1980-05-15', 'Masculino', 10, '999111222', 1, 1), -- Directiva
+    ('Ana Maria', 'Suarez Bello', '22222222', 'ana.tes@email.com', '$2a$10$ux7q1iRII.hhFHs6kUKJHebi5lGr81NG1ewW5NxEeRKMBDXevFwp6', '1985-08-22', 'Femenino', 20, '999333444', 1, 2), -- Tesorero
+    ('Admin Maestro', 'Bot Test', '33333333', 'corrtest.adm@email.com', '$2a$10$mj2TqSSoSv7qU59pd6V1TeFFLUjz1mre0CVxRYAQqQO.QX6qubZDW', '1995-10-10', 'Masculino', 30, '999555666', 1, 3); -- Administrador
 GO
 
 -- ============================================
