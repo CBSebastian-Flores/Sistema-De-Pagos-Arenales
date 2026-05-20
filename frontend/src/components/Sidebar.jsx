@@ -41,7 +41,7 @@ export default function Sidebar({
       {/* Header usuario dinámico */}
       <div className="flex flex-col px-4 py-4 border-b border-[#1e3a5f]">
         <div className="flex items-center justify-between">
-          <span className="text-white font-semibold text-sm truncate max-w-[150px]">
+          <span className="text-white font-semibold text-sm truncate max-w-37.5">
             {usuarioInfo.nombres}
           </span>
           <span className="text-gray-400 text-xs">{">"}</span>
