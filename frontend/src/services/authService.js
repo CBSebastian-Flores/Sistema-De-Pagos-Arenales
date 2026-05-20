@@ -1,3 +1,4 @@
+// importamos la instancia 'api' que tiene los interceptores configurados
 import api from './axiosConfig'
 
 export async function registrarUsuario(datos) {

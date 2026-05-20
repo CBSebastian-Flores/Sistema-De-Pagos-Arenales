@@ -2,10 +2,13 @@ package com.arenales.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 @Data
-public class LoginDTO {
-
+public class LoginRequest {
     @NotBlank(message = "El DNI es obligatorio")
     private String dni;
 

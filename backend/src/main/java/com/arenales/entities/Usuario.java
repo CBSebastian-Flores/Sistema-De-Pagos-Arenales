@@ -1,15 +1,24 @@
 package com.arenales.entities;
-
 import java.time.LocalDate;
-import jakarta.persistence.*;
-import lombok.*;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Table(name = "Usuario")
+@Table(name = "Usuario") // singular
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
-
-public class Usuario {
-
+public class Usuario {  
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_usuario")
@@ -42,10 +51,10 @@ public class Usuario {
     @Column(name = "estado", nullable = false)
     private Boolean estado;
 
-    @Column(name = "telefono", length = 9)
+    @Column(name = "telefono", nullable = false, length = 9)
     private String telefono;
 
-    @ManyToOne
+    @ManyToOne 
     @JoinColumn(name = "id_rol", nullable = false)
     private Rol rol;
 }

@@ -1,15 +1,22 @@
 package com.arenales.entities;
-import jakarta.persistence.*; // api para la persistencia
-import lombok.*; 
+import jakarta.persistence.Column; // api para la persistencia
+import jakarta.persistence.Entity; 
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Entity // para marcar que esta clase es una de la bd
-@Table(name = "Rol") // y aquí la nombro exactamente como está ahí
+@Entity 
+@Table(name = "Rol") 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
-
 public class Rol {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // para que se genere automaticamente
-    @Column(name = "id_rol") // aqui pongo el nombre exacto de la columna también
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_rol")
     private Integer idRol;
 
     @Column(name = "tipo_rol", nullable = false, unique = true, length = 50)

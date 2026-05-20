@@ -24,11 +24,7 @@ export default function Layout({ onSubmit, onCerrarSesion }) {
 
   return (
     <div className="flex min-h-screen bg-[#0f1b2d]">
-      <Sidebar
-        paginaActiva={paginaActiva}
-        setPaginaActiva={setPaginaActiva}
-        onCerrarSesion={onCerrarSesion}
-      />
+      <Sidebar paginaActiva={paginaActiva} onCerrarSesion={onCerrarSesion}  setPaginaActiva={setPaginaActiva} />
       <main className="flex-1 overflow-y-auto">
         {renderPagina()}
       </main>

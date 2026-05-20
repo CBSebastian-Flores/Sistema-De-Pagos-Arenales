@@ -1,72 +1,73 @@
 package com.arenales.controllers;
 
-import com.arenales.dto.LoginDTO;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.arenales.entities.Usuario;
 import com.arenales.repositories.UsuarioRepository;
-import com.arenales.utils.JwtUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import com.arenales.config.JwtUtil;
+import com.arenales.dto.LoginRequest;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private AuthenticationManager authenticationManager;
 
     @Autowired
     private JwtUtil jwtUtil;
 
     @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
+    private UsuarioRepository usuarioRepository;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginDTO loginDTO) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
+        try {
+            // 1. Spring Security valida las credenciales encriptadas
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getDni(), request.getContrasena())
+            );
 
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByDni(loginDTO.getDni());
+            // 2. Recuperamos el username validado (que es tu DNI)
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            String dni = userDetails.getUsername();
 
-        if (usuarioOpt.isEmpty()) {
-            return new ResponseEntity<>("DNI no encontrado", HttpStatus.UNAUTHORIZED);
+            // 3. Buscamos el usuario real en la BD para traer el nombre y objeto limpio
+            Usuario usuario = usuarioRepository.findByDni(dni)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado en base de datos"));
+
+            String tipoRol = usuario.getRol().getTipoRol(); // Extrae directamente del objeto de tu BD
+            String nombresReales = usuario.getNombres(); // 🚀 Extrae el nombre real del comerciante
+
+            // 4. Generamos el token pasando los parámetros correctos en inglés a tu JwtUtil
+            String token = jwtUtil.generateToken(dni, tipoRol, nombresReales);
+
+            // 5. Construimos el mapa dinámico con las 4 llaves que el sessionStorage de React espera
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", token);
+            response.put("dni", dni);
+            response.put("nombres", nombresReales);
+            response.put("rol", tipoRol);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "DNI o contraseña incorrectos"));
         }
-
-        Usuario usuario = usuarioOpt.get();
-
-        if (!passwordEncoder.matches(loginDTO.getContrasena(), usuario.getContrasena())) {
-            return new ResponseEntity<>("Contraseña incorrecta", HttpStatus.UNAUTHORIZED);
-        }
-
-        String token = jwtUtil.generarToken(
-                usuario.getDni(),
-                usuario.getRol().getTipoRol()
-        );
-
-        Map<String, Object> respuesta = new HashMap<>();
-        respuesta.put("token", token);
-        respuesta.put("dni", usuario.getDni());
-        respuesta.put("nombres", usuario.getNombres());
-        respuesta.put("rol", usuario.getRol().getTipoRol());
-
-        return new ResponseEntity<>(respuesta, HttpStatus.OK);
     }
-
-    @GetMapping("/test-hash")
-public String testHash() {
-    BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-    return encoder.encode("Admin123");
-}
-
-@PostMapping("/registrar-debug")
-public ResponseEntity<?> debug() {
-    var auth = SecurityContextHolder.getContext().getAuthentication();
-    return ResponseEntity.ok("Auth: " + auth.getName() + " | Authorities: " + auth.getAuthorities());
-}
 }
