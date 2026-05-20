@@ -63,42 +63,22 @@
             <groupId>org.springframework.boot</groupId>
    			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
-<<<<<<< HEAD
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
 			<version>0.11.5</version>
-=======
-		<!-- JWT -->
-		<dependency>
-			<groupId>io.jsonwebtoken</groupId>
-			<artifactId>jjwt-api</artifactId>
-			<version>0.12.6</version>
->>>>>>> 03a6ead3f1b3b740a9c59a93467fa4de8d3eefb3
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-impl</artifactId>
-<<<<<<< HEAD
 			<version>0.11.5</version>
-=======
-			<version>0.12.6</version>
->>>>>>> 03a6ead3f1b3b740a9c59a93467fa4de8d3eefb3
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
-<<<<<<< HEAD
 			<artifactId>jjwt-jackson</artifactId> <version>0.11.5</version>
 			<scope>runtime</scope>
 		</dependency>
-=======
-			<artifactId>jjwt-jackson</artifactId>
-			<version>0.12.6</version>
-			<scope>runtime</scope>
-		</dependency>
-
->>>>>>> 03a6ead3f1b3b740a9c59a93467fa4de8d3eefb3
 	</dependencies>
 
 	<build>
