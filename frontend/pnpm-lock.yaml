@@ -17,6 +17,12 @@ importers:
       react-dom:
         specifier: ^19.2.5
         version: 19.2.6(react@19.2.6)
+<<<<<<< HEAD
+=======
+      react-router-dom:
+        specifier: 6.30.0
+        version: 6.30.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+>>>>>>> 03a6ead3f1b3b740a9c59a93467fa4de8d3eefb3
       react-toastify:
         specifier: ^11.1.0
         version: 11.1.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -217,6 +223,13 @@ packages:
   '@oxc-project/types@0.129.0':
     resolution: {integrity: sha512-3oz8m3FGdr2nDXVqmFUw7jolKliC4MoyXYIG2c7gpjBnzUWQpUGIYcXYKxTdTi+N2jusvt610ckTMkxdwHkYEg==}
 
+<<<<<<< HEAD
+=======
+  '@remix-run/router@1.23.0':
+    resolution: {integrity: sha512-O3rHJzAQKamUz1fvE0Qaw0xSFqsA/yafi2iqeE0pvdFtCO1viYx8QL6f3Ln/aCCTLxs68SLf0KPM9eSeM8yBnA==}
+    engines: {node: '>=14.0.0'}
+
+>>>>>>> 03a6ead3f1b3b740a9c59a93467fa4de8d3eefb3
   '@rolldown/binding-android-arm64@1.0.0':
     resolution: {integrity: sha512-TWMZnRLMe63C2Lhyicviu7ZHaU4kxa6PS3rofvc9GmcvptzNN11BcfQ4Sl7MwTOsisQoa2keB/EBdNCAnUo8vA==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -936,6 +949,22 @@ packages:
     peerDependencies:
       react: ^19.2.6
 
+<<<<<<< HEAD
+=======
+  react-router-dom@6.30.0:
+    resolution: {integrity: sha512-x30B78HV5tFk8ex0ITwzC9TTZMua4jGyA9IUlH1JLQYQTFyxr/ZxwOJq7evg1JX1qGVUcvhsmQSKdPncQrjTgA==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      react: '>=16.8'
+      react-dom: '>=16.8'
+
+  react-router@6.30.0:
+    resolution: {integrity: sha512-D3X8FyH9nBcTSHGdEKurK7r8OYE1kKFn3d/CF+CoxbSHkxU7o37+Uh7eAHRXr6k2tSExXYO++07PeXJtA/dEhQ==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      react: '>=16.8'
+
+>>>>>>> 03a6ead3f1b3b740a9c59a93467fa4de8d3eefb3
   react-toastify@11.1.0:
     resolution: {integrity: sha512-e9h23x3phN0wbFeB6yovmWp7lobzV4CaCH0LO8nVP6H7Y+3GbcLpIzMm9dJhcp1RXbpyfvjgpfXqO80QAmn7sg==}
     peerDependencies:
@@ -1261,6 +1290,11 @@ snapshots:
 
   '@oxc-project/types@0.129.0': {}
 
+<<<<<<< HEAD
+=======
+  '@remix-run/router@1.23.0': {}
+
+>>>>>>> 03a6ead3f1b3b740a9c59a93467fa4de8d3eefb3
   '@rolldown/binding-android-arm64@1.0.0':
     optional: true
 
@@ -1851,6 +1885,21 @@ snapshots:
       react: 19.2.6
       scheduler: 0.27.0
 
+<<<<<<< HEAD
+=======
+  react-router-dom@6.30.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
+    dependencies:
+      '@remix-run/router': 1.23.0
+      react: 19.2.6
+      react-dom: 19.2.6(react@19.2.6)
+      react-router: 6.30.0(react@19.2.6)
+
+  react-router@6.30.0(react@19.2.6):
+    dependencies:
+      '@remix-run/router': 1.23.0
+      react: 19.2.6
+
+>>>>>>> 03a6ead3f1b3b740a9c59a93467fa4de8d3eefb3
   react-toastify@11.1.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
     dependencies:
       clsx: 2.1.1

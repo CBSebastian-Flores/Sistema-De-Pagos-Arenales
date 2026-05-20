@@ -6,9 +6,15 @@ export const reglas = {
   contrasena: /^.{8,}$/,
   confirmarContrasena: /^.{8,}$/,
   fechaNacimiento: /^\d{4}-\d{2}-\d{2}$/,
+<<<<<<< HEAD
   genero: /^(Masculino|Femenino|Otro)$/,
   nroPuesto: /^\d+$/,
   telefono: /^\d{9}$/,
+=======
+  genero:          /^(Masculino|Femenino|Otro)$/, 
+  nroPuesto:       /^\d+$/,
+  telefono:        /^\d{9}$/,
+>>>>>>> 03a6ead3f1b3b740a9c59a93467fa4de8d3eefb3
 }
 
 const mensajes = {
@@ -28,10 +34,30 @@ const mensajes = {
 const camposExcluidos = ['confirmarContrasena', 'correo', 'fechaNacimiento']
 
 export function validarCampo(nombre, valor) {
+<<<<<<< HEAD
   // 1. Validación específica para el Correo (Opcional)
   if (nombre === 'correo') {
     if (!valor || !valor.trim()) return null
     return reglas.correo.test(valor) ? null : mensajes.correo
+=======
+  if (nombre === 'confirmarContrasena') return null
+  if (nombre === 'correo' && (!valor || !valor.trim())) return null
+  if (!valor || !valor.trim()) return "Este campo es obligatorio"
+
+  if (!reglas[nombre]?.test(valor)) {
+    const mensajes = {
+      nombre:          "Solo letras y espacios, mínimo 2 caracteres",
+      apellidos:       "Solo letras y espacios, mínimo 2 caracteres",
+      dni:             "El DNI debe tener exactamente 8 dígitos",
+      correo:          "Ingresa un correo válido",
+      contrasena:      "La contraseña debe tener al menos 8 caracteres",
+      fechaNacimiento: "Ingresa una fecha válida",
+      genero:          "Selecciona un género",
+      nroPuesto:       "Ingresa un número de puesto válido",
+      telefono:        "El teléfono debe tener exactamente 9 dígitos", // 👈 Mensaje corregido
+    }
+    return mensajes[nombre] ?? "Valor inválido"
+>>>>>>> 03a6ead3f1b3b740a9c59a93467fa4de8d3eefb3
   }
 
   // 2. Validación específica para la Fecha de Nacimiento (Mayoría de edad estricta)

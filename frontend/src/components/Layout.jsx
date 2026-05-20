@@ -10,7 +10,7 @@ function Placeholder({ titulo }) {
   )
 }
 
-export default function Layout({ onSubmit }) {
+export default function Layout({ onSubmit, onCerrarSesion }) {
   const [paginaActiva, setPaginaActiva] = useState("Registro de Usuario")
 
   const renderPagina = () => {
@@ -24,7 +24,11 @@ export default function Layout({ onSubmit }) {
 
   return (
     <div className="flex min-h-screen bg-[#0f1b2d]">
-      <Sidebar paginaActiva={paginaActiva} setPaginaActiva={setPaginaActiva} />
+      <Sidebar
+        paginaActiva={paginaActiva}
+        setPaginaActiva={setPaginaActiva}
+        onCerrarSesion={onCerrarSesion}
+      />
       <main className="flex-1 overflow-y-auto">
         {renderPagina()}
       </main>

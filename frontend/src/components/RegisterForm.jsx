@@ -36,15 +36,23 @@ const Campo = ({ nombre, tipo, placeholder, colSpan, valor, onChange, error, chi
 
 export default function RegisterForm({ onSubmit }) {
   const [campos, setCampos] = useState({
+<<<<<<< HEAD
   nombre: '', apellidos: '', dni: '', correo: '',
   contrasena: '', confirmarContrasena: '', fechaNacimiento: '',
   genero: '', nroPuesto: '', telefono: ''
 })
 
+=======
+    nombre: '', apellidos: '', dni: '', correo: '',
+    contrasena: '', confirmarContrasena: '', fechaNacimiento: '',
+    genero: '', nroPuesto: '', telefono: ''
+  })
+>>>>>>> 03a6ead3f1b3b740a9c59a93467fa4de8d3eefb3
   const [errores, setErrores] = useState({})
   const [verContrasena, setVerContrasena] = useState(false)
   const [verConfirmar, setVerConfirmar] = useState(false)
 
+<<<<<<< HEAD
   // GESTIÓN DINÁMICA DE MAYORÍA DE EDAD (18 años atrás desde el día de hoy)
   const obtenerFechaMaximaPermitida = () => {
     const hoy = new Date()
@@ -53,6 +61,9 @@ export default function RegisterForm({ onSubmit }) {
     const dia = String(hoy.getDate()).padStart(2, '0')
     return `${anioMaximo}-${mes}-${dia}` // Retorna formato YYYY-MM-DD de forma dinámica
   }
+=======
+  const fechaMaxima = '2008-12-31'
+>>>>>>> 03a6ead3f1b3b740a9c59a93467fa4de8d3eefb3
 
   const handleChange = (e) => {
     setCampos({ ...campos, [e.target.name]: e.target.value })
@@ -64,7 +75,10 @@ export default function RegisterForm({ onSubmit }) {
 
     const nuevosErrores = validarFormulario(campos)
 
+<<<<<<< HEAD
     // Validar confirmar contraseña por separado
+=======
+>>>>>>> 03a6ead3f1b3b740a9c59a93467fa4de8d3eefb3
     if (!campos.confirmarContrasena) {
       nuevosErrores.confirmarContrasena = 'Confirma tu contraseña'
     } else if (campos.contrasena !== campos.confirmarContrasena) {
@@ -84,7 +98,11 @@ export default function RegisterForm({ onSubmit }) {
       contrasena: campos.contrasena,
       fechaNacimiento: campos.fechaNacimiento,
       genero: campos.genero,
+<<<<<<< HEAD
       nroPuesto: parseInt(campos.nroPuesto), // convertir a Integer
+=======
+      nroPuesto: parseInt(campos.nroPuesto),
+>>>>>>> 03a6ead3f1b3b740a9c59a93467fa4de8d3eefb3
       telefono: campos.telefono,
       idRol: 3
     }
@@ -105,6 +123,7 @@ export default function RegisterForm({ onSubmit }) {
               {/* Nombre */}
               <Campo nombre="nombre" tipo="text" placeholder="Juan" valor={campos.nombre} onChange={handleChange} error={errores.nombre} />
 
+<<<<<<< HEAD
               {/* Apellidos */}
               <Campo nombre="apellidos" tipo="text" placeholder="Pérez López" valor={campos.apellidos} onChange={handleChange} error={errores.apellidos} />
 
@@ -115,6 +134,16 @@ export default function RegisterForm({ onSubmit }) {
                   type="text"
                   name="dni"
                   value={campos.dni}
+=======
+              <Campo nombre="nombre" tipo="text" placeholder="Juan" valor={campos.nombre} onChange={handleChange} error={errores.nombre} />
+              <Campo nombre="apellidos" tipo="text" placeholder="Pérez López" valor={campos.apellidos} onChange={handleChange} error={errores.apellidos} />
+
+              {/* DNI */}
+              <div>
+                <label className="block text-white font-semibold mb-2">DNI</label>
+                <input
+                  type="text" name="dni" value={campos.dni}
+>>>>>>> 03a6ead3f1b3b740a9c59a93467fa4de8d3eefb3
                   onChange={(e) => {
                     const valor = e.target.value
                     if (/[^0-9]/.test(valor)) {
@@ -124,10 +153,15 @@ export default function RegisterForm({ onSubmit }) {
                     }
                     setCampos({ ...campos, dni: valor.replace(/[^0-9]/g, '') })
                   }}
+<<<<<<< HEAD
                   placeholder="12345678"
                   maxLength={8}
                   className={`w-full rounded-lg px-4 py-3 text-gray-800 text-sm
                     focus:outline-none focus:ring-2
+=======
+                  placeholder="12345678" maxLength={8}
+                  className={`w-full rounded-lg px-4 py-3 text-gray-800 text-sm focus:outline-none focus:ring-2
+>>>>>>> 03a6ead3f1b3b740a9c59a93467fa4de8d3eefb3
                     ${errores.dni ? 'bg-red-50 ring-2 ring-red-400 focus:ring-red-400' : 'bg-white focus:ring-blue-400'}`}
                 />
                 {errores.dni && <p className="text-red-400 text-xs mt-1">{errores.dni}</p>}
@@ -137,9 +171,13 @@ export default function RegisterForm({ onSubmit }) {
               <div>
                 <label className="block text-white font-semibold mb-2">Teléfono</label>
                 <input
+<<<<<<< HEAD
                   type="text"
                   name="telefono"
                   value={campos.telefono}
+=======
+                  type="text" name="telefono" value={campos.telefono}
+>>>>>>> 03a6ead3f1b3b740a9c59a93467fa4de8d3eefb3
                   onChange={(e) => {
                     const valor = e.target.value
                     if (/[^0-9]/.test(valor)) {
@@ -149,15 +187,21 @@ export default function RegisterForm({ onSubmit }) {
                     }
                     setCampos({ ...campos, telefono: valor.replace(/[^0-9]/g, '') })
                   }}
+<<<<<<< HEAD
                   placeholder="987654321"
                   maxLength={9}
                   className={`w-full rounded-lg px-4 py-3 text-gray-800 text-sm
                     focus:outline-none focus:ring-2
+=======
+                  placeholder="987654321" maxLength={9}
+                  className={`w-full rounded-lg px-4 py-3 text-gray-800 text-sm focus:outline-none focus:ring-2
+>>>>>>> 03a6ead3f1b3b740a9c59a93467fa4de8d3eefb3
                     ${errores.telefono ? 'bg-red-50 ring-2 ring-red-400 focus:ring-red-400' : 'bg-white focus:ring-blue-400'}`}
                 />
                 {errores.telefono && <p className="text-red-400 text-xs mt-1">{errores.telefono}</p>}
               </div>
 
+<<<<<<< HEAD
               {/* N° de Puesto */}
               <Campo nombre="nroPuesto" tipo="number" placeholder="Ej: 12" valor={campos.nroPuesto} onChange={handleChange} error={errores.nroPuesto} />
 
@@ -185,6 +229,14 @@ export default function RegisterForm({ onSubmit }) {
                   onChange={handleChange}
                   className={`w-full rounded-lg px-4 py-3 text-gray-800 text-sm
                     focus:outline-none focus:ring-2
+=======
+              <Campo nombre="nroPuesto" tipo="number" placeholder="Ej: 12" valor={campos.nroPuesto} onChange={handleChange} error={errores.nroPuesto} />
+
+              {/* Género */}
+              <Campo nombre="genero" tipo="" placeholder="" valor={campos.genero} onChange={handleChange} error={errores.genero}>
+                <select name="genero" value={campos.genero} onChange={handleChange}
+                  className={`w-full rounded-lg px-4 py-3 text-gray-800 text-sm focus:outline-none focus:ring-2
+>>>>>>> 03a6ead3f1b3b740a9c59a93467fa4de8d3eefb3
                     ${errores.genero ? 'bg-red-50 ring-2 ring-red-400' : 'bg-white focus:ring-blue-400'}`}>
                   <option value="">Seleccionar...</option>
                   <option value="Masculino">Masculino</option>
@@ -192,6 +244,62 @@ export default function RegisterForm({ onSubmit }) {
                   <option value="Otro">Otro</option>
                 </select>
               </Campo>
+<<<<<<< HEAD
+=======
+
+              {/* Fecha de nacimiento */}
+              <div>
+                <label className="block text-white font-semibold mb-2">Fecha de nacimiento</label>
+                <input
+                  type="date" name="fechaNacimiento" value={campos.fechaNacimiento}
+                  onChange={handleChange} max={fechaMaxima}
+                  className={`w-full rounded-lg px-4 py-3 text-gray-800 text-sm focus:outline-none focus:ring-2
+                    ${errores.fechaNacimiento ? 'bg-red-50 ring-2 ring-red-400 focus:ring-red-400' : 'bg-white focus:ring-blue-400'}`}
+                />
+                {errores.fechaNacimiento && <p className="text-red-400 text-xs mt-1">{errores.fechaNacimiento}</p>}
+              </div>
+
+              {/* Correo opcional */}
+              <Campo nombre="correo" tipo="email" placeholder="juan@email.com (opcional)" colSpan={true} valor={campos.correo} onChange={handleChange} error={errores.correo} />
+
+              {/* Contraseña */}
+              <div>
+                <label className="block text-white font-semibold mb-2">Contraseña</label>
+                <div className="relative">
+                  <input
+                    type={verContrasena ? 'text' : 'password'} name="contrasena"
+                    value={campos.contrasena} onChange={handleChange}
+                    placeholder="Mínimo 8 caracteres"
+                    className={`w-full rounded-lg px-4 py-3 text-gray-800 text-sm pr-12 focus:outline-none focus:ring-2
+                      ${errores.contrasena ? 'bg-red-50 ring-2 ring-red-400 focus:ring-red-400' : 'bg-white focus:ring-blue-400'}`}
+                  />
+                  <button type="button" onClick={() => setVerContrasena(!verContrasena)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs font-medium hover:text-gray-700">
+                    {verContrasena ? 'Ocultar' : 'Ver'}
+                  </button>
+                </div>
+                {errores.contrasena && <p className="text-red-400 text-xs mt-1">{errores.contrasena}</p>}
+              </div>
+
+              {/* Confirmar contraseña */}
+              <div>
+                <label className="block text-white font-semibold mb-2">Confirmar contraseña</label>
+                <div className="relative">
+                  <input
+                    type={verConfirmar ? 'text' : 'password'} name="confirmarContrasena"
+                    value={campos.confirmarContrasena} onChange={handleChange}
+                    placeholder="Repite tu contraseña"
+                    className={`w-full rounded-lg px-4 py-3 text-gray-800 text-sm pr-12 focus:outline-none focus:ring-2
+                      ${errores.confirmarContrasena ? 'bg-red-50 ring-2 ring-red-400 focus:ring-red-400' : 'bg-white focus:ring-blue-400'}`}
+                  />
+                  <button type="button" onClick={() => setVerConfirmar(!verConfirmar)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs font-medium hover:text-gray-700">
+                    {verConfirmar ? 'Ocultar' : 'Ver'}
+                  </button>
+                </div>
+                {errores.confirmarContrasena && <p className="text-red-400 text-xs mt-1">{errores.confirmarContrasena}</p>}
+              </div>
+>>>>>>> 03a6ead3f1b3b740a9c59a93467fa4de8d3eefb3
 
               {/* Correo opcional */}
               <Campo nombre="correo" tipo="email" placeholder="juan@email.com (opcional)" colSpan={true} valor={campos.correo} onChange={handleChange} error={errores.correo} />
@@ -243,8 +351,12 @@ export default function RegisterForm({ onSubmit }) {
               {/* Botón */}
               <div className="col-span-2 mt-2">
                 <button type="submit"
+<<<<<<< HEAD
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white
                              font-semibold py-3 rounded-lg transition-colors text-sm">
+=======
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors text-sm">
+>>>>>>> 03a6ead3f1b3b740a9c59a93467fa4de8d3eefb3
                   Registrarse
                 </button>
               </div>
