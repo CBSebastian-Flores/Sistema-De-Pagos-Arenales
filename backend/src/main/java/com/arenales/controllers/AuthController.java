@@ -51,7 +51,7 @@ public class AuthController {
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado en base de datos"));
 
             String tipoRol = usuario.getRol().getTipoRol(); // Extrae directamente del objeto de tu BD
-            String nombresReales = usuario.getNombres(); // 🚀 Extrae el nombre real del comerciante
+            String nombresReales = usuario.getNombres(); // Extrae el nombre real del comerciante
 
             // 4. Generamos el token pasando los parámetros correctos en inglés a tu JwtUtil
             String token = jwtUtil.generateToken(dni, tipoRol, nombresReales);
