@@ -106,21 +106,3 @@ Sistema-De-Pagos-Arenales/
 ```
 
 ---
-
-## 📋 Tareas completadas
-
-| ID | Descripción | Estado |
-|---|---|---|
-| SDPA-23 | Maquetado del formulario de registro con Tailwind CSS | ✅ |
-| SDPA-24 | Validación de campos con Regex en el cliente | ✅ |
-| SDPA-25 | Integración Axios + React Toastify + conexión con backend | ✅ |
-| SDPA-30 | Maquetado de la vista de Login | ✅ |
-| SDPA-31 | Guardado del token JWT en sessionStorage | ✅ |
-| SDPA-32 | Interceptor de Axios con token en header Authorization | ✅ |
-| SDPA-33 | Rutas protegidas — solo accesibles con sesión activa | ✅ |
-
----
-
-## 👥 Equipo
-
-- **Yo5h1** — Frontend (React + Tailwind) / Backend (Spring Boot)
