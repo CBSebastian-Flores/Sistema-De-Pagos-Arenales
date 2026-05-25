@@ -29,14 +29,21 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
-
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .anyRequest().authenticated())
 
+                // Descomentalo para poder tener la seguridad
+                /*.authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .anyRequest().authenticated());*/
+
+                // CONFIGURACIÓN TOTALMENTE PÚBLICA
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll() // Cualquier URL de cualquier controlador queda libre
+                );
+
+                // Descomentalo para poder generar el token JWT
                 //METEMOS EL FILTRO AL CIRCUITO ANTES QUE LA SEGURIDAD NATIVA
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                //.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

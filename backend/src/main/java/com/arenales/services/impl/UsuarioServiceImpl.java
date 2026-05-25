@@ -10,6 +10,7 @@ import com.arenales.entities.Usuario;
 import com.arenales.repositories.RolRepository;
 import com.arenales.repositories.UsuarioRepository;
 import com.arenales.services.UsuarioService;
+import com.arenales.services.ReniecService;
 
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
@@ -19,6 +20,9 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Autowired
     private RolRepository rolRepository;
+
+    @Autowired
+    private ReniecService reniecService;
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
@@ -35,6 +39,11 @@ public class UsuarioServiceImpl implements UsuarioService {
         // VALIDACIÓN DE NEGOCIO: Evitar Correo duplicado
         if (usuarioRepository.existsByCorreo(dto.getCorreo())) {
             throw new RuntimeException("El correo electrónico ya está registrado.");
+        }
+
+        // Intercepción inmediata antes de procesar cualquier dato
+        if (!reniecService.existeDni(dto.getDni())) {
+            throw new RuntimeException("El dni no existe en la reniec");
         }
 
         // Mapeo de datos
