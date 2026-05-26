@@ -1,5 +1,8 @@
 import { useState } from 'react'
+import { toast } from 'react-toastify'
 import { validarFormulario } from '../utils/validaciones'
+
+const TOKEN_RENIEC = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvYXF1aW5za3QwNEBnbWFpbC5jb20ifQ.ai7_QzZyLUaKupF2zm3RaP4Yf42aMEX1anSMosOVVHQ'
 
 const Campo = ({ nombre, tipo, placeholder, colSpan, valor, onChange, error, children }) => (
   <div className={colSpan ? "col-span-2" : ""}>
@@ -44,7 +47,8 @@ export default function RegisterForm({ onSubmit }) {
   const [errores, setErrores] = useState({})
   const [verContrasena, setVerContrasena] = useState(false)
   const [verConfirmar, setVerConfirmar] = useState(false)
-  const [dniVerificado, setDniVerificado] = useState(false)
+  const [isDniVerificado, setIsDniVerificado] = useState(false)
+  const [verificando, setVerificando] = useState(false)
 
   const obtenerFechaMaximaPermitida = () => {
     const hoy = new Date()
@@ -59,14 +63,40 @@ export default function RegisterForm({ onSubmit }) {
     setErrores({ ...errores, [e.target.name]: null })
   }
 
-  const handleVerificarDni = () => {
+  const handleVerificarDni = async () => {
     if (!campos.dni || campos.dni.length !== 8) {
       setErrores({ ...errores, dni: 'Ingresa un DNI válido de 8 dígitos para verificar' })
       return
     }
-    // Por ahora solo simula la verificación visualmente
-    setDniVerificado(true)
-    setErrores({ ...errores, dni: null })
+
+    setVerificando(true)
+    try {
+      const response = await fetch(
+        `https://dniruc.apisperu.com/api/v1/dni/${campos.dni}?token=${TOKEN_RENIEC}`
+      )
+      const data = await response.json()
+
+      if (data.success === false) {
+        setIsDniVerificado(false)
+        toast.error('DNI Inexistente — no se encontró en RENIEC')
+      } else {
+        setIsDniVerificado(true)
+        toast.success('DNI Verificado correctamente')
+        // Autocompletar nombre y apellidos si la API los devuelve
+        if (data.nombres || data.apellidoPaterno) {
+          setCampos(prev => ({
+            ...prev,
+            nombre: data.nombres ?? prev.nombre,
+            apellidos: `${data.apellidoPaterno ?? ''} ${data.apellidoMaterno ?? ''}`.trim()
+          }))
+        }
+      }
+    } catch {
+      setIsDniVerificado(false)
+      toast.error('Error al conectar con el servicio de verificación')
+    } finally {
+      setVerificando(false)
+    }
   }
 
   const handleSubmit = (e) => {
@@ -136,7 +166,7 @@ export default function RegisterForm({ onSubmit }) {
                         setErrores({ ...errores, dni: "El DNI solo acepta números" })
                       } else {
                         setErrores({ ...errores, dni: null })
-                        setDniVerificado(false)
+                        setIsDniVerificado(false)
                       }
                       setCampos({ ...campos, dni: valor.replace(/[^0-9]/g, '') })
                     }}
@@ -149,11 +179,14 @@ export default function RegisterForm({ onSubmit }) {
                   <button
                     type="button"
                     onClick={handleVerificarDni}
+                    disabled={verificando || isDniVerificado}
                     className={`px-5 py-3 rounded-lg text-sm font-semibold transition-colors
-                      ${dniVerificado
+                      ${isDniVerificado
                         ? 'bg-green-500 text-white cursor-default'
-                        : 'bg-blue-500 hover:bg-blue-600 text-white'}`}>
-                    {dniVerificado ? '✓ Verificado' : 'Verificar'}
+                        : verificando
+                          ? 'bg-gray-400 text-white cursor-wait'
+                          : 'bg-blue-500 hover:bg-blue-600 text-white'}`}>
+                    {isDniVerificado ? '✓ Verificado' : verificando ? 'Verificando...' : 'Verificar'}
                   </button>
                 </div>
                 {errores.dni && <p className="text-red-400 text-xs mt-1">{errores.dni}</p>}
@@ -284,12 +317,16 @@ export default function RegisterForm({ onSubmit }) {
                 {errores.confirmarContrasena && <p className="text-red-400 text-xs mt-1">{errores.confirmarContrasena}</p>}
               </div>
 
-              {/* Botón */}
+              {/* Botón deshabilitado hasta verificar DNI */}
               <div className="col-span-2 mt-2">
-                <button type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white
-                             font-semibold py-3 rounded-lg transition-colors text-sm">
-                  Registrarse
+                <button
+                  type="submit"
+                  disabled={!isDniVerificado}
+                  className={`w-full font-semibold py-3 rounded-lg transition-colors text-sm
+                    ${isDniVerificado
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                      : 'bg-gray-500 text-gray-300 cursor-not-allowed'}`}>
+                  {isDniVerificado ? 'Registrarse' : 'Verifica el DNI para continuar'}
                 </button>
               </div>
 
