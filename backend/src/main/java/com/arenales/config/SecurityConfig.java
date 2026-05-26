@@ -26,30 +26,29 @@ public class SecurityConfig {
     @Autowired
     private JwtFilter jwtFilter;
 
-    @Autowired
-    private UserDetailsServiceImpl userDetailsService;
-
-    @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
-        provider.setPasswordEncoder(passwordEncoder());
-        return provider;
-    }
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .authenticationProvider(authenticationProvider())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
+
+                // Descomentalo para poder tener la seguridad
+                /*.authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                        .anyRequest().authenticated())
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                        .anyRequest().authenticated());*/
+
+                // CONFIGURACIÓN TOTALMENTE PÚBLICA
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll() // Cualquier URL de cualquier controlador queda libre
+                );
+
+                // Descomentalo para poder generar el token JWT
+                //METEMOS EL FILTRO AL CIRCUITO ANTES QUE LA SEGURIDAD NATIVA
+                //.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
