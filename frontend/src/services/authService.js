@@ -21,3 +21,14 @@ export async function verificarDni(dni) {
     throw error // Lanza el error para que lo atrape el catch del formulario
   }
 }
+
+// Función para consumir el endpoint de roles
+export async function listarRoles() {
+  try {
+    const response = await api.get('/api/roles')
+    return response.data // Devuelve el array de objetos JSON [{idRol: 1, nombre: '...'}, ...]
+  } catch (error) {
+    console.error("Error al traer los roles del backend:", error)
+    throw error
+  }
+}
