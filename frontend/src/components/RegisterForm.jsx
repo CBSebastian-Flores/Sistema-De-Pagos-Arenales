@@ -36,22 +36,22 @@ const Campo = ({ nombre, tipo, placeholder, colSpan, valor, onChange, error, chi
 
 export default function RegisterForm({ onSubmit }) {
   const [campos, setCampos] = useState({
-  nombre: '', apellidos: '', dni: '', correo: '',
-  contrasena: '', confirmarContrasena: '', fechaNacimiento: '',
-  genero: '', nroPuesto: '', telefono: ''
-})
+    nombre: '', apellidos: '', dni: '', correo: '',
+    contrasena: '', confirmarContrasena: '', fechaNacimiento: '',
+    genero: '', nroPuesto: '', telefono: '', idRol: ''
+  })
 
   const [errores, setErrores] = useState({})
   const [verContrasena, setVerContrasena] = useState(false)
   const [verConfirmar, setVerConfirmar] = useState(false)
+  const [dniVerificado, setDniVerificado] = useState(false)
 
-  // GESTIÓN DINÁMICA DE MAYORÍA DE EDAD (18 años atrás desde el día de hoy)
   const obtenerFechaMaximaPermitida = () => {
     const hoy = new Date()
     const anioMaximo = hoy.getFullYear() - 18
     const mes = String(hoy.getMonth() + 1).padStart(2, '0')
     const dia = String(hoy.getDate()).padStart(2, '0')
-    return `${anioMaximo}-${mes}-${dia}` // Retorna formato YYYY-MM-DD de forma dinámica
+    return `${anioMaximo}-${mes}-${dia}`
   }
 
   const handleChange = (e) => {
@@ -59,12 +59,25 @@ export default function RegisterForm({ onSubmit }) {
     setErrores({ ...errores, [e.target.name]: null })
   }
 
+  const handleVerificarDni = () => {
+    if (!campos.dni || campos.dni.length !== 8) {
+      setErrores({ ...errores, dni: 'Ingresa un DNI válido de 8 dígitos para verificar' })
+      return
+    }
+    // Por ahora solo simula la verificación visualmente
+    setDniVerificado(true)
+    setErrores({ ...errores, dni: null })
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault()
 
     const nuevosErrores = validarFormulario(campos)
 
-    // Validar confirmar contraseña por separado
+    if (!campos.idRol) {
+      nuevosErrores.idRol = 'Selecciona un rol'
+    }
+
     if (!campos.confirmarContrasena) {
       nuevosErrores.confirmarContrasena = 'Confirma tu contraseña'
     } else if (campos.contrasena !== campos.confirmarContrasena) {
@@ -84,9 +97,9 @@ export default function RegisterForm({ onSubmit }) {
       contrasena: campos.contrasena,
       fechaNacimiento: campos.fechaNacimiento,
       genero: campos.genero,
-      nroPuesto: parseInt(campos.nroPuesto), // convertir a Integer
+      nroPuesto: parseInt(campos.nroPuesto),
       telefono: campos.telefono,
-      idRol: 3
+      idRol: parseInt(campos.idRol)
     }
 
     console.log('📤 datosParaBackend:', JSON.stringify(datosParaBackend, null, 2))
@@ -102,34 +115,47 @@ export default function RegisterForm({ onSubmit }) {
         <div className="bg-[#1a2d4a] rounded-3xl p-8">
           <form onSubmit={handleSubmit} noValidate>
             <div className="grid grid-cols-2 gap-6">
+
               {/* Nombre */}
               <Campo nombre="nombre" tipo="text" placeholder="Juan" valor={campos.nombre} onChange={handleChange} error={errores.nombre} />
 
               {/* Apellidos */}
               <Campo nombre="apellidos" tipo="text" placeholder="Pérez López" valor={campos.apellidos} onChange={handleChange} error={errores.apellidos} />
 
-              {/* DNI - solo números */}
-              <div>
+              {/* DNI con botón Verificar */}
+              <div className="col-span-2">
                 <label className="block text-white font-semibold mb-2">DNI</label>
-                <input
-                  type="text"
-                  name="dni"
-                  value={campos.dni}
-                  onChange={(e) => {
-                    const valor = e.target.value
-                    if (/[^0-9]/.test(valor)) {
-                      setErrores({ ...errores, dni: "El DNI solo acepta números" })
-                    } else {
-                      setErrores({ ...errores, dni: null })
-                    }
-                    setCampos({ ...campos, dni: valor.replace(/[^0-9]/g, '') })
-                  }}
-                  placeholder="12345678"
-                  maxLength={8}
-                  className={`w-full rounded-lg px-4 py-3 text-gray-800 text-sm
-                    focus:outline-none focus:ring-2
-                    ${errores.dni ? 'bg-red-50 ring-2 ring-red-400 focus:ring-red-400' : 'bg-white focus:ring-blue-400'}`}
-                />
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    name="dni"
+                    value={campos.dni}
+                    onChange={(e) => {
+                      const valor = e.target.value
+                      if (/[^0-9]/.test(valor)) {
+                        setErrores({ ...errores, dni: "El DNI solo acepta números" })
+                      } else {
+                        setErrores({ ...errores, dni: null })
+                        setDniVerificado(false)
+                      }
+                      setCampos({ ...campos, dni: valor.replace(/[^0-9]/g, '') })
+                    }}
+                    placeholder="12345678"
+                    maxLength={8}
+                    className={`flex-1 rounded-lg px-4 py-3 text-gray-800 text-sm
+                      focus:outline-none focus:ring-2
+                      ${errores.dni ? 'bg-red-50 ring-2 ring-red-400 focus:ring-red-400' : 'bg-white focus:ring-blue-400'}`}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleVerificarDni}
+                    className={`px-5 py-3 rounded-lg text-sm font-semibold transition-colors
+                      ${dniVerificado
+                        ? 'bg-green-500 text-white cursor-default'
+                        : 'bg-blue-500 hover:bg-blue-600 text-white'}`}>
+                    {dniVerificado ? '✓ Verificado' : 'Verificar'}
+                  </button>
+                </div>
                 {errores.dni && <p className="text-red-400 text-xs mt-1">{errores.dni}</p>}
               </div>
 
@@ -169,7 +195,7 @@ export default function RegisterForm({ onSubmit }) {
                   name="fechaNacimiento"
                   value={campos.fechaNacimiento}
                   onChange={handleChange}
-                  max={obtenerFechaMaximaPermitida()} 
+                  max={obtenerFechaMaximaPermitida()}
                   className={`w-full rounded-lg px-4 py-3 text-gray-800 text-sm
                     focus:outline-none focus:ring-2
                     ${errores.fechaNacimiento ? 'bg-red-50 ring-2 ring-red-400 focus:ring-red-400' : 'bg-white focus:ring-blue-400'}`}
@@ -195,6 +221,24 @@ export default function RegisterForm({ onSubmit }) {
 
               {/* Correo opcional */}
               <Campo nombre="correo" tipo="email" placeholder="juan@email.com (opcional)" colSpan={true} valor={campos.correo} onChange={handleChange} error={errores.correo} />
+
+              {/* Rol */}
+              <div className="col-span-2">
+                <label className="block text-white font-semibold mb-2">Rol</label>
+                <select
+                  name="idRol"
+                  value={campos.idRol}
+                  onChange={handleChange}
+                  className={`w-full rounded-lg px-4 py-3 text-gray-800 text-sm
+                    focus:outline-none focus:ring-2
+                    ${errores.idRol ? 'bg-red-50 ring-2 ring-red-400' : 'bg-white focus:ring-blue-400'}`}>
+                  <option value="">Seleccionar rol...</option>
+                  <option value="1">Directiva</option>
+                  <option value="2">Tesorero</option>
+                  <option value="3">Administrador</option>
+                </select>
+                {errores.idRol && <p className="text-red-400 text-xs mt-1">{errores.idRol}</p>}
+              </div>
 
               {/* Contraseña */}
               <div>
