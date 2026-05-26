@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { toast } from 'react-toastify'
 import { validarFormulario } from '../utils/validaciones'
-
-const TOKEN_RENIEC = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImpvYXF1aW5za3QwNEBnbWFpbC5jb20ifQ.ai7_QzZyLUaKupF2zm3RaP4Yf42aMEX1anSMosOVVHQ'
+import { verificarDni } from '../services/authService';
 
 const Campo = ({ nombre, tipo, placeholder, colSpan, valor, onChange, error, children }) => (
   <div className={colSpan ? "col-span-2" : ""}>
@@ -71,17 +70,16 @@ export default function RegisterForm({ onSubmit }) {
 
     setVerificando(true)
     try {
-      const response = await fetch(
-        `https://dniruc.apisperu.com/api/v1/dni/${campos.dni}?token=${TOKEN_RENIEC}`
-      )
-      const data = await response.json()
+      // Consumimos la función acoplada a tus interceptores
+      const existeDni = await verificarDni(campos.dni)
 
-      if (data.success === false) {
+      if (existeDni === false) {
         setIsDniVerificado(false)
-        toast.error('DNI Inexistente — no se encontró en RENIEC')
+        toast.error('DNI Inexistente — no se encontró en los registros oficiales')
       } else {
         setIsDniVerificado(true)
         toast.success('DNI Verificado correctamente')
+        /* Esto se conversara
         // Autocompletar nombre y apellidos si la API los devuelve
         if (data.nombres || data.apellidoPaterno) {
           setCampos(prev => ({
@@ -89,7 +87,7 @@ export default function RegisterForm({ onSubmit }) {
             nombre: data.nombres ?? prev.nombre,
             apellidos: `${data.apellidoPaterno ?? ''} ${data.apellidoMaterno ?? ''}`.trim()
           }))
-        }
+        }*/
       }
     } catch {
       setIsDniVerificado(false)
