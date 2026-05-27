@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import { validarFormulario } from '../utils/validaciones'
-import { verificarDni } from '../services/authService';
+import { verificarDni, listarRoles } from '../services/authService';
 
 const Campo = ({ nombre, tipo, placeholder, colSpan, valor, onChange, error, children }) => (
   <div className={colSpan ? "col-span-2" : ""}>
@@ -42,6 +42,20 @@ export default function RegisterForm({ onSubmit }) {
     contrasena: '', confirmarContrasena: '', fechaNacimiento: '',
     genero: '', nroPuesto: '', telefono: '', idRol: ''
   })
+
+  const [roles, setRoles] = useState([])
+
+  useEffect(() => {
+    const cargarRoles = async () => {
+    try {
+        const data = await listarRoles()
+        setRoles(data) // Guardamos los roles de la base de datos
+      } catch {
+        toast.error('No se pudieron cargar los roles del sistema')
+      }
+    }
+    cargarRoles()
+  }, [])
 
   const [errores, setErrores] = useState({})
   const [verContrasena, setVerContrasena] = useState(false)
@@ -243,7 +257,7 @@ export default function RegisterForm({ onSubmit }) {
                   className={`w-full rounded-lg px-4 py-3 text-gray-800 text-sm
                     focus:outline-none focus:ring-2
                     ${errores.genero ? 'bg-red-50 ring-2 ring-red-400' : 'bg-white focus:ring-blue-400'}`}>
-                  <option value="">Seleccionar...</option>
+                  <option value="" disabled hidden>Seleccionar...</option>
                   <option value="Masculino">Masculino</option>
                   <option value="Femenino">Femenino</option>
                   <option value="Otro">Otro</option>
@@ -256,19 +270,19 @@ export default function RegisterForm({ onSubmit }) {
               {/* Rol */}
               <div className="col-span-2">
                 <label className="block text-white font-semibold mb-2">Rol</label>
-                <select
-                  name="idRol"
-                  value={campos.idRol}
-                  onChange={handleChange}
-                  className={`w-full rounded-lg px-4 py-3 text-gray-800 text-sm
-                    focus:outline-none focus:ring-2
-                    ${errores.idRol ? 'bg-red-50 ring-2 ring-red-400' : 'bg-white focus:ring-blue-400'}`}>
-                  <option value="">Seleccionar rol...</option>
-                  <option value="1">Directiva</option>
-                  <option value="2">Tesorero</option>
-                  <option value="3">Administrador</option>
-                </select>
-                {errores.idRol && <p className="text-red-400 text-xs mt-1">{errores.idRol}</p>}
+                  <select
+                    name="idRol"
+                    value={campos.idRol}
+                    onChange={handleChange}
+                    className={`w-full rounded-lg px-4 py-3 text-gray-800 text-sm focus:outline-none focus:ring-2 ${errores.idRol ? 'bg-red-50 ring-2 ring-red-400' : 'bg-white focus:ring-blue-400'}`}>
+                    <option value="" disabled hidden>Seleccionar rol...</option>
+                    {roles.map((rol) => (
+                      <option key={rol.idRol} value={rol.idRol}>
+                        {rol.tipoRol}
+                      </option>
+                    ))}
+                  </select>
+                  {errores.idRol && <p className="text-red-400 text-xs mt-1">{errores.idRol}</p>}
               </div>
 
               {/* Contraseña */}

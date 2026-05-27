@@ -9,6 +9,7 @@ export const reglas = {
   genero: /^(Masculino|Femenino|Otro)$/,
   nroPuesto: /^\d+$/,
   telefono: /^\d{9}$/,
+  idRol: /^\d+$/,
 }
 
 const mensajes = {
@@ -22,6 +23,7 @@ const mensajes = {
   genero: "Selecciona un género",
   nroPuesto: "Ingresa un número de puesto válido",
   telefono: "El teléfono debe tener exactamente 9 dígitos",
+  idRol: "Selecciona un rol"
 }
 
 // Campos que no se validan aquí (tienen lógica propia en el formulario)
