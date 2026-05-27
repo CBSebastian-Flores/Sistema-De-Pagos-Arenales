@@ -36,6 +36,15 @@ const Campo = ({ nombre, tipo, placeholder, colSpan, valor, onChange, error, chi
   </div>
 )
 
+const capitalizarTexto = (texto) => {
+  if (!texto) return '';
+  return texto
+    .toLowerCase()
+    .split(' ')
+    .map(palabra => palabra.charAt(0).toUpperCase() + palabra.slice(1))
+    .join(' ');
+}
+
 export default function RegisterForm({ onSubmit }) {
   const [campos, setCampos] = useState({
     nombre: '', apellidos: '', dni: '', correo: '',
@@ -47,9 +56,9 @@ export default function RegisterForm({ onSubmit }) {
 
   useEffect(() => {
     const cargarRoles = async () => {
-    try {
+      try {
         const data = await listarRoles()
-        setRoles(data) // Guardamos los roles de la base de datos
+        setRoles(data)
       } catch {
         toast.error('No se pudieron cargar los roles del sistema')
       }
@@ -83,29 +92,32 @@ export default function RegisterForm({ onSubmit }) {
     }
 
     setVerificando(true)
-    try {
-      // Consumimos la función acoplada a tus interceptores
-      const existeDni = await verificarDni(campos.dni)
 
-      if (existeDni === false) {
-        setIsDniVerificado(false)
-        toast.error('DNI Inexistente — no se encontró en los registros oficiales')
-      } else {
-        setIsDniVerificado(true)
-        toast.success('DNI Verificado correctamente')
-        /* Esto se conversara
-        // Autocompletar nombre y apellidos si la API los devuelve
-        if (data.nombres || data.apellidoPaterno) {
-          setCampos(prev => ({
-            ...prev,
-            nombre: data.nombres ?? prev.nombre,
-            apellidos: `${data.apellidoPaterno ?? ''} ${data.apellidoMaterno ?? ''}`.trim()
-          }))
-        }*/
-      }
-    } catch {
+    try {
+      const data = await verificarDni(campos.dni) // 'data' llega como: { nombres, apellidoPaterno, apellidoMaterno, dni }
+
+      setIsDniVerificado(true)
+      console.log(data)
+      toast.success('DNI Verificado correctamente')
+
+      setCampos(prev => ({
+        ...prev,
+        nombre: capitalizarTexto(data.nombres) ?? prev.nombre,
+        apellidos: capitalizarTexto(`${data.apellidoPaterno ?? ''} ${data.apellidoMaterno ?? ''}`).trim()
+      }))
+
+    } catch (error) {
       setIsDniVerificado(false)
-      toast.error('Error al conectar con el servicio de verificación')
+      setCampos(prev => ({ ...prev, nombre: '', apellidos: '' }))
+
+      const status = error?.response?.status
+      if (status === 400) {
+        toast.error('El DNI ingresado ya se encuentra registrado en el sistema')
+      } else if (status === 404) {
+        toast.error('DNI Inexistente — no se encontró en RENIEC')
+      } else {
+        toast.error('Error al conectar con el servicio de verificación')
+      }
     } finally {
       setVerificando(false)
     }
@@ -144,7 +156,6 @@ export default function RegisterForm({ onSubmit }) {
       idRol: parseInt(campos.idRol)
     }
 
-    console.log('📤 datosParaBackend:', JSON.stringify(datosParaBackend, null, 2))
     onSubmit(datosParaBackend)
   }
 
@@ -157,12 +168,6 @@ export default function RegisterForm({ onSubmit }) {
         <div className="bg-[#1a2d4a] rounded-3xl p-8">
           <form onSubmit={handleSubmit} noValidate>
             <div className="grid grid-cols-2 gap-6">
-
-              {/* Nombre */}
-              <Campo nombre="nombre" tipo="text" placeholder="Juan" valor={campos.nombre} onChange={handleChange} error={errores.nombre} />
-
-              {/* Apellidos */}
-              <Campo nombre="apellidos" tipo="text" placeholder="Pérez López" valor={campos.apellidos} onChange={handleChange} error={errores.apellidos} />
 
               {/* DNI con botón Verificar */}
               <div className="col-span-2">
@@ -203,6 +208,12 @@ export default function RegisterForm({ onSubmit }) {
                 </div>
                 {errores.dni && <p className="text-red-400 text-xs mt-1">{errores.dni}</p>}
               </div>
+
+              {/* Nombre */}
+              <Campo nombre="nombre" tipo="text" placeholder="Juan" valor={campos.nombre} onChange={handleChange} error={errores.nombre} />
+
+              {/* Apellidos */}
+              <Campo nombre="apellidos" tipo="text" placeholder="Pérez López" valor={campos.apellidos} onChange={handleChange} error={errores.apellidos} />
 
               {/* Teléfono */}
               <div>
@@ -270,19 +281,19 @@ export default function RegisterForm({ onSubmit }) {
               {/* Rol */}
               <div className="col-span-2">
                 <label className="block text-white font-semibold mb-2">Rol</label>
-                  <select
-                    name="idRol"
-                    value={campos.idRol}
-                    onChange={handleChange}
-                    className={`w-full rounded-lg px-4 py-3 text-gray-800 text-sm focus:outline-none focus:ring-2 ${errores.idRol ? 'bg-red-50 ring-2 ring-red-400' : 'bg-white focus:ring-blue-400'}`}>
-                    <option value="" disabled hidden>Seleccionar rol...</option>
-                    {roles.map((rol) => (
-                      <option key={rol.idRol} value={rol.idRol}>
-                        {rol.tipoRol}
-                      </option>
-                    ))}
-                  </select>
-                  {errores.idRol && <p className="text-red-400 text-xs mt-1">{errores.idRol}</p>}
+                <select
+                  name="idRol"
+                  value={campos.idRol}
+                  onChange={handleChange}
+                  className={`w-full rounded-lg px-4 py-3 text-gray-800 text-sm focus:outline-none focus:ring-2 ${errores.idRol ? 'bg-red-50 ring-2 ring-red-400' : 'bg-white focus:ring-blue-400'}`}>
+                  <option value="" disabled hidden>Seleccionar rol...</option>
+                  {roles.map((rol) => (
+                    <option key={rol.idRol} value={rol.idRol}>
+                      {rol.tipoRol}
+                    </option>
+                  ))}
+                </select>
+                {errores.idRol && <p className="text-red-400 text-xs mt-1">{errores.idRol}</p>}
               </div>
 
               {/* Contraseña */}
@@ -329,7 +340,7 @@ export default function RegisterForm({ onSubmit }) {
                 {errores.confirmarContrasena && <p className="text-red-400 text-xs mt-1">{errores.confirmarContrasena}</p>}
               </div>
 
-              {/* Botón deshabilitado hasta verificar DNI */}
+              {/* Botón submit */}
               <div className="col-span-2 mt-2">
                 <button
                   type="submit"

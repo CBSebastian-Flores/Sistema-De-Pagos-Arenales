@@ -22,7 +22,6 @@ public class ReniecServiceImpl implements ReniecService {
     @Override
     public ReniecResponseDTO obtenerDatosCompletosDni(String dni) {
         String url = API_URL + dni;
-
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", apiToken);
@@ -31,10 +30,7 @@ public class ReniecServiceImpl implements ReniecService {
 
             // Consumimos la API externa esperando el DTO estructurado
             ResponseEntity<ReniecResponseDTO> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.GET,
-                    entity,
-                    ReniecResponseDTO.class
+                url, HttpMethod.GET, entity, ReniecResponseDTO.class
             );
 
             // Retornamos el cuerpo del JSON recibido (nombres, apellidoPaterno, etc.)

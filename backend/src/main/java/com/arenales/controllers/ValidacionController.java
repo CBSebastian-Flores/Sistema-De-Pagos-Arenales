@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/validaciones")
 public class ValidacionController {
+
     @Autowired
     private ReniecService reniecService;
 
