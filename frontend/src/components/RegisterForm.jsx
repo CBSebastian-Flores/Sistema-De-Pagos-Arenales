@@ -36,6 +36,15 @@ const Campo = ({ nombre, tipo, placeholder, colSpan, valor, onChange, error, chi
   </div>
 )
 
+const capitalizarTexto = (texto) => {
+  if (!texto) return '';
+  return texto
+    .toLowerCase()
+    .split(' ')
+    .map(palabra => palabra.charAt(0).toUpperCase() + palabra.slice(1))
+    .join(' ');
+}
+
 export default function RegisterForm({ onSubmit }) {
   const [campos, setCampos] = useState({
     nombre: '', apellidos: '', dni: '', correo: '',
@@ -83,16 +92,17 @@ export default function RegisterForm({ onSubmit }) {
     }
 
     setVerificando(true)
+
     try {
-      const data = await verificarDni(campos.dni)
+      const data = await verificarDni(campos.dni) // 'data' llega como: { nombres, apellidoPaterno, apellidoMaterno, dni }
 
       setIsDniVerificado(true)
       toast.success('DNI Verificado correctamente')
 
       setCampos(prev => ({
         ...prev,
-        nombre: data.first_name ?? prev.nombre,
-        apellidos: `${data.first_last_name ?? ''} ${data.second_last_name ?? ''}`.trim()
+        nombre: capitalizarTexto(data.nombres) ?? prev.nombre,
+        apellidos: capitalizarTexto(`${data.apellidoPaterno ?? ''} ${data.apellidoMaterno ?? ''}`).trim()
       }))
 
     } catch (error) {
@@ -101,7 +111,7 @@ export default function RegisterForm({ onSubmit }) {
 
       const status = error?.response?.status
       if (status === 400) {
-        toast.error('El DNI ingresado ya se encuentra registrado en el sistema')
+        toast.error(error.response.data || 'El DNI ingresado ya se encuentra registrado en el sistema')
       } else if (status === 404) {
         toast.error('DNI Inexistente — no se encontró en RENIEC')
       } else {
