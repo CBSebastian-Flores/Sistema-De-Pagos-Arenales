@@ -97,6 +97,7 @@ export default function RegisterForm({ onSubmit }) {
       const data = await verificarDni(campos.dni) // 'data' llega como: { nombres, apellidoPaterno, apellidoMaterno, dni }
 
       setIsDniVerificado(true)
+      console.log(data)
       toast.success('DNI Verificado correctamente')
 
       setCampos(prev => ({
@@ -111,7 +112,7 @@ export default function RegisterForm({ onSubmit }) {
 
       const status = error?.response?.status
       if (status === 400) {
-        toast.error(error.response.data || 'El DNI ingresado ya se encuentra registrado en el sistema')
+        toast.error('El DNI ingresado ya se encuentra registrado en el sistema')
       } else if (status === 404) {
         toast.error('DNI Inexistente — no se encontró en RENIEC')
       } else {

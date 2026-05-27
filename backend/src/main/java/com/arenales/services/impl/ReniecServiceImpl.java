@@ -20,47 +20,25 @@ public class ReniecServiceImpl implements ReniecService {
     private final String API_URL = "https://api.decolecta.com/v1/reniec/dni?numero=";
 
     @Override
-    public boolean existeDni(String dni) {
-        if ("99999999".equals(dni)) return false;
-
+    public ReniecResponseDTO obtenerDatosCompletosDni(String dni) {
         String url = API_URL + dni;
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", apiToken);
+
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
+            // Consumimos la API externa esperando el DTO estructurado
             ResponseEntity<ReniecResponseDTO> response = restTemplate.exchange(
                 url, HttpMethod.GET, entity, ReniecResponseDTO.class
             );
 
-            return response.getStatusCode() == HttpStatus.OK;
-
+            // Retornamos el cuerpo del JSON recibido (nombres, apellidoPaterno, etc.)
+            return response.getBody();
         } catch (HttpClientErrorException.NotFound e) {
-            return false;
+            return null;
         } catch (Exception e) {
-            System.err.println("❌ Error RENIEC existeDni: " + e.getMessage());
-            return false;
-        }
-    }
-
-    @Override
-    public ReniecResponseDTO obtenerDatos(String dni) {
-        if ("99999999".equals(dni)) return null;
-
-        String url = API_URL + dni;
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", apiToken);
-            HttpEntity<String> entity = new HttpEntity<>(headers);
-
-            ResponseEntity<ReniecResponseDTO> response = restTemplate.exchange(
-                url, HttpMethod.GET, entity, ReniecResponseDTO.class
-            );
-
-            return response.getStatusCode() == HttpStatus.OK ? response.getBody() : null;
-
-        } catch (Exception e) {
-            System.err.println("❌ Error RENIEC obtenerDatos: " + e.getMessage());
+            System.err.println("Fallo de comunicación con API RENIEC externa: " + e.getMessage());
             return null;
         }
     }

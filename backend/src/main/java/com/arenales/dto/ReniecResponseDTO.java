@@ -1,22 +1,29 @@
 package com.arenales.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @Data
-@JsonIgnoreProperties(ignoreUnknown = true)
+@AllArgsConstructor
+@NoArgsConstructor
 public class ReniecResponseDTO {
+    // Mapeamos "document_number" al campo dni
+    @JsonAlias("document_number")
+    private String dni;
 
-    @JsonProperty("document_number")
-    private String numeroDocumento;
-
-    @JsonProperty("first_name")
+    // Mapeamos "first_name" al campo nombres
+    @JsonAlias("first_name")
     private String nombres;
 
-    @JsonProperty("first_last_name")
+    // Mapeamos "first_last_name" al apellido paterno
+    @JsonAlias("first_last_name")
     private String apellidoPaterno;
 
-    @JsonProperty("second_last_name")
+    // Mapeamos "second_last_name" al apellido materno
+    @JsonAlias("second_last_name")
     private String apellidoMaterno;
 }
