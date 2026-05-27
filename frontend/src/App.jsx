@@ -8,6 +8,9 @@ import AccesoDenegado from './components/AccesoDenegado'
 import { registrarUsuario } from './services/authService'
 import { loginUsuario, guardarSesion, cerrarSesion, estaAutenticado } from './services/loginService'
 
+import SolicitarRecuperacion from './pages/SolicitarRecuperacion'
+import RestablecerPassword from './pages/RestablecerPassword'
+
 export default function App() {
 const handleLogin = async (datos) => {
   try {
@@ -60,6 +63,9 @@ const handleLogin = async (datos) => {
         } />
         <Route path="/acceso-denegado" element={<AccesoDenegado />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
+
+        <Route path="/solicitar-recuperacion" element={<SolicitarRecuperacion />} />
+<Route path="/restablecer-password" element={<RestablecerPassword />} />
       </Routes>
     </BrowserRouter>
   )
