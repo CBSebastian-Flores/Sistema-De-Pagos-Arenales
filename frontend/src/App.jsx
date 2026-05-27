@@ -9,19 +9,23 @@ import { registrarUsuario } from './services/authService'
 import { loginUsuario, guardarSesion, cerrarSesion, estaAutenticado } from './services/loginService'
 
 export default function App() {
-  const handleLogin = async (datos) => {
-    try {
-      const respuesta = await loginUsuario(datos)
-      guardarSesion(respuesta)
-      toast.success(`¡Bienvenido, ${respuesta.nombres}!`)
-      window.location.href = '/dashboard'
-    } catch (error) {
+const handleLogin = async (datos) => {
+  try {
+    const respuesta = await loginUsuario(datos)
+    guardarSesion(respuesta)
+    toast.success(`¡Bienvenido, ${respuesta.nombres}!`)
+    window.location.href = '/dashboard'
+  } catch (error) {
+    if (error.response?.status === 423) {
+      toast.error('Cuenta bloqueada por múltiples intentos fallidos. Intente de nuevo en 15 minutos.')
+    } else {
       const mensaje = typeof error.response?.data === 'string'
         ? error.response.data
         : 'DNI o contraseña incorrectos'
       toast.error(mensaje)
     }
   }
+}
 
   const handleSubmit = async (datos) => {
     try {
