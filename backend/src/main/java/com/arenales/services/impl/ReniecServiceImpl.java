@@ -20,26 +20,16 @@ public class ReniecServiceImpl implements ReniecService {
     private final String API_URL = "https://api.decolecta.com/v1/reniec/dni?numero=";
 
     @Override
-    public boolean existeDni(String dni) {
-        // MOCK DE DESARROLLO: Para pruebas del Frontend sin gastar consultas
-        if ("99999999".equals(dni)) {
-            return false;
-        }
-        if ("11111111".equals(dni)) {
-            return true;
-        }
-
+    public ReniecResponseDTO obtenerDatosCompletosDni(String dni) {
         String url = API_URL + dni;
 
         try {
-            // 1. Preparamos la cabecera de seguridad con tu Token
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", apiToken);
 
-            // 2. Empaquetamos la cabecera
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
-            // 3. Hacemos la petición GET con la cabecera incluida
+            // Consumimos la API externa esperando el DTO estructurado
             ResponseEntity<ReniecResponseDTO> response = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
@@ -47,13 +37,13 @@ public class ReniecServiceImpl implements ReniecService {
                     ReniecResponseDTO.class
             );
 
-            return response.getStatusCode() == HttpStatus.OK;
-
+            // Retornamos el cuerpo del JSON recibido (nombres, apellidoPaterno, etc.)
+            return response.getBody();
         } catch (HttpClientErrorException.NotFound e) {
-            return false;
+            return null;
         } catch (Exception e) {
-            System.err.println("Fallo de comunicación con API RENIEC: " + e.getMessage());
-            return false;
+            System.err.println("Fallo de comunicación con API RENIEC externa: " + e.getMessage());
+            return null;
         }
     }
 }
