@@ -21,30 +21,16 @@ public class ReniecServiceImpl implements ReniecService {
 
     @Override
     public boolean existeDni(String dni) {
-        // MOCK DE DESARROLLO: Para pruebas del Frontend sin gastar consultas
-        if ("99999999".equals(dni)) {
-            return false;
-        }
-        if ("11111111".equals(dni)) {
-            return true;
-        }
+        if ("99999999".equals(dni)) return false;
 
         String url = API_URL + dni;
-
         try {
-            // 1. Preparamos la cabecera de seguridad con tu Token
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", apiToken);
-
-            // 2. Empaquetamos la cabecera
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
-            // 3. Hacemos la petición GET con la cabecera incluida
             ResponseEntity<ReniecResponseDTO> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.GET,
-                    entity,
-                    ReniecResponseDTO.class
+                url, HttpMethod.GET, entity, ReniecResponseDTO.class
             );
 
             return response.getStatusCode() == HttpStatus.OK;
@@ -52,8 +38,30 @@ public class ReniecServiceImpl implements ReniecService {
         } catch (HttpClientErrorException.NotFound e) {
             return false;
         } catch (Exception e) {
-            System.err.println("Fallo de comunicación con API RENIEC: " + e.getMessage());
+            System.err.println("❌ Error RENIEC existeDni: " + e.getMessage());
             return false;
+        }
+    }
+
+    @Override
+    public ReniecResponseDTO obtenerDatos(String dni) {
+        if ("99999999".equals(dni)) return null;
+
+        String url = API_URL + dni;
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", apiToken);
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<ReniecResponseDTO> response = restTemplate.exchange(
+                url, HttpMethod.GET, entity, ReniecResponseDTO.class
+            );
+
+            return response.getStatusCode() == HttpStatus.OK ? response.getBody() : null;
+
+        } catch (Exception e) {
+            System.err.println("❌ Error RENIEC obtenerDatos: " + e.getMessage());
+            return null;
         }
     }
 }
