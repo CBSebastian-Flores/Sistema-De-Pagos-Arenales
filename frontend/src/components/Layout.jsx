@@ -1,6 +1,7 @@
 import { useState } from "react"
 import Sidebar from "./Sidebar"
 import RegisterForm from "./RegisterForm"
+import AccesoDenegado from "./AccesoDenegado"
 
 function Placeholder({ titulo }) {
   return (
@@ -10,10 +11,20 @@ function Placeholder({ titulo }) {
   )
 }
 
+const paginasRestringidas = {
+  "Registro de Usuario": ["Administrador"]
+}
+
 export default function Layout({ onSubmit, onCerrarSesion }) {
-  const [paginaActiva, setPaginaActiva] = useState("Registro de Usuario")
+  const [paginaActiva, setPaginaActiva] = useState("Mis Pagos Pendientes")
+  const rolActual = sessionStorage.getItem("rol")
 
   const renderPagina = () => {
+    const rolesPermitidos = paginasRestringidas[paginaActiva]
+    if (rolesPermitidos && !rolesPermitidos.includes(rolActual)) {
+      return <AccesoDenegado />
+    }
+
     switch (paginaActiva) {
       case "Registro de Usuario":
         return <RegisterForm onSubmit={onSubmit} />
@@ -24,7 +35,7 @@ export default function Layout({ onSubmit, onCerrarSesion }) {
 
   return (
     <div className="flex min-h-screen bg-[#0f1b2d]">
-      <Sidebar paginaActiva={paginaActiva} onCerrarSesion={onCerrarSesion}  setPaginaActiva={setPaginaActiva} />
+      <Sidebar paginaActiva={paginaActiva} onCerrarSesion={onCerrarSesion} setPaginaActiva={setPaginaActiva} />
       <main className="flex-1 overflow-y-auto">
         {renderPagina()}
       </main>

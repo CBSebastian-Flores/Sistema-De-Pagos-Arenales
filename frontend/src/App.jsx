@@ -4,11 +4,11 @@ import 'react-toastify/dist/ReactToastify.css'
 import Login from './pages/Login'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
+import AccesoDenegado from './components/AccesoDenegado'
 import { registrarUsuario } from './services/authService'
 import { loginUsuario, guardarSesion, cerrarSesion, estaAutenticado } from './services/loginService'
 
 export default function App() {
-
   const handleLogin = async (datos) => {
     try {
       const respuesta = await loginUsuario(datos)
@@ -54,6 +54,7 @@ export default function App() {
             <Layout onSubmit={handleSubmit} onCerrarSesion={handleCerrarSesion} />
           </ProtectedRoute>
         } />
+        <Route path="/acceso-denegado" element={<AccesoDenegado />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
