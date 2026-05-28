@@ -1,39 +1,45 @@
 import { useState } from "react";
 
+// 1. Agregamos los roles permitidos a cada ítem del menú
 const menuItems = [
   {
     section: "Usuario",
-    items: ["Mis Pagos Pendientes", "Mi Historial de Pagos"],
+    items: [
+      { nombre: "Mis Pagos Pendientes", roles: ["ADMINISTRADOR", "DIRECTIVA", "TESORERO"] },
+      { nombre: "Mi Historial de Pagos", roles: ["ADMINISTRADOR", "DIRECTIVA", "TESORERO"] },
+    ],
   },
   {
     section: "Gestión de Recaudación",
-    items: ["Vista de Pagos", "Registrar Egresos"],
+    items: [
+      { nombre: "Vista de Pagos", roles: ["ADMINISTRADOR", "TESORERO"] },
+      { nombre: "Registrar Egresos", roles: ["ADMINISTRADOR", "TESORERO"] },
+    ],
   },
-  { section: "Panel de Gráficos", items: ["Dashboard Analítico"] },
+  { 
+    section: "Panel de Gráficos", 
+    items: [
+      { nombre: "Dashboard Analítico", roles: ["ADMINISTRADOR", "TESORERO"] }
+    ] 
+  },
   {
     section: "Configuración",
-    items: ["Generación de Pagos", "Registro de Usuario"],
+    items: [
+      { nombre: "Generación de Pagos", roles: ["ADMINISTRADOR", "TESORERO"] },
+      { nombre: "Registro de Usuario", roles: ["ADMINISTRADOR"] },
+    ],
   },
 ];
 
-export default function Sidebar({
-  paginaActiva,
-  setPaginaActiva,
-  onCerrarSesion,
-}) {
-  // Inicializamos el estado leyendo el localStorage/sessionStorage directamente. Cero useEffect.
+export default function Sidebar({ paginaActiva, setPaginaActiva, onCerrarSesion }) {
   const [usuarioInfo] = useState(() => {
-    /*const nombres = localStorage.getItem("nombres");
-    const rol = localStorage.getItem("rol");*/
-
     const nombres = sessionStorage.getItem("nombres");
-    const rol = sessionStorage.getItem("rol");
+    const rol = (sessionStorage.getItem("rol") || "").toUpperCase();
 
-    if (nombres) {
-      return { nombres: nombres, rol: rol || "" };
-    }
-
-    return { nombres: "Usuario", rol: "" };
+    return { 
+      nombres: nombres || "Usuario", 
+      rol: rol 
+    };
   });
 
   return (
@@ -55,25 +61,32 @@ export default function Sidebar({
 
       {/* Menú */}
       <nav className="flex-1 overflow-y-auto py-4">
-        {menuItems.map((grupo) => (
-          <div key={grupo.section} className="mb-4">
-            <p className="text-gray-500 text-xs px-4 mb-1">{grupo.section}</p>
-            {grupo.items.map((item) => (
-              <button
-                key={item}
-                onClick={() => setPaginaActiva(item)}
-                className={`w-full text-left px-4 py-2 text-sm font-medium transition-colors
-                  ${
-                    paginaActiva === item
+        {menuItems.map((grupo) => {
+          const itemsFiltrados = grupo.items.filter(item => 
+            item.roles.includes(usuarioInfo.rol)
+          );
+
+          if (itemsFiltrados.length === 0) return null;
+
+          return (
+            <div key={grupo.section} className="mb-4">
+              <p className="text-gray-500 text-xs px-4 mb-1">{grupo.section}</p>
+              {itemsFiltrados.map((item) => (
+                <button
+                  key={item.nombre}
+                  onClick={() => setPaginaActiva(item.nombre)}
+                  className={`w-full text-left px-4 py-2 text-sm font-medium transition-colors
+                    ${paginaActiva === item.nombre
                       ? "bg-[#1e3a5f] text-white"
                       : "text-gray-300 hover:bg-[#1a2d4a] hover:text-white"
-                  }`}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
-        ))}
+                    }`}
+                >
+                  {item.nombre}
+                </button>
+              ))}
+            </div>
+          );
+        })}
       </nav>
 
       {/* Cerrar sesión */}
@@ -82,20 +95,8 @@ export default function Sidebar({
           onClick={onCerrarSesion}
           className="w-full cursor-pointer text-left text-gray-400 hover:text-red-400 text-sm font-medium transition-colors flex items-center gap-2"
         >
-          {/* Ícono SVG profesional de Logout */}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="w-5 h-5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
-            />
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
           </svg>
           Cerrar Sesión
         </button>
