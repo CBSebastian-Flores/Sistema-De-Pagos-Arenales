@@ -40,7 +40,6 @@ export default function Login({ onLogin }) {
 
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
 
-            {/* DNI */}
             <div>
               <label className="block text-white font-semibold mb-2">DNI</label>
               <input
@@ -54,14 +53,11 @@ export default function Login({ onLogin }) {
                 }}
                 placeholder="12345678"
                 maxLength={8}
-                className={`w-full rounded-lg px-4 py-3 text-gray-800 text-sm
-                  focus:outline-none focus:ring-2
-                  ${errores.dni ? 'bg-red-50 ring-2 ring-red-400' : 'bg-white focus:ring-blue-400'}`}
+                className={`w-full rounded-lg px-4 py-3 text-gray-800 text-sm focus:outline-none focus:ring-2 ${errores.dni ? 'bg-red-50 ring-2 ring-red-400' : 'bg-white focus:ring-blue-400'}`}
               />
               {errores.dni && <p className="text-red-400 text-xs mt-1">{errores.dni}</p>}
             </div>
 
-            {/* Contraseña */}
             <div>
               <label className="block text-white font-semibold mb-2">Contraseña</label>
               <div className="relative">
@@ -71,9 +67,7 @@ export default function Login({ onLogin }) {
                   value={campos.contrasena}
                   onChange={handleChange}
                   placeholder="Tu contraseña"
-                  className={`w-full rounded-lg px-4 py-3 text-gray-800 text-sm pr-12
-                    focus:outline-none focus:ring-2
-                    ${errores.contrasena ? 'bg-red-50 ring-2 ring-red-400' : 'bg-white focus:ring-blue-400'}`}
+                  className={`w-full rounded-lg px-4 py-3 text-gray-800 text-sm pr-12 focus:outline-none focus:ring-2 ${errores.contrasena ? 'bg-red-50 ring-2 ring-red-400' : 'bg-white focus:ring-blue-400'}`}
                 />
                 <button
                   type="button"
@@ -87,10 +81,15 @@ export default function Login({ onLogin }) {
 
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white
-                         font-semibold py-3 rounded-lg transition-colors text-sm mt-2">
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors text-sm mt-2">
               Ingresar
             </button>
+
+            <div className="text-center mt-4">
+              <a href="/solicitar-recuperacion" className="text-gray-400 hover:text-white text-sm transition-colors">
+                ¿Olvidaste tu contraseña?
+              </a>
+            </div>
 
           </form>
         </div>
