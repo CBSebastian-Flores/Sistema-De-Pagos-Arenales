@@ -18,10 +18,12 @@ export default function SolicitarRecuperacion() {
     setEnviando(true)
     try {
       await api.post('/api/auth/solicitar-recuperacion', { dni })
-      toast.success('Revise su bandeja de correo para continuar')
-    } catch {
-      toast.error('No se pudo enviar el correo. Intente nuevamente.')
+    } catch (error) {
+      // Mostramos el error real en consola para el desarrollo
+      console.error("Error en solicitud: ", error);
     } finally {
+      // Siempre disparamos éxito. Así el atacante nunca sabrá si el DNI era válido.
+      toast.success('Si el DNI está registrado, se habrá enviado un enlace a su bandeja de correo.')
       setEnviando(false)
     }
   }
