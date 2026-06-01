@@ -1,9 +1,16 @@
 package com.arenales.dto;
 
 import java.time.LocalDate;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
@@ -39,10 +46,6 @@ public class UsuarioDTO {
     @NotNull(message = "El número de puesto es obligatorio")
     @Min(value = 1, message = "El número de puesto debe ser mayor a 0")
     private Integer nroPuesto; // cambiado a Integer
-
-    @NotBlank(message = "El teléfono es obligatorio")
-    @Pattern(regexp = "^\\d{9}$", message = "El teléfono debe tener exactamente 9 dígitos")
-    private String telefono;
 
     @NotNull(message = "El ID de rol es obligatorio")
     private Integer idRol;

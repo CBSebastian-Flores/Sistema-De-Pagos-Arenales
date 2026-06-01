@@ -18,7 +18,7 @@ public class JwtUtil {
 
     private final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
-    // Generacion de Toke JWT
+    // Generacion del token
     public String generateToken(String dni, String rol, String nombres) {
         return Jwts.builder()
                 .setSubject(dni)
@@ -67,5 +67,18 @@ public class JwtUtil {
                 .build()
                 .parseClaimsJws(token) // Desencripta el Base64 y procesa el token
                 .getBody(); // Devuelve el cuerpo del token (un mapa de clave-valor)
+    }
+
+    // expiracion de token personalizado
+    public String generateTokenWithCustomExpiration(String dni, String rol, String nombres, int minutos) {
+        long tiempoEnMilisegundos = 60000L * minutos;
+        return Jwts.builder()
+                .setSubject(dni)
+                .claim("rol", rol)
+                .claim("nombres", nombres)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + tiempoEnMilisegundos))
+                .signWith(key)
+                .compact();
     }
 }

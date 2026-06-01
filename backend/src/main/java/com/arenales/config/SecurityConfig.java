@@ -1,11 +1,11 @@
 package com.arenales.config;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -16,8 +16,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import com.arenales.services.impl.UserDetailsServiceImpl;
 
 @Configuration
 @EnableWebSecurity
@@ -33,22 +31,21 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // Descomentalo para poder tener la seguridad
-                /*.authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .anyRequest().authenticated());*/
-
-                // CONFIGURACIÓN TOTALMENTE PÚBLICA
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll() // Cualquier URL de cualquier controlador queda libre
+                        .requestMatchers("/api/auth/**").permitAll()
+                        
+                        .requestMatchers("/api/pagos/**").hasAnyAuthority("Tesorero", "Administrador")
+                        .requestMatchers("/api/deudas/**").hasAnyAuthority("Tesorero", "Administrador")
+                        .requestMatchers("/api/egresos/**").hasAnyAuthority("Tesorero", "Administrador")
+                        
+                        .requestMatchers("/api/servicios/**").hasAnyAuthority("Directiva", "Administrador")
+                        .anyRequest().authenticated()
                 );
 
-                // Descomentalo para poder generar el token JWT
-                //METEMOS EL FILTRO AL CIRCUITO ANTES QUE LA SEGURIDAD NATIVA
-                //.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
-
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
