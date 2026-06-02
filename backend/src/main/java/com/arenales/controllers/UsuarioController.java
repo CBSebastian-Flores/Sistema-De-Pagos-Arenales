@@ -11,6 +11,8 @@ import com.arenales.services.UsuarioService;
 
 import jakarta.validation.Valid;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
@@ -21,20 +23,22 @@ public class UsuarioController {
     @PostMapping("/registrar")
     public ResponseEntity<?> registrarUsuario(@Valid @RequestBody UsuarioDTO usuarioDTO) {
         try {
-            // Se ejecuta la lógica en el servicio
+            // Se ejecuta la lógica en el servicio (Tu Service Impl se queda intacto)
             Usuario usuarioCreado = usuarioService.registrarUsuario(usuarioDTO);
-            
+
             // Si todo sale bien, respondemos el estándar REST: 201 Created
             return new ResponseEntity<>(usuarioCreado, HttpStatus.CREATED);
-            
+
         } catch (RuntimeException e) {
-            // Aquí atrapamos los "throw new RuntimeException" controlados del Service (duplicados, rol inexistente)
-            // Respondemos un 400 Bad Request con el mensaje exacto
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-            
+            // 🔑 LA CORRECCIÓN CLAVE: Empaquetamos el mensaje en un mapa JSON con la clave "error"
+            // Así pasa de ser un String suelto a un JSON estructurado: {"error": "El DNI ya está registrado..."}
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+
         } catch (Exception e) {
-            // Este catch atrapa errores graves e inesperados (ej: se cayó la base de datos)
-            return new ResponseEntity<>("Ocurrió un error interno en el servidor al procesar el registro.", HttpStatus.INTERNAL_SERVER_ERROR);
+            // Para errores catastróficos inesperados, también usamos la estructura "error"
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Ocurrió un error interno en el servidor al procesar el registro."));
         }
     }
 }

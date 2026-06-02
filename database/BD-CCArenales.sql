@@ -45,6 +45,8 @@ CREATE TABLE Usuario (
     nro_puesto INT NOT NULL,
     telefono VARCHAR(9) NOT NULL,
     estado BIT NOT NULL DEFAULT 1,
+    intentos_fallidos INT NOT NULL DEFAULT 0,
+	bloqueado_hasta DATETIME NULL,
     id_rol INT NOT NULL,
 
     -- Llave foránea

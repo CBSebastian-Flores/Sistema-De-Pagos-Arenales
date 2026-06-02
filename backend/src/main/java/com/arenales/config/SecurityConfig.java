@@ -33,6 +33,14 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
+
+                        .requestMatchers(
+                                "/v3/api-docs/**",          // Datos crudos de OpenAPI en JSON
+                                "/swagger-ui/**",           // Recursos de la interfaz gráfica
+                                "/swagger-ui.html",         // URL de redirección principal
+                                "/swagger-resources/**",    // Configuraciones de Swagger
+                                "/webjars/**"               // Librerías web de la interfaz
+                        ).permitAll() // 🔓 Permite acceso público sin necesidad de Token JWT
                         
                         .requestMatchers("/api/pagos/**").hasAnyAuthority("Tesorero", "Administrador")
                         .requestMatchers("/api/deudas/**").hasAnyAuthority("Tesorero", "Administrador")
