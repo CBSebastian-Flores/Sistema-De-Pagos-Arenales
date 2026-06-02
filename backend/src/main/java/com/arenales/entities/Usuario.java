@@ -46,10 +46,14 @@ public class Usuario {
     private String genero;
     @Column(name = "nro_puesto", nullable = false)
     private Integer nroPuesto;
+    @Column(name = "telefono", nullable = false, length = 9)
+    private String telefono;
 
 
     @Column(name = "estado", nullable = false, length = 20)
-    private String estado = "Activo"; 
+    private Boolean estado;
+
+
     @Column(name = "intentos_fallidos")
     private Integer intentosFallidos = 0;
     @Column(name = "bloqueado_hasta")

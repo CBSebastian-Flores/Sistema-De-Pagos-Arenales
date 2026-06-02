@@ -60,7 +60,7 @@ public class AuthController {
                     .body(Map.of("error", "Cuenta bloqueada temporalmente. Intente de nuevo después de: " + usuario.getBloqueadoHasta()));
         }
 
-        if (usuario.getEstado() != null && usuario.getEstado().equalsIgnoreCase("Inactivo")) {
+        if (usuario.getEstado() != null && !usuario.getEstado()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED) 
                     .body(Map.of("error", "Cuenta inactiva. Comuníquese con el administrador."));
         }
@@ -111,8 +111,15 @@ public class AuthController {
     }
 
     @PostMapping("/solicitar-recuperacion")
-    public ResponseEntity<?> solicitarRecuperacion(@RequestParam String correo) {
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByCorreo(correo);
+    public ResponseEntity<?> solicitarRecuperacion(@RequestBody Map<String, String> request) {
+        String dni = request.get("dni");
+
+        if (dni == null || dni.trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "El campo DNI es obligatorio."));
+        }
+
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByDni(dni);
         
         if (usuarioOpt.isEmpty()) {
             return ResponseEntity.ok(Map.of("mensaje", "Si el correo electrónico coincide con una cuenta registrada, recibirá un enlace de restablecimiento."));
@@ -138,7 +145,15 @@ public class AuthController {
     }
 
     @PostMapping("/restablecer-password")
-    public ResponseEntity<?> restablecerPassword(@RequestParam String token, @RequestParam String nuevaContrasena) {
+    public ResponseEntity<?> restablecerPassword(@RequestBody Map<String, String> request) {
+        String token = request.get("token");
+        String nuevaContrasena = request.get("nuevaContrasena");
+
+        if (token == null || nuevaContrasena == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Datos insuficientes para procesar la solicitud."));
+        }
+
         try {
             String dni = jwtUtil.extractDni(token); 
             
