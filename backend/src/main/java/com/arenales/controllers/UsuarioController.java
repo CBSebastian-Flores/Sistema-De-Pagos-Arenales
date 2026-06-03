@@ -41,4 +41,6 @@ public class UsuarioController {
                     .body(Map.of("error", "Ocurrió un error interno en el servidor al procesar el registro."));
         }
     }
+
+
 }

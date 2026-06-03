@@ -18,7 +18,7 @@ export default function SolicitarRecuperacion() {
     setEnviando(true);
 
     let mensajeExito =
-      "Si el DNI coincide con una cuenta activa y registrada, recibirá un enlace de restablecimiento.";
+      "Si el DNI coincide con una cuenta activa y registrada, recibirá un enlace de restablecimiento. De lo contrario, solicite su acceso con el administrador del sistema.";
 
     try {
       const response = await api.post("/api/auth/solicitar-recuperacion", {

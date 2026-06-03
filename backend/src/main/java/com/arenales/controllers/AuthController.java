@@ -1,6 +1,7 @@
 package com.arenales.controllers;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -95,8 +96,11 @@ public class AuthController {
         Usuario usuario = usuarioOpt.get();
 
         if (usuario.getBloqueadoHasta() != null && usuario.getBloqueadoHasta().isAfter(LocalDateTime.now())) {
-            return ResponseEntity.status(HttpStatus.LOCKED) 
-                    .body(Map.of("error", "Cuenta bloqueada temporalmente. Intente de nuevo después de: " + usuario.getBloqueadoHasta()));
+            // Calculamos la diferencia en minutos entre el "ahora" y la hora del desbloqueo
+            long minutosRestantes = ChronoUnit.MINUTES.between(LocalDateTime.now(), usuario.getBloqueadoHasta()) + 1;
+
+            return ResponseEntity.status(HttpStatus.LOCKED)
+                    .body(Map.of("error", "Cuenta bloqueada temporalmente por seguridad. Intente de nuevo en " + minutosRestantes + " minutos."));
         }
 
         if (usuario.getEstado() != null && !usuario.getEstado()) {
@@ -195,7 +199,7 @@ public class AuthController {
         }
 
         Map<String, String> respuestaOpaca = Map.of(
-                "mensaje", "Si el DNI coincide con una cuenta activa y registrada, recibirá un enlace de restablecimiento en su correo."
+                "mensaje", "Si el DNI coincide con una cuenta activa y registrada, recibirá un enlace de restablecimiento en su correo. De lo contrario, solicite su acceso con el administrador del sistema."
         );
 
         Optional<Usuario> usuarioOpt = usuarioRepository.findByDni(dni);
@@ -213,7 +217,7 @@ public class AuthController {
         }
 
         // Filtro 3: Si está inactivo, respondemos ÉXITO ficticio (No se envía nada)
-        if (!usuario.getEstado()) { // false = inactivo
+        if (!usuario.getEstado()) {
             return ResponseEntity.ok(respuestaOpaca);
         }
 
@@ -222,7 +226,7 @@ public class AuthController {
 
         emailService.enviarCorreoRecuperacion(usuario.getCorreo(), usuario.getNombres(), enlace);
 
-        return ResponseEntity.ok(Map.of("mensaje", "Si el DNI coincide con una cuenta registrada, recibirá un enlace de restablecimiento."));
+        return ResponseEntity.ok(respuestaOpaca);
     }
 
     @Operation(
