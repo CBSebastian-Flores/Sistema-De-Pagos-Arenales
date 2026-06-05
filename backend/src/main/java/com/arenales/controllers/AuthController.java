@@ -60,11 +60,10 @@ public class AuthController {
                     .body(Map.of("error", "Cuenta bloqueada temporalmente. Intente de nuevo después de: " + usuario.getBloqueadoHasta()));
         }
 
-        if (usuario.getEstado() != null && usuario.getEstado().equalsIgnoreCase("Inactivo")) {
+        if (usuario.getEstado() != null && !usuario.getEstado()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED) 
                     .body(Map.of("error", "Cuenta inactiva. Comuníquese con el administrador."));
         }
-
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getDni(), request.getContrasena())

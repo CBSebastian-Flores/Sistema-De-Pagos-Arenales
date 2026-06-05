@@ -1,7 +1,7 @@
 package com.arenales.entities;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime; // Importante para el control de tiempo del bloqueo
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,8 +35,7 @@ public class Usuario {
     private String apellidos;
     @Column(name = "dni", nullable = false, unique = true, length = 8)
     private String dni;
-
-    @Column(name = "correo", nullable = false, unique = true, length = 150)
+    @Column(name = "correo", unique = true, length = 150)
     private String correo;
     @Column(name = "contrasena", nullable = false, length = 255)
     private String contrasena;
@@ -46,10 +45,10 @@ public class Usuario {
     private String genero;
     @Column(name = "nro_puesto", nullable = false)
     private Integer nroPuesto;
-
-
-    @Column(name = "estado", nullable = false, length = 20)
-    private String estado = "Activo"; 
+    @Column(name = "telefono", nullable = false, length = 9)
+    private String telefono;
+    @Column(name = "estado", nullable = false)
+    private Boolean estado = true; 
     @Column(name = "intentos_fallidos")
     private Integer intentosFallidos = 0;
     @Column(name = "bloqueado_hasta")

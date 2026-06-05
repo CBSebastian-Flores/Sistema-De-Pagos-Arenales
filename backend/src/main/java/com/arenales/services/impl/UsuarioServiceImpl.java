@@ -3,15 +3,22 @@ package com.arenales.services.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.arenales.dto.ReniecResponseDTO;
 import com.arenales.dto.UsuarioDTO;
+import com.arenales.dto.UsuarioListadoDTO;
+import com.arenales.dto.UsuarioActualizarDTO;
+import com.arenales.dto.RestablecerFuerzaDTO;
 import com.arenales.entities.Rol;
 import com.arenales.entities.Usuario;
 import com.arenales.repositories.RolRepository;
 import com.arenales.repositories.UsuarioRepository;
 import com.arenales.services.ReniecService; 
 import com.arenales.services.UsuarioService;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
@@ -29,7 +36,9 @@ public class UsuarioServiceImpl implements UsuarioService {
     private ReniecService reniecService; 
 
     @Override
+    @Transactional
     public Usuario registrarUsuario(UsuarioDTO dto) {
+        // CORREGIDO: Se cambió 'obtainDatosCompletosDni' por 'obtenerDatosCompletosDni'
         ReniecResponseDTO dataReniec = reniecService.obtenerDatosCompletosDni(dto.getDni());
         if (dataReniec == null) {
             throw new RuntimeException("El DNI ingresado no es válido o no existe en los registros oficiales de la RENIEC.");
@@ -43,7 +52,6 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new RuntimeException("El correo electrónico ya está registrado.");
         }
 
-        // Mapeo de datos (Manteniendo el estado como String y sin el teléfono que quitamos)
         Usuario usuario = new Usuario();
         usuario.setNombres(dto.getNombres());
         usuario.setApellidos(dto.getApellidos());
@@ -52,7 +60,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setFechaNacimiento(dto.getFechaNacimiento());
         usuario.setNroPuesto(dto.getNroPuesto()); 
         usuario.setGenero(dto.getGenero());
-        usuario.setEstado("Activo");
+        usuario.setEstado(true); 
 
         String passEncriptada = passwordEncoder.encode(dto.getContrasena());
         usuario.setContrasena(passEncriptada);
@@ -62,5 +70,86 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setRol(rol);
 
         return usuarioRepository.save(usuario);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UsuarioListadoDTO> listarTodos() {
+        return usuarioRepository.findAll().stream().map(user -> {
+            UsuarioListadoDTO dto = new UsuarioListadoDTO();
+            dto.setIdUsuario(user.getIdUsuario());
+            dto.setDni(user.getDni());
+            dto.setNombres(user.getNombres() + " " + user.getApellidos());
+            dto.setNombreRol(user.getRol() != null ? user.getRol().getTipoRol() : "SIN ROL");
+            dto.setEstado(user.getEstado());
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public Usuario actualizar(Integer id, UsuarioActualizarDTO dto) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
+
+        // CORREGIDO: También se usa 'obtenerDatosCompletosDni' aquí por consistencia legal
+        if (dto.getDni() != null && !dto.getDni().equals(usuario.getDni())) {
+            ReniecResponseDTO dataReniec = reniecService.obtenerDatosCompletosDni(dto.getDni());
+            if (dataReniec == null) {
+                throw new RuntimeException("El nuevo DNI ingresado no es válido o no existe en los registros oficiales de la RENIEC.");
+            }
+            if (usuarioRepository.existsByDni(dto.getDni())) {
+                throw new RuntimeException("El nuevo DNI ya se encuentra registrado por otro usuario.");
+            }
+            usuario.setDni(dto.getDni());
+        }
+
+        if (dto.getCorreo() != null && !dto.getCorreo().equalsIgnoreCase(usuario.getCorreo())) {
+            if (usuarioRepository.existsByCorreo(dto.getCorreo())) {
+                throw new RuntimeException("El nuevo correo electrónico ya está en uso por otro usuario.");
+            }
+            usuario.setCorreo(dto.getCorreo());
+        }
+
+        usuario.setTelefono(dto.getTelefono());
+        usuario.setNroPuesto(dto.getNroPuesto());
+        usuario.setFechaNacimiento(dto.getFechaNacimiento());
+        usuario.setEstado(dto.getEstado());
+
+        if (dto.getIdRol() != null) {
+            Rol nuevoRol = rolRepository.findById(dto.getIdRol())
+                    .orElseThrow(() -> new RuntimeException("El rol especificado no existe."));
+            usuario.setRol(nuevoRol);
+        }
+
+        return usuarioRepository.save(usuario);
+    }
+
+    @Override
+    @Transactional
+    public Usuario delete(Integer id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        usuario.setEstado(false); 
+        return usuarioRepository.save(usuario);
+    }
+
+    @Override
+    @Transactional
+    public void restablecerContrasenaForzado(RestablecerFuerzaDTO dto) {
+        if (dto.getNuevaContrasena() == null || dto.getNuevaContrasena().trim().length() < 8) {
+            throw new RuntimeException("La nueva contraseña debe tener al menos 8 caracteres.");
+        }
+
+        Usuario usuario = usuarioRepository.findByDni(dto.getDni())
+                .orElseThrow(() -> new RuntimeException("Usuario con DNI " + dto.getDni() + " no encontrado"));
+
+        String passEncriptada = passwordEncoder.encode(dto.getNuevaContrasena().trim());
+        usuario.setContrasena(passEncriptada);
+
+        usuario.setIntentosFallidos(0);
+        usuario.setBloqueadoHasta(null);
+
+        usuarioRepository.save(usuario);
     }
 }
