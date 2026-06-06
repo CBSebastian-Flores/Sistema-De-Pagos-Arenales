@@ -140,10 +140,14 @@ function ModalEditar({ usuario, roles, onClose, onGuardado }) {
 
     setCargando(true)
     try {
-      await api.post(`/api/usuarios/${usuario.idUsuario}`, {
-        ...form,
+      await api.put(`/api/usuarios/${usuario.idUsuario}`, {
+        correo: form.correo,
+        telefono: form.telefono,
         nroPuesto: Number(form.nroPuesto),
         idRol: Number(form.idRol),
+        estado: usuario.estado, // Pasas el estado actual
+        genero: form.genero,
+        fechaNacimiento: form.fechaNacimiento
       })
       toast.success("Usuario actualizado correctamente")
       onGuardado()
@@ -158,8 +162,8 @@ function ModalEditar({ usuario, roles, onClose, onGuardado }) {
   return (
     <Modal titulo="Editar Usuario" onClose={onClose} ancho="max-w-2xl">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <CampoForm label="Nombres" nombre="nombres" valor={form.nombres} onChange={handleChange} error={errores.nombres} />
-        <CampoForm label="Apellidos" nombre="apellidos" valor={form.apellidos} onChange={handleChange} error={errores.apellidos} />
+        <CampoForm label="Nombres" nombre="nombres" valor={form.nombres} disabled={true} />
+        <CampoForm label="Apellidos" nombre="apellidos" valor={form.apellidos} disabled={true} />
         <CampoForm label="Correo" nombre="correo" valor={form.correo} onChange={handleChange} error={errores.correo} type="email" />
         <CampoForm label="Teléfono" nombre="telefono" valor={form.telefono} onChange={handleChange} error={errores.telefono} />
         <CampoForm label="Nro. Puesto" nombre="nroPuesto" valor={form.nroPuesto} onChange={handleChange} error={errores.nroPuesto} />
@@ -245,8 +249,9 @@ function ModalRestablecerPassword({ usuario, onClose }) {
 
     setCargando(true)
     try {
-      await api.post(`/api/usuarios/${usuario.idUsuario}/restablecer-password`, {
-        contrasena: form.contrasena,
+      await api.put("/api/usuarios/restablecer-forzado", {
+        dni: usuario.dni, // 🔑 Enviamos el DNI en el cuerpo como pide tu RestablecerFuerzaDTO
+        nuevaContrasena: form.contrasena
       })
       toast.success("Contraseña restablecida correctamente")
       onClose()
