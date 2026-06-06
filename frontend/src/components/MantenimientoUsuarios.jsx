@@ -107,6 +107,12 @@ function Modal({ titulo, onClose, children, ancho = "max-w-lg" }) {
 
 // ─── Modal Editar Usuario ──────────────────────────────────────────────────────
 function ModalEditar({ usuario, roles, onClose, onGuardado }) {
+  // 1. Buscamos dentro de la lista de 'roles' (del catálogo) cuál coincide con el texto de la tabla
+  const rolExistente = roles.find(r => r.tipoRol === usuario.tipoRol);
+
+  // 2. Si lo encuentra, extrae su ID numérico real y lo vuelve String
+  const idRolInicial = rolExistente ? String(rolExistente.idRol) : "";
+
   const [form, setForm] = useState({
     nombres: usuario.nombres || "",
     apellidos: usuario.apellidos || "",
@@ -115,7 +121,7 @@ function ModalEditar({ usuario, roles, onClose, onGuardado }) {
     nroPuesto: String(usuario.nroPuesto ?? ""),
     genero: usuario.genero || "",
     fechaNacimiento: usuario.fechaNacimiento || "",
-    idRol: String(usuario.idRol ?? ""),
+    idRol: idRolInicial,
     estado: usuario.estado === true || usuario.estado === 1 ? "1" : "0",
   })
   const [errores, setErrores] = useState({})
@@ -176,8 +182,8 @@ function ModalEditar({ usuario, roles, onClose, onGuardado }) {
       {/* ── Campos editables ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <CampoForm label="Correo" nombre="correo" valor={form.correo} onChange={handleChange} error={errores.correo} type="email" />
-        <CampoForm label="Teléfono" nombre="telefono" valor={form.telefono} onChange={handleChange} error={errores.telefono} />
-        <CampoForm label="Nro. Puesto" nombre="nroPuesto" valor={form.nroPuesto} onChange={handleChange} error={errores.nroPuesto} />
+        <CampoForm label="Teléfono" nombre="telefono" valor={form.telefono} onChange={handleChange} error={errores.telefono} maxLength={9} />
+        <CampoForm label="Nro. Puesto" nombre="nroPuesto" valor={form.nroPuesto} onChange={handleChange} error={errores.nroPuesto} maxLength={3} />
 
         {/* Género */}
         <CampoForm label="Género" nombre="genero" valor={form.genero} onChange={handleChange} error={errores.genero}>
@@ -187,14 +193,15 @@ function ModalEditar({ usuario, roles, onClose, onGuardado }) {
             className={`bg-[#0f1b2d] border rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors
               ${errores.genero ? "border-red-500" : "border-[#1e3a5f] focus:border-blue-500"}`}
           >
-            <option value="">Seleccionar</option>
             <option value="Masculino">Masculino</option>
             <option value="Femenino">Femenino</option>
             <option value="Otro">Otro</option>
           </select>
           {errores.genero && <p className="text-red-400 text-xs">{errores.genero}</p>}
         </CampoForm>
+
         <CampoForm label="Fecha de Nacimiento" nombre="fechaNacimiento" valor={form.fechaNacimiento} onChange={handleChange} error={errores.fechaNacimiento} type="date" />
+
         <CampoForm label="Rol" nombre="idRol" valor={form.idRol} onChange={handleChange} error={errores.idRol}>
           <select
             value={form.idRol}
@@ -202,7 +209,6 @@ function ModalEditar({ usuario, roles, onClose, onGuardado }) {
             className={`bg-[#0f1b2d] border rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors
               ${errores.idRol ? "border-red-500" : "border-[#1e3a5f] focus:border-blue-500"}`}
           >
-            <option value="">Seleccionar</option>
             {roles.map(r => (
               <option key={r.idRol} value={r.idRol}>{r.tipoRol}</option>
             ))}
@@ -421,7 +427,7 @@ useEffect(() => {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#1e3a5f] bg-[#0f1b2d]">
-                {["DNI", "Nombres y Apellidos", "Correo", "Celular", "Nro. Puesto", "Rol", "Estado", "Acciones"].map(col => (
+                {["DNI", "Nombres y Apellidos", "Correo", "Telefono", "Nro. Puesto", "Rol", "Estado", "Acciones"].map(col => (
                   <th key={col} className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">
                     {col}
                   </th>
