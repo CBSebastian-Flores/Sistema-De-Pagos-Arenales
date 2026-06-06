@@ -1,24 +1,24 @@
 package com.arenales.services.impl;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.arenales.dto.ReniecResponseDTO;
+import com.arenales.dto.RestablecerFuerzaDTO;
+import com.arenales.dto.UsuarioActualizarDTO;
 import com.arenales.dto.UsuarioDTO;
 import com.arenales.dto.UsuarioListadoDTO;
-import com.arenales.dto.UsuarioActualizarDTO;
-import com.arenales.dto.RestablecerFuerzaDTO;
 import com.arenales.entities.Rol;
 import com.arenales.entities.Usuario;
 import com.arenales.repositories.RolRepository;
 import com.arenales.repositories.UsuarioRepository;
 import com.arenales.services.ReniecService; 
 import com.arenales.services.UsuarioService;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
@@ -38,7 +38,6 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     @Transactional
     public Usuario registrarUsuario(UsuarioDTO dto) {
-        // CORREGIDO: Se cambió 'obtainDatosCompletosDni' por 'obtenerDatosCompletosDni'
         ReniecResponseDTO dataReniec = reniecService.obtenerDatosCompletosDni(dto.getDni());
         if (dataReniec == null) {
             throw new RuntimeException("El DNI ingresado no es válido o no existe en los registros oficiales de la RENIEC.");
@@ -60,7 +59,9 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setFechaNacimiento(dto.getFechaNacimiento());
         usuario.setNroPuesto(dto.getNroPuesto()); 
         usuario.setGenero(dto.getGenero());
-        usuario.setEstado(true); 
+     
+        usuario.setTelefono(dto.getTelefono());
+        usuario.setEstado(true);
 
         String passEncriptada = passwordEncoder.encode(dto.getContrasena());
         usuario.setContrasena(passEncriptada);
@@ -92,7 +93,6 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
 
-        // CORREGIDO: También se usa 'obtenerDatosCompletosDni' aquí por consistencia legal
         if (dto.getDni() != null && !dto.getDni().equals(usuario.getDni())) {
             ReniecResponseDTO dataReniec = reniecService.obtenerDatosCompletosDni(dto.getDni());
             if (dataReniec == null) {
