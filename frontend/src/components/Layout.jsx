@@ -2,6 +2,7 @@ import { useState } from "react"
 import Sidebar from "./Sidebar"
 import RegisterForm from "./RegisterForm"
 import AccesoDenegado from "./AccesoDenegado"
+import MantenimientoUsuarios from "./MantenimientoUsuarios"
 
 function Placeholder({ titulo }) {
   return (
@@ -12,7 +13,8 @@ function Placeholder({ titulo }) {
 }
 
 const paginasRestringidas = {
-  "Registro de Usuario": ["Administrador"]
+  "Registro de Usuario": ["Administrador"],
+  "Mantenimiento de Usuarios": ["Administrador"],
 }
 
 export default function Layout({ onSubmit, onCerrarSesion }) {
@@ -28,6 +30,8 @@ export default function Layout({ onSubmit, onCerrarSesion }) {
     switch (paginaActiva) {
       case "Registro de Usuario":
         return <RegisterForm onSubmit={onSubmit} />
+      case "Mantenimiento de Usuarios":
+        return <MantenimientoUsuarios />
       default:
         return <Placeholder titulo={paginaActiva} />
     }
