@@ -116,17 +116,20 @@ function ModalEditar({ usuario, roles, onClose, onGuardado }) {
     genero: usuario.genero || "",
     fechaNacimiento: usuario.fechaNacimiento || "",
     idRol: String(usuario.idRol ?? ""),
+    estado: usuario.estado === true || usuario.estado === 1 ? "1" : "0",
   })
   const [errores, setErrores] = useState({})
   const [cargando, setCargando] = useState(false)
 
   const handleChange = (nombre, valor) => {
     setForm(f => ({ ...f, [nombre]: valor }))
-    const err = validarCampo(nombre, valor)
-    setErrores(e => ({ ...e, [nombre]: err }))
+    if (nombre !== "estado") {
+      const err = validarCampo(nombre, valor)
+      setErrores(e => ({ ...e, [nombre]: err }))
+    }
   }
 
-  const camposValidar = ["nombres", "apellidos", "correo", "telefono", "nroPuesto", "genero", "fechaNacimiento", "idRol"]
+  const camposValidar = ["correo", "telefono", "nroPuesto", "genero", "fechaNacimiento", "idRol"]
 
   const handleGuardar = async () => {
     const nuevosErrores = {}
@@ -162,12 +165,21 @@ function ModalEditar({ usuario, roles, onClose, onGuardado }) {
 
   return (
     <Modal titulo="Editar Usuario" onClose={onClose} ancho="max-w-2xl">
+      {/* ── Campos inmutables (referencia) ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 pb-4 border-b border-[#1e3a5f]">
+        <CampoForm label="ID Usuario" nombre="idUsuario" valor={String(usuario.idUsuario ?? "")} onChange={() => {}} disabled />
+        <CampoForm label="DNI" nombre="dni" valor={usuario.dni || ""} onChange={() => {}} disabled />
+        <CampoForm label="Nombres" nombre="nombres" valor={usuario.nombres || ""} onChange={() => {}} disabled />
+        <CampoForm label="Apellidos" nombre="apellidos" valor={usuario.apellidos || ""} onChange={() => {}} disabled />
+      </div>
+
+      {/* ── Campos editables ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <CampoForm label="Nombres" nombre="nombres" valor={form.nombres} disabled={true} />
-        <CampoForm label="Apellidos" nombre="apellidos" valor={form.apellidos} disabled={true} />
         <CampoForm label="Correo" nombre="correo" valor={form.correo} onChange={handleChange} error={errores.correo} type="email" />
         <CampoForm label="Teléfono" nombre="telefono" valor={form.telefono} onChange={handleChange} error={errores.telefono} />
         <CampoForm label="Nro. Puesto" nombre="nroPuesto" valor={form.nroPuesto} onChange={handleChange} error={errores.nroPuesto} />
+
+        {/* Género */}
         <CampoForm label="Género" nombre="genero" valor={form.genero} onChange={handleChange} error={errores.genero}>
           <select
             value={form.genero}
@@ -251,7 +263,7 @@ function ModalRestablecerPassword({ usuario, onClose }) {
     setCargando(true)
     try {
       await api.put("/api/usuarios/restablecer-forzado", {
-        dni: usuario.dni, // 🔑 Enviamos el DNI en el cuerpo como pide tu RestablecerFuerzaDTO
+        dni: usuario.dni, 
         nuevaContrasena: form.contrasena
       })
       toast.success("Contraseña restablecida correctamente")
