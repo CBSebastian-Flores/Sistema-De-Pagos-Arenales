@@ -107,10 +107,7 @@ function Modal({ titulo, onClose, children, ancho = "max-w-lg" }) {
 
 // ─── Modal Editar Usuario ──────────────────────────────────────────────────────
 function ModalEditar({ usuario, roles, onClose, onGuardado }) {
-  // 1. Buscamos dentro de la lista de 'roles' (del catálogo) cuál coincide con el texto de la tabla
   const rolExistente = roles.find(r => r.tipoRol === usuario.tipoRol);
-
-  // 2. Si lo encuentra, extrae su ID numérico real y lo vuelve String
   const idRolInicial = rolExistente ? String(rolExistente.idRol) : "";
 
   const [form, setForm] = useState({
@@ -163,7 +160,8 @@ function ModalEditar({ usuario, roles, onClose, onGuardado }) {
       onGuardado()
       onClose()
     } catch (error) {
-      toast.error(error.response?.data?.error || "Error al actualizar el usuario")
+      const msg = error.response?.data?.error || "Error al actualizar el usuario"
+      toast.error(msg)
     } finally {
       setCargando(false)
     }
@@ -202,6 +200,7 @@ function ModalEditar({ usuario, roles, onClose, onGuardado }) {
 
         <CampoForm label="Fecha de Nacimiento" nombre="fechaNacimiento" valor={form.fechaNacimiento} onChange={handleChange} error={errores.fechaNacimiento} type="date" />
 
+        {/* Rol */}
         <CampoForm label="Rol" nombre="idRol" valor={form.idRol} onChange={handleChange} error={errores.idRol}>
           <select
             value={form.idRol}
@@ -214,6 +213,18 @@ function ModalEditar({ usuario, roles, onClose, onGuardado }) {
             ))}
           </select>
           {errores.idRol && <p className="text-red-400 text-xs">{errores.idRol}</p>}
+        </CampoForm>
+
+        {/* Estado */}
+        <CampoForm label="Estado" nombre="estado" valor={form.estado} onChange={handleChange}>
+          <select
+            value={form.estado}
+            onChange={(e) => handleChange("estado", e.target.value)}
+            className="bg-[#0f1b2d] border border-[#1e3a5f] focus:border-blue-500 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors"
+          >
+            <option value="1">Activo</option>
+            <option value="0">Inactivo</option>
+          </select>
         </CampoForm>
       </div>
 
@@ -236,7 +247,7 @@ function ModalEditar({ usuario, roles, onClose, onGuardado }) {
   )
 }
 
-// ─── Modal Restablecer Contraseña ──────────────────────────────────────────────
+// ─── Modal Restablecer Contraseña ───────────────────────────────────
 function ModalRestablecerPassword({ usuario, onClose }) {
   const [form, setForm] = useState({ contrasena: "", confirmarContrasena: "" })
   const [errores, setErrores] = useState({})
