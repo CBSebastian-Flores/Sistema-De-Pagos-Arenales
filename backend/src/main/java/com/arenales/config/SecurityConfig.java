@@ -50,6 +50,7 @@ public class SecurityConfig {
                         .permitAll()
 
                         .requestMatchers("/api/usuarios/listar").hasAuthority("Administrador")
+                        .requestMatchers("/api/roles").hasAuthority("Administrador")
                         .requestMatchers("/api/usuarios/restablecer-forzado").hasAuthority("Administrador")
 
                         .requestMatchers(HttpMethod.PUT, "/api/usuarios/**").hasAuthority("Administrador")

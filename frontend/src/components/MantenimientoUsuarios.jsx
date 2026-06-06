@@ -69,6 +69,7 @@ function CampoPassword({ label, nombre, valor, onChange, error }) {
           type={visible ? "text" : "password"}
           value={valor}
           onChange={(e) => onChange(nombre, e.target.value)}
+          autoComplete="new-password"
           className={`w-full bg-[#0f1b2d] border rounded-lg px-3 py-2 pr-10 text-sm text-white placeholder-gray-600 outline-none transition-colors
             ${error ? "border-red-500 focus:border-red-400" : "border-[#1e3a5f] focus:border-blue-500"}`}
         />
@@ -325,7 +326,7 @@ export default function MantenimientoUsuarios() {
 
   const cargarRoles = async () => {
   try {
-    const res = await api.get("/api/roles/listar")
+    const res = await api.get("/api/roles")
     setRoles(res.data)
   } catch (error) {
     console.log("ERROR ROLES:", error.response?.status, error.response?.data)
@@ -371,10 +372,7 @@ useEffect(() => {
     const texto = busqueda.toLowerCase()
     return (
       u.dni?.toLowerCase().includes(texto) ||
-      u.nombres?.toLowerCase().includes(texto) ||
-      u.apellidos?.toLowerCase().includes(texto) ||
-      u.correo?.toLowerCase().includes(texto) ||
-      u.tipoRol?.toLowerCase().includes(texto)
+      u.nombres?.toLowerCase().includes(texto)
     )
   })
 
