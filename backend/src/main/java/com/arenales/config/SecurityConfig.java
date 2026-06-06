@@ -33,8 +33,7 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
 
@@ -47,28 +46,23 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/swagger-resources/**",
-                                "/webjars/**"
-                        ).permitAll()
+                                "/webjars/**")
+                        .permitAll()
 
-                        .requestMatchers("/api/usuarios/listar")
-                            .hasAuthority("Administrador")
-                        .requestMatchers("/api/usuarios/restablecer-forzado")
-                            .hasAuthority("Administrador")
-                        .requestMatchers(HttpMethod.PUT, "/api/usuarios/**")
-                            .hasAuthority("Administrador")
-                        .requestMatchers(HttpMethod.DELETE, "/api/usuarios/**")
-                            .hasAuthority("Administrador")
-                        .requestMatchers("/api/pagos/**")
-                            .hasAnyAuthority("Tesorero", "Administrador")
-                        .requestMatchers("/api/deudas/**")
-                            .hasAnyAuthority("Tesorero", "Administrador")
-                        .requestMatchers("/api/egresos/**")
-                            .hasAnyAuthority("Tesorero", "Administrador")
-                        .requestMatchers("/api/servicios/**")
-                            .hasAnyAuthority("Directiva", "Administrador")
+                        .requestMatchers("/api/usuarios/listar").hasAuthority("Administrador")
+                        .requestMatchers("/api/usuarios/restablecer-forzado").hasAuthority("Administrador")
 
-                        .anyRequest().authenticated()
-                );
+                        .requestMatchers(HttpMethod.PUT, "/api/usuarios/**").hasAuthority("Administrador")
+                        .requestMatchers(HttpMethod.PATCH, "/api/usuarios/**").hasAuthority("Administrador")
+                        .requestMatchers(HttpMethod.DELETE, "/api/usuarios/**").hasAuthority("Administrador")
+
+                        .requestMatchers("/api/pagos/**").hasAnyAuthority("Tesorero", "Administrador")
+                        .requestMatchers("/api/deudas/**").hasAnyAuthority("Tesorero", "Administrador")
+                        .requestMatchers("/api/egresos/**").hasAnyAuthority("Tesorero", "Administrador")
+                        
+                        .requestMatchers("/api/servicios/**").hasAnyAuthority("Directiva", "Administrador")
+
+                        .anyRequest().authenticated());
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -93,13 +87,11 @@ public class SecurityConfig {
                 "POST",
                 "PUT",
                 "DELETE",
-                "OPTIONS"
-        ));
+                "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
         source.registerCorsConfiguration("/**", config);
 

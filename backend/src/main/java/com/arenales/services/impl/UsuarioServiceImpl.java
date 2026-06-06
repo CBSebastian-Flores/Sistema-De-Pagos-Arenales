@@ -80,8 +80,15 @@ public class UsuarioServiceImpl implements UsuarioService {
             UsuarioListadoDTO dto = new UsuarioListadoDTO();
             dto.setIdUsuario(user.getIdUsuario());
             dto.setDni(user.getDni());
-            dto.setNombres(user.getNombres() + " " + user.getApellidos());
-            dto.setNombreRol(user.getRol() != null ? user.getRol().getTipoRol() : "SIN ROL");
+            dto.setNombres(user.getNombres());
+            dto.setApellidos(user.getApellidos());
+            dto.setCorreo(user.getCorreo());
+            dto.setTelefono(user.getTelefono());
+            dto.setNroPuesto(user.getNroPuesto());
+            dto.setGenero(user.getGenero());
+            dto.setFechaNacimiento(user.getFechaNacimiento());
+            dto.setTipoRol(user.getRol() != null ? user.getRol().getTipoRol() : "SIN ROL");
+
             dto.setEstado(user.getEstado());
             return dto;
         }).collect(Collectors.toList());
@@ -92,17 +99,6 @@ public class UsuarioServiceImpl implements UsuarioService {
     public Usuario actualizar(Integer id, UsuarioActualizarDTO dto) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
-
-        if (dto.getDni() != null && !dto.getDni().equals(usuario.getDni())) {
-            ReniecResponseDTO dataReniec = reniecService.obtenerDatosCompletosDni(dto.getDni());
-            if (dataReniec == null) {
-                throw new RuntimeException("El nuevo DNI ingresado no es válido o no existe en los registros oficiales de la RENIEC.");
-            }
-            if (usuarioRepository.existsByDni(dto.getDni())) {
-                throw new RuntimeException("El nuevo DNI ya se encuentra registrado por otro usuario.");
-            }
-            usuario.setDni(dto.getDni());
-        }
 
         if (dto.getCorreo() != null && !dto.getCorreo().equalsIgnoreCase(usuario.getCorreo())) {
             if (usuarioRepository.existsByCorreo(dto.getCorreo())) {

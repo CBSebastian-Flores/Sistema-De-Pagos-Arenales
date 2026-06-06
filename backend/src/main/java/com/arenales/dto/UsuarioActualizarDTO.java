@@ -6,7 +6,6 @@ import lombok.Data;
 
 @Data
 public class UsuarioActualizarDTO {
-    private String dni;
     private String correo;
     private String telefono;
     private Integer nroPuesto;
