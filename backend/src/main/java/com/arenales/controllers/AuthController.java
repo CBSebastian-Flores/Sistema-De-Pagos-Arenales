@@ -107,7 +107,6 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED) 
                     .body(Map.of("error", "Cuenta inactiva. Comuníquese con el administrador."));
         }
-
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getDni(), request.getContrasena())

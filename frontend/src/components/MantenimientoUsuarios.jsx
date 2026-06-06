@@ -69,6 +69,7 @@ function CampoPassword({ label, nombre, valor, onChange, error }) {
           type={visible ? "text" : "password"}
           value={valor}
           onChange={(e) => onChange(nombre, e.target.value)}
+          autoComplete="new-password"
           className={`w-full bg-[#0f1b2d] border rounded-lg px-3 py-2 pr-10 text-sm text-white placeholder-gray-600 outline-none transition-colors
             ${error ? "border-red-500 focus:border-red-400" : "border-[#1e3a5f] focus:border-blue-500"}`}
         />
@@ -104,15 +105,20 @@ function Modal({ titulo, onClose, children, ancho = "max-w-lg" }) {
   )
 }
 
-// ─── Modal Editar Usuario (SDPA-71) ───────────────────────────────────────────
+// ─── Modal Editar Usuario ──────────────────────────────────────────────────────
 function ModalEditar({ usuario, roles, onClose, onGuardado }) {
+  const rolExistente = roles.find(r => r.tipoRol === usuario.tipoRol);
+  const idRolInicial = rolExistente ? String(rolExistente.idRol) : "";
+
   const [form, setForm] = useState({
+    nombres: usuario.nombres || "",
+    apellidos: usuario.apellidos || "",
     correo: usuario.correo || "",
     telefono: usuario.telefono || "",
     nroPuesto: String(usuario.nroPuesto ?? ""),
     genero: usuario.genero || "",
     fechaNacimiento: usuario.fechaNacimiento || "",
-    idRol: String(usuario.idRol ?? ""),
+    idRol: idRolInicial,
     estado: usuario.estado === true || usuario.estado === 1 ? "1" : "0",
   })
   const [errores, setErrores] = useState({})
@@ -141,14 +147,14 @@ function ModalEditar({ usuario, roles, onClose, onGuardado }) {
 
     setCargando(true)
     try {
-      await api.put(`/api/usuarios/actualizar/${usuario.idUsuario}`, {
+      await api.put(`/api/usuarios/${usuario.idUsuario}`, {
         correo: form.correo,
         telefono: form.telefono,
         nroPuesto: Number(form.nroPuesto),
-        genero: form.genero,
-        fechaNacimiento: form.fechaNacimiento,
         idRol: Number(form.idRol),
-        estado: form.estado === "1",
+        estado: usuario.estado, // Pasas el estado actual
+        genero: form.genero,
+        fechaNacimiento: form.fechaNacimiento
       })
       toast.success("Usuario actualizado correctamente")
       onGuardado()
@@ -174,8 +180,8 @@ function ModalEditar({ usuario, roles, onClose, onGuardado }) {
       {/* ── Campos editables ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <CampoForm label="Correo" nombre="correo" valor={form.correo} onChange={handleChange} error={errores.correo} type="email" />
-        <CampoForm label="Teléfono" nombre="telefono" valor={form.telefono} onChange={handleChange} error={errores.telefono} />
-        <CampoForm label="Nro. Puesto" nombre="nroPuesto" valor={form.nroPuesto} onChange={handleChange} error={errores.nroPuesto} />
+        <CampoForm label="Teléfono" nombre="telefono" valor={form.telefono} onChange={handleChange} error={errores.telefono} maxLength={9} />
+        <CampoForm label="Nro. Puesto" nombre="nroPuesto" valor={form.nroPuesto} onChange={handleChange} error={errores.nroPuesto} maxLength={3} />
 
         {/* Género */}
         <CampoForm label="Género" nombre="genero" valor={form.genero} onChange={handleChange} error={errores.genero}>
@@ -185,7 +191,6 @@ function ModalEditar({ usuario, roles, onClose, onGuardado }) {
             className={`bg-[#0f1b2d] border rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors
               ${errores.genero ? "border-red-500" : "border-[#1e3a5f] focus:border-blue-500"}`}
           >
-            <option value="">Seleccionar</option>
             <option value="Masculino">Masculino</option>
             <option value="Femenino">Femenino</option>
             <option value="Otro">Otro</option>
@@ -203,7 +208,6 @@ function ModalEditar({ usuario, roles, onClose, onGuardado }) {
             className={`bg-[#0f1b2d] border rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors
               ${errores.idRol ? "border-red-500" : "border-[#1e3a5f] focus:border-blue-500"}`}
           >
-            <option value="">Seleccionar</option>
             {roles.map(r => (
               <option key={r.idRol} value={r.idRol}>{r.tipoRol}</option>
             ))}
@@ -243,7 +247,7 @@ function ModalEditar({ usuario, roles, onClose, onGuardado }) {
   )
 }
 
-// ─── Modal Restablecer Contraseña (SDPA-95) ───────────────────────────────────
+// ─── Modal Restablecer Contraseña ───────────────────────────────────
 function ModalRestablecerPassword({ usuario, onClose }) {
   const [form, setForm] = useState({ contrasena: "", confirmarContrasena: "" })
   const [errores, setErrores] = useState({})
@@ -275,9 +279,9 @@ function ModalRestablecerPassword({ usuario, onClose }) {
 
     setCargando(true)
     try {
-      await api.put(`/api/usuarios/restablecer-fuerza`, {
-        dni: usuario.dni,
-        nuevaContrasena: form.contrasena,
+      await api.put("/api/usuarios/restablecer-forzado", {
+        dni: usuario.dni, 
+        nuevaContrasena: form.contrasena
       })
       toast.success("Contraseña restablecida correctamente")
       onClose()
@@ -338,32 +342,33 @@ export default function MantenimientoUsuarios() {
 
   // ── Carga inicial ──
   const cargarUsuarios = async () => {
-    try {
-      const res = await api.get("/api/usuarios/listar")
-      setUsuarios(res.data)
-    } catch {
-      toast.error("No se pudo cargar la lista de usuarios")
-    } finally {
-      setCargando(false)
-    }
+  try {
+    const res = await api.get("/api/usuarios/listar")
+    setUsuarios(res.data)
+  } catch (error) {
+    console.log("ERROR USUARIOS:", error.response?.status, error.response?.data)
+    toast.error("No se pudo cargar la lista de usuarios")
+  } finally {
+    setCargando(false)
   }
+}
 
   const cargarRoles = async () => {
-    try {
-      const res = await api.get("/api/roles/listar")
-      setRoles(res.data)
-    } catch {
-      // silencioso — los roles son secundarios para la carga inicial
-    }
+  try {
+    const res = await api.get("/api/roles")
+    setRoles(res.data)
+  } catch (error) {
+    console.log("ERROR ROLES:", error.response?.status, error.response?.data)
   }
+}
 
-  useEffect(() => {
-    const inicializar = async () => {
-      await cargarUsuarios()
-      await cargarRoles()
-    }
-    inicializar()
-  }, [])
+useEffect(() => {
+  const inicializar = async () => {
+    await cargarUsuarios()
+    await cargarRoles()
+  }
+  inicializar()
+}, [])
 
   // ── Eliminar lógico ──
   const handleEliminar = (usuario) => {
@@ -396,10 +401,7 @@ export default function MantenimientoUsuarios() {
     const texto = busqueda.toLowerCase()
     return (
       u.dni?.toLowerCase().includes(texto) ||
-      u.nombres?.toLowerCase().includes(texto) ||
-      u.apellidos?.toLowerCase().includes(texto) ||
-      u.correo?.toLowerCase().includes(texto) ||
-      u.tipoRol?.toLowerCase().includes(texto)
+      u.nombres?.toLowerCase().includes(texto)
     )
   })
 
@@ -436,7 +438,7 @@ export default function MantenimientoUsuarios() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#1e3a5f] bg-[#0f1b2d]">
-                {["DNI", "Nombres y Apellidos", "Correo", "Celular", "Nro. Puesto", "Rol", "Estado", "Acciones"].map(col => (
+                {["DNI", "Nombres y Apellidos", "Correo", "Telefono", "Nro. Puesto", "Rol", "Estado", "Acciones"].map(col => (
                   <th key={col} className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">
                     {col}
                   </th>

@@ -45,7 +45,7 @@ public class UsuarioDTO {
 
     @NotNull(message = "El número de puesto es obligatorio")
     @Min(value = 1, message = "El número de puesto debe ser mayor a 0")
-    private Integer nroPuesto; // cambiado a Integer
+    private Integer nroPuesto;
 
     @NotBlank(message = "El teléfono es obligatorio")
     @Pattern(regexp = "^\\d{9}$", message = "El teléfono debe tener exactamente 9 dígitos")
