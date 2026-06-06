@@ -1,17 +1,28 @@
 package com.arenales.controllers;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import com.arenales.dto.RestablecerFuerzaDTO;
+import com.arenales.dto.UsuarioActualizarDTO;
 import com.arenales.dto.UsuarioDTO;
+import com.arenales.dto.UsuarioListadoDTO;
 import com.arenales.entities.Usuario;
 import com.arenales.services.UsuarioService;
 
 import jakarta.validation.Valid;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -23,24 +34,101 @@ public class UsuarioController {
     @PostMapping("/registrar")
     public ResponseEntity<?> registrarUsuario(@Valid @RequestBody UsuarioDTO usuarioDTO) {
         try {
-            // Se ejecuta la lógica en el servicio (Tu Service Impl se queda intacto)
             Usuario usuarioCreado = usuarioService.registrarUsuario(usuarioDTO);
 
-            // Si todo sale bien, respondemos el estándar REST: 201 Created
             return new ResponseEntity<>(usuarioCreado, HttpStatus.CREATED);
 
         } catch (RuntimeException e) {
-            // 🔑 LA CORRECCIÓN CLAVE: Empaquetamos el mensaje en un mapa JSON con la clave "error"
-            // Así pasa de ser un String suelto a un JSON estructurado: {"error": "El DNI ya está registrado..."}
+
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", e.getMessage()));
 
         } catch (Exception e) {
-            // Para errores catastróficos inesperados, también usamos la estructura "error"
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Ocurrió un error interno en el servidor al procesar el registro."));
+                    .body(Map.of("error",
+                            "Ocurrió un error interno en el servidor al procesar el registro."));
         }
     }
 
+    @GetMapping("/listar")
+    public ResponseEntity<List<UsuarioListadoDTO>> listarUsuarios() {
+        List<UsuarioListadoDTO> lista = usuarioService.listarTodos();
+        return ResponseEntity.ok(lista);
+    }
 
+    @PutMapping("/restablecer-forzado")
+    public ResponseEntity<?> restablecerContrasenaForzado(@RequestBody RestablecerFuerzaDTO dto) {
+        try {
+            usuarioService.restablecerContrasenaForzado(dto);
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "mensaje",
+                    "La contraseña ha sido restablecida con éxito. La cuenta ha sido desbloqueada y restaurada a 0 intentos fallidos."));
+
+        } catch (RuntimeException e) {
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                    "success", false,
+                    "error", e.getMessage()));
+
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "success", false,
+                    "error",
+                    "Ocurrió un error inesperado al procesar el restablecimiento de contraseña."));
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> actualizarUsuario(@PathVariable Integer id, @RequestBody UsuarioActualizarDTO dto) {
+        try {
+            Usuario usuarioActualizado = usuarioService.actualizar(id, dto);
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "mensaje", "Los datos del usuario han sido actualizados correctamente en el sistema.",
+                    "usuario", usuarioActualizado));
+
+        } catch (RuntimeException e) {
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                    "success", false,
+                    "error", e.getMessage()));
+
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "success", false,
+                    "error",
+                    "Ocurrió un error inesperado en el servidor al procesar la actualización."));
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> eliminarLogicamente(@PathVariable Integer id) {
+        try {
+            usuarioService.delete(id);
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "mensaje",
+                    "El usuario ha sido deshabilitado del sistema correctamente sin perder su historial financiero."));
+
+        } catch (RuntimeException e) {
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "success", false,
+                    "error", e.getMessage()));
+
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "success", false,
+                    "error",
+                    "Ocurrió un error inesperado al procesar la deshabilitación."));
+        }
+    }
 }

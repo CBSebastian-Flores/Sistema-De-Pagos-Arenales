@@ -69,6 +69,7 @@ function CampoPassword({ label, nombre, valor, onChange, error }) {
           type={visible ? "text" : "password"}
           value={valor}
           onChange={(e) => onChange(nombre, e.target.value)}
+          autoComplete="new-password"
           className={`w-full bg-[#0f1b2d] border rounded-lg px-3 py-2 pr-10 text-sm text-white placeholder-gray-600 outline-none transition-colors
             ${error ? "border-red-500 focus:border-red-400" : "border-[#1e3a5f] focus:border-blue-500"}`}
         />
@@ -104,9 +105,11 @@ function Modal({ titulo, onClose, children, ancho = "max-w-lg" }) {
   )
 }
 
-// ─── Modal Editar Usuario (SDPA-71) ───────────────────────────────────────────
+// ─── Modal Editar Usuario ──────────────────────────────────────────────────────
 function ModalEditar({ usuario, roles, onClose, onGuardado }) {
   const [form, setForm] = useState({
+    nombres: usuario.nombres || "",
+    apellidos: usuario.apellidos || "",
     correo: usuario.correo || "",
     telefono: usuario.telefono || "",
     nroPuesto: String(usuario.nroPuesto ?? ""),
@@ -141,21 +144,20 @@ function ModalEditar({ usuario, roles, onClose, onGuardado }) {
 
     setCargando(true)
     try {
-      await api.put(`/api/usuarios/actualizar/${usuario.idUsuario}`, {
+      await api.put(`/api/usuarios/${usuario.idUsuario}`, {
         correo: form.correo,
         telefono: form.telefono,
         nroPuesto: Number(form.nroPuesto),
-        genero: form.genero,
-        fechaNacimiento: form.fechaNacimiento,
         idRol: Number(form.idRol),
-        estado: form.estado === "1",
+        estado: usuario.estado, // Pasas el estado actual
+        genero: form.genero,
+        fechaNacimiento: form.fechaNacimiento
       })
       toast.success("Usuario actualizado correctamente")
       onGuardado()
       onClose()
     } catch (error) {
-      const msg = error.response?.data?.error || "Error al actualizar el usuario"
-      toast.error(msg)
+      toast.error(error.response?.data?.error || "Error al actualizar el usuario")
     } finally {
       setCargando(false)
     }
@@ -192,10 +194,7 @@ function ModalEditar({ usuario, roles, onClose, onGuardado }) {
           </select>
           {errores.genero && <p className="text-red-400 text-xs">{errores.genero}</p>}
         </CampoForm>
-
         <CampoForm label="Fecha de Nacimiento" nombre="fechaNacimiento" valor={form.fechaNacimiento} onChange={handleChange} error={errores.fechaNacimiento} type="date" />
-
-        {/* Rol */}
         <CampoForm label="Rol" nombre="idRol" valor={form.idRol} onChange={handleChange} error={errores.idRol}>
           <select
             value={form.idRol}
@@ -209,18 +208,6 @@ function ModalEditar({ usuario, roles, onClose, onGuardado }) {
             ))}
           </select>
           {errores.idRol && <p className="text-red-400 text-xs">{errores.idRol}</p>}
-        </CampoForm>
-
-        {/* Estado */}
-        <CampoForm label="Estado" nombre="estado" valor={form.estado} onChange={handleChange}>
-          <select
-            value={form.estado}
-            onChange={(e) => handleChange("estado", e.target.value)}
-            className="bg-[#0f1b2d] border border-[#1e3a5f] focus:border-blue-500 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors"
-          >
-            <option value="1">Activo</option>
-            <option value="0">Inactivo</option>
-          </select>
         </CampoForm>
       </div>
 
@@ -275,8 +262,9 @@ function ModalRestablecerPassword({ usuario, onClose }) {
 
     setCargando(true)
     try {
-      await api.post(`/api/usuarios/${usuario.idUsuario}/restablecer-password`, {
-        contrasena: form.contrasena,
+      await api.put("/api/usuarios/restablecer-forzado", {
+        dni: usuario.dni, 
+        nuevaContrasena: form.contrasena
       })
       toast.success("Contraseña restablecida correctamente")
       onClose()
@@ -337,32 +325,33 @@ export default function MantenimientoUsuarios() {
 
   // ── Carga inicial ──
   const cargarUsuarios = async () => {
-    try {
-      const res = await api.get("/api/usuarios/listar")
-      setUsuarios(res.data)
-    } catch {
-      toast.error("No se pudo cargar la lista de usuarios")
-    } finally {
-      setCargando(false)
-    }
+  try {
+    const res = await api.get("/api/usuarios/listar")
+    setUsuarios(res.data)
+  } catch (error) {
+    console.log("ERROR USUARIOS:", error.response?.status, error.response?.data)
+    toast.error("No se pudo cargar la lista de usuarios")
+  } finally {
+    setCargando(false)
   }
+}
 
   const cargarRoles = async () => {
-    try {
-      const res = await api.get("/api/roles/listar")
-      setRoles(res.data)
-    } catch {
-      // silencioso — los roles son secundarios para la carga inicial
-    }
+  try {
+    const res = await api.get("/api/roles")
+    setRoles(res.data)
+  } catch (error) {
+    console.log("ERROR ROLES:", error.response?.status, error.response?.data)
   }
+}
 
-  useEffect(() => {
-    const inicializar = async () => {
-      await cargarUsuarios()
-      await cargarRoles()
-    }
-    inicializar()
-  }, [])
+useEffect(() => {
+  const inicializar = async () => {
+    await cargarUsuarios()
+    await cargarRoles()
+  }
+  inicializar()
+}, [])
 
   // ── Eliminar lógico ──
   const handleEliminar = (usuario) => {
@@ -395,10 +384,7 @@ export default function MantenimientoUsuarios() {
     const texto = busqueda.toLowerCase()
     return (
       u.dni?.toLowerCase().includes(texto) ||
-      u.nombres?.toLowerCase().includes(texto) ||
-      u.apellidos?.toLowerCase().includes(texto) ||
-      u.correo?.toLowerCase().includes(texto) ||
-      u.tipoRol?.toLowerCase().includes(texto)
+      u.nombres?.toLowerCase().includes(texto)
     )
   })
 
