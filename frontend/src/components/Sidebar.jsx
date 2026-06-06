@@ -1,6 +1,5 @@
 import { useState } from "react";
 
-// 1. Agregamos los roles permitidos a cada ítem del menú
 const menuItems = [
   {
     section: "Usuario",
@@ -16,17 +15,18 @@ const menuItems = [
       { nombre: "Registrar Egresos", roles: ["ADMINISTRADOR", "TESORERO"] },
     ],
   },
-  { 
-    section: "Panel de Gráficos", 
+  {
+    section: "Panel de Gráficos",
     items: [
       { nombre: "Dashboard Analítico", roles: ["ADMINISTRADOR", "TESORERO"] }
-    ] 
+    ]
   },
   {
     section: "Configuración",
     items: [
       { nombre: "Generación de Pagos", roles: ["ADMINISTRADOR", "TESORERO"] },
       { nombre: "Registro de Usuario", roles: ["ADMINISTRADOR"] },
+      { nombre: "Mantenimiento de Usuarios", roles: ["ADMINISTRADOR"] },
     ],
   },
 ];
@@ -35,11 +35,7 @@ export default function Sidebar({ paginaActiva, setPaginaActiva, onCerrarSesion 
   const [usuarioInfo] = useState(() => {
     const nombres = sessionStorage.getItem("nombres");
     const rol = (sessionStorage.getItem("rol") || "").toUpperCase();
-
-    return { 
-      nombres: nombres || "Usuario", 
-      rol: rol 
-    };
+    return { nombres: nombres || "Usuario", rol };
   });
 
   return (
@@ -62,7 +58,7 @@ export default function Sidebar({ paginaActiva, setPaginaActiva, onCerrarSesion 
       {/* Menú */}
       <nav className="flex-1 overflow-y-auto py-4">
         {menuItems.map((grupo) => {
-          const itemsFiltrados = grupo.items.filter(item => 
+          const itemsFiltrados = grupo.items.filter(item =>
             item.roles.includes(usuarioInfo.rol)
           );
 
