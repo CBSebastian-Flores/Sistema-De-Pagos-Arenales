@@ -3,6 +3,7 @@ import Sidebar from "./Sidebar"
 import RegisterForm from "./RegisterForm"
 import AccesoDenegado from "./AccesoDenegado"
 import MantenimientoUsuarios from "./MantenimientoUsuarios"
+import MantenimientoServicios from "./MantenimientoServicios"
 
 function Placeholder({ titulo }) {
   return (
@@ -15,6 +16,7 @@ function Placeholder({ titulo }) {
 const paginasRestringidas = {
   "Registro de Usuario": ["Administrador"],
   "Mantenimiento de Usuarios": ["Administrador"],
+  "Mantenimiento de Servicios": ["Administrador", "Tesorero"],
 }
 
 export default function Layout({ onSubmit, onCerrarSesion }) {
@@ -32,6 +34,8 @@ export default function Layout({ onSubmit, onCerrarSesion }) {
         return <RegisterForm onSubmit={onSubmit} />
       case "Mantenimiento de Usuarios":
         return <MantenimientoUsuarios />
+      case "Mantenimiento de Servicios":
+        return <MantenimientoServicios />
       default:
         return <Placeholder titulo={paginaActiva} />
     }

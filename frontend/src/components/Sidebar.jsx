@@ -27,6 +27,7 @@ const menuItems = [
       { nombre: "Generación de Pagos", roles: ["ADMINISTRADOR", "TESORERO"] },
       { nombre: "Registro de Usuario", roles: ["ADMINISTRADOR"] },
       { nombre: "Mantenimiento de Usuarios", roles: ["ADMINISTRADOR"] },
+      { nombre: "Mantenimiento de Servicios", roles: ["ADMINISTRADOR", "TESORERO"] },
     ],
   },
 ];
