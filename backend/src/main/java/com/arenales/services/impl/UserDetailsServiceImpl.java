@@ -12,7 +12,6 @@ import com.arenales.entities.Usuario;
 import com.arenales.repositories.UsuarioRepository;
 
 @Service
-
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Autowired
