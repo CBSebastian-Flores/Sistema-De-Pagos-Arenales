@@ -1,4 +1,5 @@
 package com.arenales.entities;
+
 import jakarta.persistence.Column; // api para la persistencia
 import jakarta.persistence.Entity; 
 import jakarta.persistence.GeneratedValue;

@@ -57,7 +57,9 @@ GO
 CREATE TABLE Servicio (
     id_servicio INT PRIMARY KEY IDENTITY(1,1),
     nombre_servicio VARCHAR(100) NOT NULL,
-    descripcion VARCHAR(255) NULL
+    descripcion VARCHAR(255) NULL,
+    precio_base DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    estado BIT NOT NULL DEFAULT 1,
 );
 GO
 
