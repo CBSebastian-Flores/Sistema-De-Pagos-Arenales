@@ -9,7 +9,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class ServicioDTO {
+public class ServicioRequestDTO {
     @NotBlank(message = "El nombre del servicio es obligatorio.")
     @Size(max = 100, message = "El nombre no puede superar los 100 caracteres.")
     private String nombreServicio;

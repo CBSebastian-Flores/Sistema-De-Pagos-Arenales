@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ServicioListadoDTO {
+public class ServicioResponseDTO {
     private Integer idServicio;
     private String nombreServicio;
     private String descripcion;
