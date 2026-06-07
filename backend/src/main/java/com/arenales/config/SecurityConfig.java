@@ -39,6 +39,7 @@ public class SecurityConfig {
 
                         // AUTH
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/error").permitAll()
 
                         // SWAGGER
                         .requestMatchers(
@@ -62,6 +63,14 @@ public class SecurityConfig {
                         .requestMatchers("/api/egresos/**").hasAnyAuthority("Tesorero", "Administrador")
                         
                         .requestMatchers("/api/servicios/**").hasAnyAuthority("Directiva", "Administrador")
+
+                        // Control de acceso para el Mantenimiento de Servicios
+                        .requestMatchers(HttpMethod.GET, "/api/servicios/listar").hasAuthority("Administrador")
+                        .requestMatchers(HttpMethod.GET, "/api/servicios/activos").hasAuthority("Administrador")
+                        .requestMatchers(HttpMethod.GET, "/api/servicios/{id}").hasAuthority("Administrador")
+                        .requestMatchers(HttpMethod.POST, "/api/servicios/crear").hasAuthority("Administrador")
+                        .requestMatchers(HttpMethod.PUT, "/api/servicios/actualizar/**").hasAuthority("Administrador")
+                        .requestMatchers(HttpMethod.DELETE, "/api/servicios/inhabilitar/**").hasAuthority("Administrador")
 
                         .anyRequest().authenticated());
 
