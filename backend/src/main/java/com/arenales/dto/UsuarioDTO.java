@@ -15,7 +15,6 @@ import lombok.Data;
 
 @Data
 public class UsuarioDTO {
-
     @JsonProperty("nombres")
     @NotBlank(message = "El nombre no puede estar vacío")
     private String nombres;
