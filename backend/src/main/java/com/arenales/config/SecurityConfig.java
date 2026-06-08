@@ -62,7 +62,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/deudas/**").hasAnyAuthority("Tesorero", "Administrador")
                         .requestMatchers("/api/egresos/**").hasAnyAuthority("Tesorero", "Administrador")
                         
-                        .requestMatchers("/api/servicios/**").hasAnyAuthority("Directiva", "Administrador")
+                        .requestMatchers("/api/servicios/**").hasAnyAuthority("Socio", "Tesorero", "Administrador")
 
                         // Control de acceso para el Mantenimiento de Servicios
                         .requestMatchers(HttpMethod.GET, "/api/servicios/listar").hasAuthority("Administrador")

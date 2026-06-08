@@ -248,8 +248,7 @@ export default function MantenimientoServicios() {
   const serviciosFiltrados = servicios.filter(s => {
     const texto = busqueda.toLowerCase()
     return (
-      s.nombreServicio?.toLowerCase().includes(texto) ||
-      s.descripcion?.toLowerCase().includes(texto)
+      s.nombreServicio?.toLowerCase().includes(texto)
     )
   })
 
@@ -269,7 +268,7 @@ export default function MantenimientoServicios() {
           </svg>
           <input
             type="text"
-            placeholder="Buscar por nombre o descripción..."
+            placeholder="Buscar por nombre"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             className="w-full bg-[#111e30] border border-[#1e3a5f] rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder-gray-600 outline-none focus:border-blue-500 transition-colors"

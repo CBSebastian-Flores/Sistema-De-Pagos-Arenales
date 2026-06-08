@@ -120,12 +120,14 @@ INSERT INTO Rol (tipo_rol) VALUES ('Tesorero');
 INSERT INTO Rol (tipo_rol) VALUES ('Administrador');
 GO
 
-INSERT INTO Usuario (nombres, apellidos, dni, correo, contrasena, fecha_nacimiento, genero, nro_puesto, telefono, estado, id_rol)
-VALUES 
-    ('Carlos Jose', 'Mendoza Lara', '11111111', 'carlos.dir@email.com', '$2a$10$S/zkpjsyP7lZNr4b8uWFaOuaZPfGkN9KeQT6ttmKWZbq.WIJ2pt5u', '1980-05-15', 'Masculino', 10, '999111222', 1, 1), -- Socio
-    ('Ana Maria', 'Suarez Bello', '22222222', 'ana.tes@email.com', '$2a$10$ux7q1iRII.hhFHs6kUKJHebi5lGr81NG1ewW5NxEeRKMBDXevFwp6', '1985-08-22', 'Femenino', 20, '999333444', 1, 2), -- Tesorero
-    ('Admin Maestro', 'Bot Test', '33333333', 'corrtest.adm@email.com', '$2a$10$mj2TqSSoSv7qU59pd6V1TeFFLUjz1mre0CVxRYAQqQO.QX6qubZDW', '1995-10-10', 'Masculino', 30, '999555666', 1, 3); -- Administrador
-GO
+INSERT INTO Usuario
+(nombres, apellidos, dni, correo, contrasena, fecha_nacimiento, genero, nro_puesto, estado, intentos_fallidos, bloqueado_hasta, id_rol)
+VALUES
+('Christian', 'Flores Salas', '70710914', 'thebrunogamer319@gmail.com', '$2a$10$20YUOu2LptOEyVqzMPMFTe89SyEjse/AoPemO2Ii8pjTyWi.MuI7O', '2000-08-22', 'Masculino', 207, 1, 0, NULL, 1),
+('Juan', 'Perez Salazar', '05426318', 'juanperez1@gmail.com', '$2a$10$VtJjKbq6zCr6x5dMtpap/usJLqIG.aZmBr1HuE7lUYxiU16EzLPe6', '1990-05-10', 'Masculino', 101, 1, 0, NULL, 1),
+('Ricardo', 'Diaz', '09421574', 'ricardo.diaz@gmail.com', '$2a$10$Hi5bZ9HdIscZPFRvJqp3sOet2yFrAPUcr9LmTbEzZsYJZLwVeuIK6', '1997-02-15', 'Masculino', 318, 0, 0, NULL, 1),
+('Rosa', 'Navarro Espinoza', '05426137', 'navarrorosae@gmail.com', '$2a$10$c2WH7Bp2/U9shf8gqoDe1O7qs2Bs/d/4Ec12c7xDFoUm.y4RRDJ56', '1985-10-05', 'Femenino', 112, 1, 0, NULL, 1),
+('Sofia', 'Paredes Cruzado', '07215496', 'sofia.pcruzado@gmail.com', '$2a$10$nHjWbhnlHNWTTkvmJNCBBecKL12VJ1NBkPgH1dMeLf4sL7OzI0h92', '1998-03-19', 'Femenino', 216, 1, 0, NULL, 1);
 
 -- ============================================
 -- SCRIPT DE CONSULTA - CC_Arenales

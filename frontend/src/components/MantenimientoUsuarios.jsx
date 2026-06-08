@@ -421,7 +421,7 @@ useEffect(() => {
           </svg>
           <input
             type="text"
-            placeholder="Buscar por DNI, nombre, correo, rol..."
+            placeholder="Buscar por DNI y nombre"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             className="w-full bg-[#111e30] border border-[#1e3a5f] rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder-gray-600 outline-none focus:border-blue-500 transition-colors"

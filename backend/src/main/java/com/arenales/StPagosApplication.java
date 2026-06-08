@@ -11,12 +11,24 @@ public class StPagosApplication {
 		SpringApplication.run(StPagosApplication.class, args);
 	}
 
-	//Genera codigos Bycript
+	//Genera codigos Bycript para varias cuentas
 	@org.springframework.context.annotation.Bean
-	public org.springframework.boot.CommandLineRunner generarClave() {
+	public org.springframework.boot.CommandLineRunner generarClaves() {
 		return args -> {
+			int cantidadAGenerar = 16;
+			String contrasenaComun = "12345678";
+			org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder encoder =
+					new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
+
 			System.out.println("=========================================");
-			System.out.println("CLAVE EXACTA PARA SQL: " + new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode("12345678"));
+			System.out.println("GENERANDO " + cantidadAGenerar + " CLAVES CON LA MISMA CONTRASEÑA");
+			System.out.println("=========================================");
+
+			for (int i = 1; i <= cantidadAGenerar; i++) {
+				String claveEncriptada = encoder.encode(contrasenaComun);
+				System.out.println("Usuario " + i + " [Texto: " + contrasenaComun + "] -> Clave SQL: " + claveEncriptada);
+			}
+
 			System.out.println("=========================================");
 		};
 	}

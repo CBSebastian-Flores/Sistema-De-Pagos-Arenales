@@ -4,8 +4,8 @@ const menuItems = [
   {
     section: "Usuario",
     items: [
-      { nombre: "Mis Pagos Pendientes", roles: ["ADMINISTRADOR", "DIRECTIVA", "TESORERO"] },
-      { nombre: "Mi Historial de Pagos", roles: ["ADMINISTRADOR", "DIRECTIVA", "TESORERO"] },
+      { nombre: "Mis Pagos Pendientes", roles: ["ADMINISTRADOR", "SOCIO", "TESORERO"] },
+      { nombre: "Mi Historial de Pagos", roles: ["ADMINISTRADOR", "SOCIO", "TESORERO"] },
     ],
   },
   {
