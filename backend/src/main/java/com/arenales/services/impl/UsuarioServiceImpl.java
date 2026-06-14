@@ -3,7 +3,9 @@ package com.arenales.services.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.arenales.services.AuditoriaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +35,16 @@ public class UsuarioServiceImpl implements UsuarioService {
     private BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
-    private ReniecService reniecService; 
+    private ReniecService reniecService;
+
+    @Autowired
+    private AuditoriaService auditoriaService;
+
+    private Usuario obtenerAdminLogueado() {
+        String dniAdmin = SecurityContextHolder.getContext().getAuthentication().getName();
+        return usuarioRepository.findByDni(dniAdmin)
+                .orElseThrow(() -> new RuntimeException("Administrador no encontrado en la sesión de seguridad activa."));
+    }
 
     @Override
     @Transactional
@@ -70,7 +81,12 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .orElseThrow(() -> new RuntimeException("El rol especificado no existe."));
         usuario.setRol(rol);
 
-        return usuarioRepository.save(usuario);
+        Usuario usuarioGuardado = usuarioRepository.save(usuario);
+
+        Usuario admin = obtenerAdminLogueado();
+        auditoriaService.registrarHistorialUsuario(usuarioGuardado, "REGISTRAR", "Registro inicial de nuevo usuario socio/empleado.", admin);
+
+        return usuarioGuardado;
     }
 
     @Override
@@ -100,6 +116,9 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
 
+        Usuario admin = obtenerAdminLogueado();
+        auditoriaService.registrarHistorialUsuario(usuario, "ACTUALIZAR", "Actualización de datos generales del perfil de usuario.", admin);
+
         if (dto.getCorreo() != null && !dto.getCorreo().equalsIgnoreCase(usuario.getCorreo())) {
             if (usuarioRepository.existsByCorreo(dto.getCorreo())) {
                 throw new RuntimeException("El nuevo correo electrónico ya está en uso por otro usuario.");
@@ -123,9 +142,13 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     @Transactional
-    public Usuario delete(Integer id) {
+    public Usuario delete(Integer id, String motivo) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Usuario admin = obtenerAdminLogueado();
+        auditoriaService.registrarHistorialUsuario(usuario, "INHABILITAR", motivo, admin);
+
         usuario.setEstado(false); 
         return usuarioRepository.save(usuario);
     }
@@ -139,6 +162,9 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         Usuario usuario = usuarioRepository.findByDni(dto.getDni())
                 .orElseThrow(() -> new RuntimeException("Usuario con DNI " + dto.getDni() + " no encontrado"));
+
+        Usuario admin = obtenerAdminLogueado();
+        auditoriaService.registrarHistorialUsuario(usuario, "PASSWORD_RESET", "Restablecimiento forzado de credenciales de acceso por el Administrador.", admin);
 
         String passEncriptada = passwordEncoder.encode(dto.getNuevaContrasena().trim());
         usuario.setContrasena(passEncriptada);

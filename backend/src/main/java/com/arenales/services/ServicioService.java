@@ -15,5 +15,5 @@ public interface ServicioService {
     ServicioResponseDTO crear(ServicioRequestDTO dto);
     ServicioResponseDTO actualizar(Integer id, ServicioRequestDTO dto);
 
-    void inhabilitarLogico(Integer id);
+    void inhabilitarLogico(Integer id, String motivo);
 }
