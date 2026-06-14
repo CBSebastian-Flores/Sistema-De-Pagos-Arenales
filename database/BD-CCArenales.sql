@@ -17,10 +17,12 @@ GO
 -- LIMPIEZA DE TABLAS (Orden por Foreign Keys)
 -- ============================================
 IF OBJECT_ID('Pago', 'U') IS NOT NULL DROP TABLE Pago;
-IF OBJECT_ID('Egreso', 'U') IS NOT NULL DROP TABLE Egreso;
+IF OBJECT_ID('Historial_Servicio', 'U') IS NOT NULL DROP TABLE Historial_Servicio;
+IF OBJECT_ID('Historial_Usuario', 'U') IS NOT NULL DROP TABLE Historial_Usuario;
 IF OBJECT_ID('Deuda', 'U') IS NOT NULL DROP TABLE Deuda;
-IF OBJECT_ID('Servicio', 'U') IS NOT NULL DROP TABLE Servicio;
+IF OBJECT_ID('Egreso', 'U') IS NOT NULL DROP TABLE Egreso;
 IF OBJECT_ID('Usuario', 'U') IS NOT NULL DROP TABLE Usuario;
+IF OBJECT_ID('Servicio', 'U') IS NOT NULL DROP TABLE Servicio;
 IF OBJECT_ID('Rol', 'U') IS NOT NULL DROP TABLE Rol;
 GO
 
