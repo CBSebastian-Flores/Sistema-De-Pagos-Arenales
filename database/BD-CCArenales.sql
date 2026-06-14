@@ -58,6 +58,9 @@ CREATE TABLE Servicio (
     id_servicio INT PRIMARY KEY IDENTITY(1,1),
     nombre_servicio VARCHAR(100) NOT NULL,
     descripcion VARCHAR(255) NULL,
+	categoria VARCHAR(20) NOT NULL DEFAULT 'ORDINARIO' CHECK (categoria IN ('ORDINARIO', 'EXTRAORDINARIO')),
+	modalidad_cobro VARCHAR(15) NOT NULL DEFAULT 'FIJO'	CHECK (modalidad_cobro IN ('FIJO', 'VARIABLE')),
+	precio_base DECIMAL (10,2) NOT NULL DEFAULT 0.00,
     precio_base DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     estado BIT NOT NULL DEFAULT 1,
 );
@@ -74,9 +77,13 @@ CREATE TABLE Deuda (
     id_servicio INT NOT NULL,
     id_usuario INT NOT NULL,
 
+	id_usuario_creador INT NOT NULL,
+	fecha_registro_sistema DATETIME NOT NULL DEFAULT GETDATE(),
+
     -- Llaves foráneas
     CONSTRAINT FK_Deuda_Servicio FOREIGN KEY (id_servicio) REFERENCES Servicio(id_servicio),
     CONSTRAINT FK_Deuda_Usuario FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario)
+	CONSTRAINT FK_Deuda_UsuarioCreador FOREIGN KEY (id_usuario_creador) REFERENCES Usuario(id_usuario)
 );
 GO
 
@@ -108,6 +115,38 @@ CREATE TABLE Egreso (
 
     -- Llave foránea
     CONSTRAINT FK_Egreso_Usuario FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario)
+);
+GO
+
+CREATE TABLE Historial_Usuario (
+    id_historial_usuario INT IDENTITY(1,1) PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    datos_anteriores NVARCHAR(MAX) NULL,
+    tipo_accion VARCHAR(50) NOT NULL
+    CHECK (tipo_accion IN ('REGISTRAR','ACTUALIZAR','INHABILITAR','HABILITAR','PASSWORD_RESET')),
+    motivo NVARCHAR(255) NULL,
+    id_usuario_creador INT NOT NULL,
+    fecha_registro DATETIME NOT NULL DEFAULT GETDATE()
+
+	-- Llave foránea
+    CONSTRAINT FK_HistorialUsuario_Usuario FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario),
+    CONSTRAINT FK_HistorialUsuario_UsuarioCreador FOREIGN KEY (id_usuario_creador) REFERENCES Usuario(id_usuario)
+);
+GO
+
+CREATE TABLE Historial_Servicio (
+    id_historial_servicio INT IDENTITY(1,1) PRIMARY KEY,
+    id_servicio INT NOT NULL,
+    datos_anteriores NVARCHAR(MAX) NULL,
+    tipo_accion VARCHAR(50) NOT NULL
+    CHECK (tipo_accion IN ('REGISTRAR','ACTUALIZAR','INHABILITAR','HABILITAR')),
+    motivo NVARCHAR(255) NULL,
+    id_usuario_creador INT NOT NULL,
+    fecha_registro DATETIME NOT NULL DEFAULT GETDATE(),
+
+    -- Llaves foráneas
+    CONSTRAINT FK_HistorialServicio_Servicio FOREIGN KEY (id_servicio) REFERENCES Servicio(id_servicio),
+    CONSTRAINT FK_HistorialServicio_UsuarioCreador FOREIGN KEY (id_usuario_creador) REFERENCES Usuario(id_usuario)
 );
 GO
 
