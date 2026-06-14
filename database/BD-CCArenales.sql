@@ -44,8 +44,8 @@ CREATE TABLE Usuario (
     fecha_nacimiento DATE NOT NULL,
     genero VARCHAR(20) NOT NULL
     CHECK (genero IN ('Masculino', 'Femenino', 'Otro')),
-    nro_puesto INT NOT NULL,
-    telefono VARCHAR(9) NOT NULL,
+    nro_puesto INT NOT NULL UNIQUE,
+    telefono VARCHAR(9) NOT NULL UNIQUE,
     estado BIT NOT NULL DEFAULT 1,
     intentos_fallidos INT NOT NULL DEFAULT 0,
 	bloqueado_hasta DATETIME NULL,
