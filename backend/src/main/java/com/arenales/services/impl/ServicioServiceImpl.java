@@ -4,10 +4,14 @@ import com.arenales.dto.ServicioResponseDTO;
 import com.arenales.dto.ServicioRequestDTO;
 import com.arenales.entities.Servicio;
 
+import com.arenales.entities.Usuario;
 import com.arenales.repositories.ServicioRepository;
+import com.arenales.repositories.UsuarioRepository;
+import com.arenales.services.AuditoriaService;
 import com.arenales.services.ServicioService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +22,18 @@ import java.util.stream.Collectors;
 public class ServicioServiceImpl implements ServicioService {
     @Autowired
     private ServicioRepository servicioRepository;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private AuditoriaService auditoriaService;
+
+    private Usuario obtenerAdminLogueado() {
+        String dniAdmin = SecurityContextHolder.getContext().getAuthentication().getName();
+        return usuarioRepository.findByDni(dniAdmin)
+                .orElseThrow(() -> new RuntimeException("Administrador no encontrado en la sesión de seguridad activa."));
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -62,20 +78,26 @@ public class ServicioServiceImpl implements ServicioService {
     @Override
     @Transactional
     public ServicioResponseDTO crear(ServicioRequestDTO dto) {
-        Servicio servicio = new Servicio();
-        servicio.setNombreServicio(dto.getNombreServicio());
-        servicio.setDescripcion(dto.getDescripcion());
-        servicio.setPrecioBase(dto.getPrecioBase());
-        servicio.setEstado(true);
+        // Crear y guardar el servicio
+        Servicio nuevoServicio = new Servicio();
+        nuevoServicio.setNombreServicio(dto.getNombreServicio());
+        nuevoServicio.setDescripcion(dto.getDescripcion());
+        nuevoServicio.setPrecioBase(dto.getPrecioBase());
+        nuevoServicio.setEstado(true);
 
-        Servicio guardado = servicioRepository.save(servicio);
+        Servicio servicioGuardado = servicioRepository.save(nuevoServicio);
+
+        Usuario admin = obtenerAdminLogueado();
+
+        // Registrar Historial (Como es nuevo, datos_anteriores será automáticamente null internamente)
+        auditoriaService.registrarHistorialServicio(servicioGuardado, "REGISTRAR", "Registro inicial de nuevo servicio.", admin);
 
         return new ServicioResponseDTO(
-                guardado.getIdServicio(),
-                guardado.getNombreServicio(),
-                guardado.getDescripcion(),
-                guardado.getPrecioBase(),
-                guardado.getEstado());
+                servicioGuardado.getIdServicio(),
+                servicioGuardado.getNombreServicio(),
+                servicioGuardado.getDescripcion(),
+                servicioGuardado.getPrecioBase(),
+                servicioGuardado.getEstado());
     }
 
     @Override
@@ -84,6 +106,13 @@ public class ServicioServiceImpl implements ServicioService {
         Servicio servicio = servicioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Servicio no encontrado con ID: " + id));
 
+        // Extraer el Administrador logueado
+        Usuario admin = obtenerAdminLogueado();
+
+        // Enviamos el objeto "servicio" tal como está antes de modificar sus campos
+        auditoriaService.registrarHistorialServicio(servicio, "ACTUALIZAR", "Actualización de datos generales del servicio.", admin);
+
+        // Aplicar los cambios y guardar
         servicio.setNombreServicio(dto.getNombreServicio());
         servicio.setDescripcion(dto.getDescripcion());
         servicio.setPrecioBase(dto.getPrecioBase());
@@ -100,10 +129,17 @@ public class ServicioServiceImpl implements ServicioService {
 
     @Override
     @Transactional
-    public void inhabilitarLogico(Integer id) {
+    public void inhabilitarLogico(Integer id, String motivo) {
         Servicio servicio = servicioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Servicio no encontrado con ID: " + id));
 
+        // Extraer el Administrador logueado
+        Usuario admin = obtenerAdminLogueado();
+
+        // Antes de cambiar el estado a false
+        auditoriaService.registrarHistorialServicio(servicio, "INHABILITAR", motivo, admin);
+
+        // Aplicar la inhabilitación lógica
         servicio.setEstado(false);
         servicioRepository.save(servicio);
     }
