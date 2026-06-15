@@ -36,7 +36,7 @@ public class UsuarioController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizarUsuario(@PathVariable Integer id, @RequestBody UsuarioActualizarDTO dto) {
+    public ResponseEntity<?> actualizarUsuario(@PathVariable Integer id, @Valid @RequestBody UsuarioActualizarDTO dto) {
         Usuario usuarioActualizado = usuarioService.actualizar(id, dto);
         return ResponseEntity.ok(Map.of(
                 "success", true,
@@ -45,35 +45,25 @@ public class UsuarioController {
     }
 
     @PutMapping("/{id}/inhabilitar")
-    public ResponseEntity<?> inhabilitarUsuario(@PathVariable Integer id, @jakarta.validation.Valid @RequestBody AuditoriaRequestDTO dto) {
-        try {
-            usuarioService.inhabilitar(id, dto.getMotivo());
-            return ResponseEntity.ok(Map.of(
-                "success", true,
-                "mensaje", "El usuario ha sido deshabilitado del sistema correctamente sin perder su historial financiero."
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("success", false, "error", e.getMessage()));
-        }
+    public ResponseEntity<?> inhabilitarUsuario(@PathVariable Integer id, @Valid @RequestBody AuditoriaRequestDTO dto) {
+        usuarioService.inhabilitar(id, dto.getMotivo());
+        return ResponseEntity.ok(Map.of(
+            "success", true,
+            "mensaje", "El usuario ha sido deshabilitado del sistema correctamente sin perder su historial financiero."
+        ));
     }
 
     @PutMapping("/{id}/habilitar")
-    public ResponseEntity<?> habilitarUsuario(@PathVariable Integer id, @jakarta.validation.Valid @RequestBody AuditoriaRequestDTO dto) {
-        try {
-            usuarioService.habilitar(id, dto.getMotivo());
-            return ResponseEntity.ok(Map.of(
-                "success", true,
-                "mensaje", "El usuario ha sido habilitado nuevamente en el sistema."
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("success", false, "error", e.getMessage()));
-        }
+    public ResponseEntity<?> habilitarUsuario(@PathVariable Integer id, @Valid @RequestBody AuditoriaRequestDTO dto) {
+        usuarioService.habilitar(id, dto.getMotivo());
+        return ResponseEntity.ok(Map.of(
+            "success", true,
+            "mensaje", "El usuario ha sido habilitado nuevamente en el sistema."
+        ));
     }
     
     @PutMapping("/restablecer-forzado")
-    public ResponseEntity<?> restablecerContrasenaForzado(@RequestBody RestablecerFuerzaDTO dto) {
+    public ResponseEntity<?> restablecerContrasenaForzado(@Valid @RequestBody RestablecerFuerzaDTO dto) {
         usuarioService.restablecerContrasenaForzado(dto);
         return ResponseEntity.ok(Map.of(
                 "success", true,

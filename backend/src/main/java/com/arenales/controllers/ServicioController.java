@@ -52,7 +52,7 @@ public class ServicioController {
 
     // Eliminación lógica / Inhabilitar servicio (Con control de error manual)
     @DeleteMapping("/inhabilitar/{id}")
-    public ResponseEntity<?> inhabilitarLogico(@PathVariable Integer id, @RequestParam(defaultValue = "Inhabilitación por desuso") String motivo) {
+    public ResponseEntity<?> inhabilitarLogico(@PathVariable Integer id,@RequestParam(defaultValue = "Inhabilitación por desuso") String motivo) {
         servicioService.inhabilitarLogico(id, motivo);
         return ResponseEntity.ok(Map.of(
                 "success", true,
