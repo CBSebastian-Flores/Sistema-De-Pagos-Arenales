@@ -3,6 +3,7 @@ package com.arenales.services.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.arenales.config.SecurityUtils;
 import com.arenales.services.AuditoriaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,10 +41,28 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Autowired
     private AuditoriaService auditoriaService;
 
-    private Usuario obtenerAdminLogueado() {
-        String dniAdmin = SecurityContextHolder.getContext().getAuthentication().getName();
-        return usuarioRepository.findByDni(dniAdmin)
-                .orElseThrow(() -> new RuntimeException("Administrador no encontrado en la sesión de seguridad activa."));
+    @Autowired
+    private SecurityUtils securityUtils;
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UsuarioListadoDTO> listarTodos() {
+        return usuarioRepository.findAll().stream().map(user -> {
+            UsuarioListadoDTO dto = new UsuarioListadoDTO();
+            dto.setIdUsuario(user.getIdUsuario());
+            dto.setDni(user.getDni());
+            dto.setNombres(user.getNombres());
+            dto.setApellidos(user.getApellidos());
+            dto.setCorreo(user.getCorreo());
+            dto.setTelefono(user.getTelefono());
+            dto.setNroPuesto(user.getNroPuesto());
+            dto.setGenero(user.getGenero());
+            dto.setFechaNacimiento(user.getFechaNacimiento());
+            dto.setTipoRol(user.getRol() != null ? user.getRol().getTipoRol() : "SIN ROL");
+
+            dto.setEstado(user.getEstado());
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -83,31 +102,10 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
 
-        Usuario admin = obtenerAdminLogueado();
+        Usuario admin = securityUtils.getUsuarioAutenticado();
         auditoriaService.registrarHistorialUsuario(usuarioGuardado, "REGISTRAR", "Registro inicial de nuevo usuario socio/empleado.", admin);
 
         return usuarioGuardado;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<UsuarioListadoDTO> listarTodos() {
-        return usuarioRepository.findAll().stream().map(user -> {
-            UsuarioListadoDTO dto = new UsuarioListadoDTO();
-            dto.setIdUsuario(user.getIdUsuario());
-            dto.setDni(user.getDni());
-            dto.setNombres(user.getNombres());
-            dto.setApellidos(user.getApellidos());
-            dto.setCorreo(user.getCorreo());
-            dto.setTelefono(user.getTelefono());
-            dto.setNroPuesto(user.getNroPuesto());
-            dto.setGenero(user.getGenero());
-            dto.setFechaNacimiento(user.getFechaNacimiento());
-            dto.setTipoRol(user.getRol() != null ? user.getRol().getTipoRol() : "SIN ROL");
-
-            dto.setEstado(user.getEstado());
-            return dto;
-        }).collect(Collectors.toList());
     }
 
     @Override
@@ -116,7 +114,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
 
-        Usuario admin = obtenerAdminLogueado();
+        Usuario admin = securityUtils.getUsuarioAutenticado();
         auditoriaService.registrarHistorialUsuario(usuario, "ACTUALIZAR", "Actualización de datos generales del perfil de usuario.", admin);
 
         if (dto.getCorreo() != null && !dto.getCorreo().equalsIgnoreCase(usuario.getCorreo())) {
@@ -146,7 +144,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        Usuario admin = obtenerAdminLogueado();
+        Usuario admin = securityUtils.getUsuarioAutenticado();
         auditoriaService.registrarHistorialUsuario(usuario, "INHABILITAR", motivo, admin);
 
         usuario.setEstado(false); 
@@ -163,7 +161,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario usuario = usuarioRepository.findByDni(dto.getDni())
                 .orElseThrow(() -> new RuntimeException("Usuario con DNI " + dto.getDni() + " no encontrado"));
 
-        Usuario admin = obtenerAdminLogueado();
+        Usuario admin = securityUtils.getUsuarioAutenticado();
         auditoriaService.registrarHistorialUsuario(usuario, "PASSWORD_RESET", "Restablecimiento forzado de credenciales de acceso por el Administrador.", admin);
 
         String passEncriptada = passwordEncoder.encode(dto.getNuevaContrasena().trim());

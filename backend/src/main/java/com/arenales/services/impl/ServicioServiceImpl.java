@@ -1,5 +1,6 @@
 package com.arenales.services.impl;
 
+import com.arenales.config.SecurityUtils;
 import com.arenales.dto.ServicioResponseDTO;
 import com.arenales.dto.ServicioRequestDTO;
 import com.arenales.entities.Servicio;
@@ -29,11 +30,8 @@ public class ServicioServiceImpl implements ServicioService {
     @Autowired
     private AuditoriaService auditoriaService;
 
-    private Usuario obtenerAdminLogueado() {
-        String dniAdmin = SecurityContextHolder.getContext().getAuthentication().getName();
-        return usuarioRepository.findByDni(dniAdmin)
-                .orElseThrow(() -> new RuntimeException("Administrador no encontrado en la sesión de seguridad activa."));
-    }
+    @Autowired
+    private SecurityUtils securityUtils;
 
     @Override
     @Transactional(readOnly = true)
@@ -87,7 +85,7 @@ public class ServicioServiceImpl implements ServicioService {
 
         Servicio servicioGuardado = servicioRepository.save(nuevoServicio);
 
-        Usuario admin = obtenerAdminLogueado();
+        Usuario admin = securityUtils.getUsuarioAutenticado();
 
         // Registrar Historial (Como es nuevo, datos_anteriores será automáticamente null internamente)
         auditoriaService.registrarHistorialServicio(servicioGuardado, "REGISTRAR", "Registro inicial de nuevo servicio.", admin);
@@ -107,7 +105,7 @@ public class ServicioServiceImpl implements ServicioService {
                 .orElseThrow(() -> new RuntimeException("Servicio no encontrado con ID: " + id));
 
         // Extraer el Administrador logueado
-        Usuario admin = obtenerAdminLogueado();
+        Usuario admin = securityUtils.getUsuarioAutenticado();
 
         // Enviamos el objeto "servicio" tal como está antes de modificar sus campos
         auditoriaService.registrarHistorialServicio(servicio, "ACTUALIZAR", "Actualización de datos generales del servicio.", admin);
@@ -134,7 +132,7 @@ public class ServicioServiceImpl implements ServicioService {
                 .orElseThrow(() -> new RuntimeException("Servicio no encontrado con ID: " + id));
 
         // Extraer el Administrador logueado
-        Usuario admin = obtenerAdminLogueado();
+        Usuario admin = securityUtils.getUsuarioAutenticado();
 
         // Antes de cambiar el estado a false
         auditoriaService.registrarHistorialServicio(servicio, "INHABILITAR", motivo, admin);
