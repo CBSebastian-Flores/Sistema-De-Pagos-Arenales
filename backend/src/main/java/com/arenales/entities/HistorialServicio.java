@@ -36,7 +36,4 @@ public class HistorialServicio {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario_creador", nullable = false)
     private Usuario usuarioCreador; // El administrador que ejecutó la acción
-
-    @Column(name = "fecha_registro", nullable = false, updatable = false)
-    private LocalDateTime fechaRegistro;
 }

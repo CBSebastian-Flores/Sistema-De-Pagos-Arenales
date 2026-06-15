@@ -163,10 +163,10 @@ GO
 INSERT INTO Usuario
 (nombres, apellidos, dni, correo, contrasena, fecha_nacimiento, genero, nro_puesto, telefono, estado, intentos_fallidos, bloqueado_hasta, id_rol)
 VALUES
-('Christian', 'Flores Salas', '70710914', 'thebrunogamer319@gmail.com', '$2a$10$20YUOu2LptOEyVqzMPMFTe89SyEjse/AoPemO2Ii8pjTyWi.MuI7O', '2000-08-22', 'Masculino', 207, '912314200', 1, 0, NULL, 1),
-('Juan', 'Perez Salazar', '05426318', 'juanperez1@gmail.com', '$2a$10$VtJjKbq6zCr6x5dMtpap/usJLqIG.aZmBr1HuE7lUYxiU16EzLPe6', '1990-05-10', 'Masculino', 101, '949412710', 1, 0, NULL, 1),
-('Ricardo', 'Diaz', '09421574', 'ricardo.diaz@gmail.com', '$2a$10$Hi5bZ9HdIscZPFRvJqp3sOet2yFrAPUcr9LmTbEzZsYJZLwVeuIK6', '1997-02-15', 'Masculino', 318, '964235869', 0, 0, NULL, 1),
-('Rosa', 'Navarro Espinoza', '05426137', 'navarrorosae@gmail.com', '$2a$10$c2WH7Bp2/U9shf8gqoDe1O7qs2Bs/d/4Ec12c7xDFoUm.y4RRDJ56', '1985-10-05', 'Femenino', 112, '958273481', 1, 0, NULL, 1),
+('Christian', 'Flores Salas', '70710914', 'thebrunogamer319@gmail.com', '$2a$10$20YUOu2LptOEyVqzMPMFTe89SyEjse/AoPemO2Ii8pjTyWi.MuI7O', '2000-08-22', 'Masculino', 207, '912314200', 1, 0, NULL, 3),
+('Juan', 'Perez Salazar', '05426318', 'juanperez1@gmail.com', '$2a$10$VtJjKbq6zCr6x5dMtpap/usJLqIG.aZmBr1HuE7lUYxiU16EzLPe6', '1990-05-10', 'Masculino', 101, '949412710', 1, 0, NULL, 2),
+('Ricardo', 'Diaz', '09421574', 'ricardo.diaz@gmail.com', '$2a$10$Hi5bZ9HdIscZPFRvJqp3sOet2yFrAPUcr9LmTbEzZsYJZLwVeuIK6', '1997-02-15', 'Masculino', 318, '964235869', 1, 0, NULL, 1),
+('Rosa', 'Navarro Espinoza', '05426137', 'navarrorosae@gmail.com', '$2a$10$c2WH7Bp2/U9shf8gqoDe1O7qs2Bs/d/4Ec12c7xDFoUm.y4RRDJ56', '1985-10-05', 'Femenino', 112, '958273481', 0, 0, NULL, 1),
 ('Sofia', 'Paredes Cruzado', '07215496', 'sofia.pcruzado@gmail.com', '$2a$10$nHjWbhnlHNWTTkvmJNCBBecKL12VJ1NBkPgH1dMeLf4sL7OzI0h92', '1998-03-19', 'Femenino', 216, '829384712', 1, 0, NULL, 1);
 
 -- ============================================

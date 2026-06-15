@@ -36,7 +36,4 @@ public class HistorialUsuario {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario_creador", nullable = false)
     private Usuario usuarioCreador; // El administrador autenticado que ejecutó la acción (OWASP)
-
-    @Column(name = "fecha_registro", nullable = false, updatable = false)
-    private LocalDateTime fechaRegistro;
 }
