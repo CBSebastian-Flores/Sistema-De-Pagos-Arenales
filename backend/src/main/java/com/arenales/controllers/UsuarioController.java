@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.arenales.dto.AuditoriaRequestDTO;
 import com.arenales.dto.RestablecerFuerzaDTO;
 import com.arenales.dto.UsuarioActualizarDTO;
 import com.arenales.dto.UsuarioDTO;
@@ -35,7 +36,7 @@ public class UsuarioController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizarUsuario(@PathVariable Integer id, @RequestBody UsuarioActualizarDTO dto) {
+    public ResponseEntity<?> actualizarUsuario(@PathVariable Integer id, @Valid @RequestBody UsuarioActualizarDTO dto) {
         Usuario usuarioActualizado = usuarioService.actualizar(id, dto);
         return ResponseEntity.ok(Map.of(
                 "success", true,
@@ -43,16 +44,26 @@ public class UsuarioController {
                 "usuario", usuarioActualizado));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminarLogicamente(@PathVariable Integer id, @RequestParam(defaultValue = "Inhabilitación por desuso") String motivo) {
-        usuarioService.delete(id, motivo);
+    @PutMapping("/{id}/inhabilitar")
+    public ResponseEntity<?> inhabilitarUsuario(@PathVariable Integer id, @Valid @RequestBody AuditoriaRequestDTO dto) {
+        usuarioService.inhabilitar(id, dto.getMotivo());
         return ResponseEntity.ok(Map.of(
-                "success", true,
-                "mensaje", "El usuario ha sido deshabilitado del sistema correctamente sin perder su historial financiero."));
+            "success", true,
+            "mensaje", "El usuario ha sido deshabilitado del sistema correctamente sin perder su historial financiero."
+        ));
+    }
+
+    @PutMapping("/{id}/habilitar")
+    public ResponseEntity<?> habilitarUsuario(@PathVariable Integer id, @Valid @RequestBody AuditoriaRequestDTO dto) {
+        usuarioService.habilitar(id, dto.getMotivo());
+        return ResponseEntity.ok(Map.of(
+            "success", true,
+            "mensaje", "El usuario ha sido habilitado nuevamente en el sistema."
+        ));
     }
     
     @PutMapping("/restablecer-forzado")
-    public ResponseEntity<?> restablecerContrasenaForzado(@RequestBody RestablecerFuerzaDTO dto) {
+    public ResponseEntity<?> restablecerContrasenaForzado(@Valid @RequestBody RestablecerFuerzaDTO dto) {
         usuarioService.restablecerContrasenaForzado(dto);
         return ResponseEntity.ok(Map.of(
                 "success", true,

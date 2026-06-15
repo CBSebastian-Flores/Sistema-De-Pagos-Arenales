@@ -19,7 +19,8 @@ public interface UsuarioService {
     Usuario actualizar(Integer id, UsuarioActualizarDTO usuarioActualizarDTO);
 
     // [BACK] Endpoint de Cambio de Estado / Eliminación Lógica
-    Usuario delete(Integer id, String motivo);
+    void inhabilitar(Integer id, String motivo);
+    void habilitar(Integer id, String motivo);
 
     // [BACK] Endpoint para Restablecimiento Forzado de Contraseña
     void restablecerContrasenaForzado(RestablecerFuerzaDTO restablecerFuerzaDTO);
