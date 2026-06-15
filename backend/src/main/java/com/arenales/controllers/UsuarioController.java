@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.arenales.dto.AuditoriaRequestDTO;
 import com.arenales.dto.RestablecerFuerzaDTO;
 import com.arenales.dto.UsuarioActualizarDTO;
 import com.arenales.dto.UsuarioDTO;
@@ -43,12 +44,32 @@ public class UsuarioController {
                 "usuario", usuarioActualizado));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminarLogicamente(@PathVariable Integer id, @RequestParam(defaultValue = "Inhabilitación por desuso") String motivo) {
-        usuarioService.delete(id, motivo);
-        return ResponseEntity.ok(Map.of(
+    @PutMapping("/{id}/inhabilitar")
+    public ResponseEntity<?> inhabilitarUsuario(@PathVariable Integer id, @jakarta.validation.Valid @RequestBody AuditoriaRequestDTO dto) {
+        try {
+            usuarioService.inhabilitar(id, dto.getMotivo());
+            return ResponseEntity.ok(Map.of(
                 "success", true,
-                "mensaje", "El usuario ha sido deshabilitado del sistema correctamente sin perder su historial financiero."));
+                "mensaje", "El usuario ha sido deshabilitado del sistema correctamente sin perder su historial financiero."
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/{id}/habilitar")
+    public ResponseEntity<?> habilitarUsuario(@PathVariable Integer id, @jakarta.validation.Valid @RequestBody AuditoriaRequestDTO dto) {
+        try {
+            usuarioService.habilitar(id, dto.getMotivo());
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "mensaje", "El usuario ha sido habilitado nuevamente en el sistema."
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
     }
     
     @PutMapping("/restablecer-forzado")

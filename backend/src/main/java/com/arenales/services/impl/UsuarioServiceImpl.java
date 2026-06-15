@@ -140,15 +140,26 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     @Transactional
-    public Usuario delete(Integer id, String motivo) {
+    public void inhabilitar(Integer id, String motivo) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         Usuario admin = securityUtils.getUsuarioAutenticado();
         auditoriaService.registrarHistorialUsuario(usuario, "INHABILITAR", motivo, admin);
+        usuario.setEstado(false);
+        usuarioRepository.save(usuario);
+    }
 
-        usuario.setEstado(false); 
-        return usuarioRepository.save(usuario);
+    @Override
+    @Transactional
+    public void habilitar(Integer id, String motivo) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Usuario admin = securityUtils.getUsuarioAutenticado();
+        auditoriaService.registrarHistorialUsuario(usuario, "HABILITAR", motivo, admin);
+        usuario.setEstado(true);
+        usuarioRepository.save(usuario);
     }
 
     @Override
