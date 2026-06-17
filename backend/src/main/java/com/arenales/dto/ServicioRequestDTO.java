@@ -17,6 +17,12 @@ public class ServicioRequestDTO {
     @Size(max = 255, message = "La descripción no puede superar los 255 caracteres.")
     private String descripcion;
 
+    @NotBlank(message = "La categoría es obligatoria")
+    private String categoria; 
+
+    @NotBlank(message = "La modalidad de cobro es obligatoria")
+    private String modalidadCobro; 
+
     @NotNull(message = "El monto sugerido es obligatorio.")
     @DecimalMin(value = "0.0", inclusive = true, message = "El monto sugerido no puede ser negativo.")
     private BigDecimal precioBase;
