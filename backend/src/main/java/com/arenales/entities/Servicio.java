@@ -26,7 +26,7 @@ public class Servicio {
     @Column(name = "descripcion", length = 255)
     private String descripcion;
 
-    @Column(name = "categoria", nullable = false,length = 20)
+    @Column(name = "categoria", nullable = false, length = 20)
     private String categoria;
 
     @Column(name = "modalidad_cobro", nullable = false, length = 15)
@@ -37,5 +37,4 @@ public class Servicio {
 
     @Column(name = "estado", nullable = false)
     private Boolean estado;
-
 }
