@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.arenales.dto.DeudaDTO;
+import com.arenales.dto.DeudaRequestDTO;
 
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +21,7 @@ public class DeudaController {
     private DeudaService deudaService;
 
     @PostMapping("/publicar-masivo")
-    public ResponseEntity<?> publicarDeudaMasiva(@Valid @RequestBody DeudaDTO dto) {
+    public ResponseEntity<?> publicarDeudaMasiva(@Valid @RequestBody DeudaRequestDTO dto) {
         deudaService.publicarDeudaMasiva(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                 "success", true,

@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.Data;
 
 @Data
-public class DeudaDTO {
+public class DeudaRequestDTO {
 
     @NotNull(message = "El ID del servicio es obligatorio.")
     private Integer idServicio;

@@ -13,8 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.arenales.dto.ReniecResponseDTO;
 import com.arenales.dto.RestablecerFuerzaDTO;
 import com.arenales.dto.UsuarioActualizarDTO;
-import com.arenales.dto.UsuarioDTO;
-import com.arenales.dto.UsuarioListadoDTO;
+import com.arenales.dto.UsuarioRequestDTO;
+import com.arenales.dto.UsuarioResponseDTO;
 import com.arenales.entities.Rol;
 import com.arenales.entities.Usuario;
 import com.arenales.repositories.RolRepository;
@@ -45,9 +45,9 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UsuarioListadoDTO> listarTodos() {
+    public List<UsuarioResponseDTO> listarTodos() {
         return usuarioRepository.findAll().stream().map(user -> {
-            UsuarioListadoDTO dto = new UsuarioListadoDTO();
+            UsuarioResponseDTO dto = new UsuarioResponseDTO();
             dto.setIdUsuario(user.getIdUsuario());
             dto.setDni(user.getDni());
             dto.setNombres(user.getNombres());
@@ -66,7 +66,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     @Transactional
-    public Usuario registrarUsuario(UsuarioDTO dto) {
+    public Usuario registrarUsuario(UsuarioRequestDTO dto) {
         ReniecResponseDTO dataReniec = reniecService.obtenerDatosCompletosDni(dto.getDni());
         if (dataReniec == null) {
             throw new RuntimeException("El DNI ingresado no es válido o no existe en los registros oficiales de la RENIEC.");

@@ -1,6 +1,6 @@
 package com.arenales.services.impl;
 
-import com.arenales.dto.RolDTO;
+import com.arenales.dto.RolResponseDTO;
 import com.arenales.entities.Rol;
 import com.arenales.repositories.RolRepository;
 import com.arenales.services.RolService;
@@ -16,13 +16,13 @@ public class RolServiceImpl implements RolService {
     private RolRepository rolRepository;
 
     @Override
-    public List<RolDTO> listarRoles() {
+    public List<RolResponseDTO> listarRoles() {
         // Extraemos las entidades puras de SQL Server
         List<Rol> rolesEntidad = rolRepository.findAll();
 
         // Mapeamos y limpiamos los datos transformándolos a DTO
         return rolesEntidad.stream().map(rol -> {
-            RolDTO dto = new RolDTO();
+            RolResponseDTO dto = new RolResponseDTO();
             dto.setIdRol(rol.getIdRol());
             dto.setTipoRol(rol.getTipoRol());
             return dto;

@@ -1,6 +1,6 @@
 package com.arenales.controllers;
 
-import com.arenales.dto.RolDTO;
+import com.arenales.dto.RolResponseDTO;
 import com.arenales.services.RolService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -31,9 +31,9 @@ public class RolController {
     })
 
     @GetMapping
-    public ResponseEntity<List<RolDTO>> listarRoles() {
+    public ResponseEntity<List<RolResponseDTO>> listarRoles() {
         // Llamamos al servicio que extrae de SQL Server y limpia los datos en el DTO
-        List<RolDTO> roles = rolService.listarRoles();
+        List<RolResponseDTO> roles = rolService.listarRoles();
 
         // Retornamos la lista con el Status Code 200 OK nativo
         return ResponseEntity.ok(roles);

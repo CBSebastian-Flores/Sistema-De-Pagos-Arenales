@@ -1,9 +1,9 @@
 package com.arenales.services;
 
-import com.arenales.dto.RolDTO;
+import com.arenales.dto.RolResponseDTO;
 
 import java.util.List;
 
 public interface RolService {
-    List<RolDTO> listarRoles();
+    List<RolResponseDTO> listarRoles();
 }

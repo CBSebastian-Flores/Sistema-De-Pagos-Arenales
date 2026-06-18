@@ -1,6 +1,6 @@
 package com.arenales.services.impl;
 
-import com.arenales.dto.DeudaDTO;
+import com.arenales.dto.DeudaRequestDTO;
 import com.arenales.entities.Deuda;
 import com.arenales.entities.Servicio;
 import com.arenales.entities.Usuario;
@@ -38,7 +38,7 @@ public class DeudaServiceImpl implements DeudaService {
 
     @Override
     @Transactional
-    public void publicarDeudaMasiva(DeudaDTO dto) {
+    public void publicarDeudaMasiva(DeudaRequestDTO dto) {
 
         Servicio servicio = servicioRepository.findById(dto.getIdServicio())
                 .orElseThrow(() -> new RuntimeException("Servicio no encontrado con ID: " + dto.getIdServicio()));

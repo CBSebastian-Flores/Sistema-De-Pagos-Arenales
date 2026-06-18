@@ -14,7 +14,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class UsuarioDTO {
+public class UsuarioRequestDTO {
     @JsonProperty("nombres")
     @NotBlank(message = "El nombre no puede estar vacío")
     private String nombres;

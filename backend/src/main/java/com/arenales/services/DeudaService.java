@@ -1,7 +1,7 @@
 package com.arenales.services;
 
-import com.arenales.dto.DeudaDTO;
+import com.arenales.dto.DeudaRequestDTO;
 
 public interface DeudaService {
-    void publicarDeudaMasiva(DeudaDTO dto);
+    void publicarDeudaMasiva(DeudaRequestDTO dto);
 }

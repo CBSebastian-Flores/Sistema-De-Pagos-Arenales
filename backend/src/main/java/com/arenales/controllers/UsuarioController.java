@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import com.arenales.dto.AuditoriaRequestDTO;
 import com.arenales.dto.RestablecerFuerzaDTO;
 import com.arenales.dto.UsuarioActualizarDTO;
-import com.arenales.dto.UsuarioDTO;
-import com.arenales.dto.UsuarioListadoDTO;
+import com.arenales.dto.UsuarioRequestDTO;
+import com.arenales.dto.UsuarioResponseDTO;
 import com.arenales.entities.Usuario;
 import com.arenales.services.UsuarioService;
 
@@ -26,13 +26,13 @@ public class UsuarioController {
     private UsuarioService usuarioService;
 
     @GetMapping("/listar")
-    public ResponseEntity<List<UsuarioListadoDTO>> listarUsuarios() {
+    public ResponseEntity<List<UsuarioResponseDTO>> listarUsuarios() {
         return ResponseEntity.ok(usuarioService.listarTodos());
     }
 
     @PostMapping("/registrar")
-    public ResponseEntity<?> registrarUsuario(@Valid @RequestBody UsuarioDTO usuarioDTO) {
-        return new ResponseEntity<>(usuarioService.registrarUsuario(usuarioDTO), HttpStatus.CREATED);
+    public ResponseEntity<?> registrarUsuario(@Valid @RequestBody UsuarioRequestDTO usuarioRequestDTO) {
+        return new ResponseEntity<>(usuarioService.registrarUsuario(usuarioRequestDTO), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
