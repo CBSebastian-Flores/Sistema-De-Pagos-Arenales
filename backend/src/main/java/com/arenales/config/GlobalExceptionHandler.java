@@ -39,4 +39,14 @@ public class GlobalExceptionHandler {
                         "error", "Ocurrió un error interno e inesperado en el servidor."
                 ));
     }
+
+    // CAPTURA ERRORES GENÉRICOS / INESPERADOS (Caídas de BD o excepciones de sistema)
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> manejarIllegalArgument(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(
+                        "success", false,
+                        "error", ex.getMessage() // Escupe directo: "El precioBase para un servicio FIJO..."
+                ));
+    }
 }

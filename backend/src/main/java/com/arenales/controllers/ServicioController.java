@@ -1,5 +1,6 @@
 package com.arenales.controllers;
 
+import com.arenales.dto.AuditoriaRequestDTO;
 import com.arenales.dto.ServicioRequestDTO;
 import com.arenales.dto.ServicioResponseDTO;
 import com.arenales.services.ServicioService;
@@ -38,25 +39,32 @@ public class ServicioController {
 
     // Crear un nuevo concepto de cobro (Con control de error manual)
     @PostMapping("/crear")
-    public ResponseEntity<?> crear(@Valid @RequestBody ServicioRequestDTO dto) {
-        ServicioResponseDTO nuevoServicio = servicioService.crear(dto);
-        return new ResponseEntity<>(nuevoServicio, HttpStatus.CREATED);
+    public ResponseEntity<ServicioResponseDTO> crear(@Valid @RequestBody ServicioRequestDTO dto) {
+        return new ResponseEntity<>(servicioService.crear(dto), HttpStatus.CREATED);
     }
 
     // Actualizar los datos de un servicio existente (Con control de error manual)
     @PutMapping("/actualizar/{id}")
-    public ResponseEntity<?> actualizar(@PathVariable Integer id, @Valid @RequestBody ServicioRequestDTO dto) {
-        ServicioResponseDTO actualizado = servicioService.actualizar(id, dto);
-        return ResponseEntity.ok(actualizado);
+    public ResponseEntity<ServicioResponseDTO> actualizar(@PathVariable Integer id,
+            @Valid @RequestBody ServicioRequestDTO dto) {
+        return ResponseEntity.ok(servicioService.actualizar(id, dto));
     }
 
     // Eliminación lógica / Inhabilitar servicio (Con control de error manual)
-    @DeleteMapping("/inhabilitar/{id}")
-    public ResponseEntity<?> inhabilitarLogico(@PathVariable Integer id,@RequestParam(defaultValue = "Inhabilitación por desuso") String motivo) {
-        servicioService.inhabilitarLogico(id, motivo);
+
+    @PutMapping("/{id}/inhabilitar")
+    public ResponseEntity<?> inhabilitar(@PathVariable Integer id, @Valid @RequestBody AuditoriaRequestDTO dto) {
+        servicioService.inhabilitar(id, dto.getMotivo());
         return ResponseEntity.ok(Map.of(
                 "success", true,
-                "mensaje", "El servicio ha sido inhabilitado correctamente en el sistema."
-        ));
+                "mensaje", "El servicio ha sido inhabilitado correctamente en el sistema."));
+    }
+
+    @PutMapping("/{id}/habilitar")
+    public ResponseEntity<?> habilitar(@PathVariable Integer id, @Valid @RequestBody AuditoriaRequestDTO dto) {
+        servicioService.habilitar(id, dto.getMotivo());
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "mensaje", "El servicio ha sido habilitado correctamente en el sistema."));
     }
 }

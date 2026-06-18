@@ -12,10 +12,10 @@ import com.arenales.services.AuditoriaService;
 import com.arenales.services.ServicioService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,6 +41,8 @@ public class ServicioServiceImpl implements ServicioService {
                         s.getIdServicio(),
                         s.getNombreServicio(),
                         s.getDescripcion(),
+                        s.getCategoria(),
+                        s.getModalidadCobro(),
                         s.getPrecioBase(),
                         s.getEstado()))
                 .collect(Collectors.toList());
@@ -54,6 +56,8 @@ public class ServicioServiceImpl implements ServicioService {
                         s.getIdServicio(),
                         s.getNombreServicio(),
                         s.getDescripcion(),
+                        s.getCategoria(),
+                        s.getModalidadCobro(),
                         s.getPrecioBase(),
                         s.getEstado()))
                 .collect(Collectors.toList());
@@ -69,6 +73,8 @@ public class ServicioServiceImpl implements ServicioService {
                 servicio.getIdServicio(),
                 servicio.getNombreServicio(),
                 servicio.getDescripcion(),
+                servicio.getCategoria(),
+                servicio.getModalidadCobro(),
                 servicio.getPrecioBase(),
                 servicio.getEstado());
     }
@@ -80,8 +86,20 @@ public class ServicioServiceImpl implements ServicioService {
         Servicio nuevoServicio = new Servicio();
         nuevoServicio.setNombreServicio(dto.getNombreServicio());
         nuevoServicio.setDescripcion(dto.getDescripcion());
-        nuevoServicio.setPrecioBase(dto.getPrecioBase());
+        nuevoServicio.setCategoria(dto.getCategoria());
+        nuevoServicio.setModalidadCobro(dto.getModalidadCobro());
         nuevoServicio.setEstado(true);
+
+        if ("FIJO".equalsIgnoreCase(dto.getModalidadCobro())) {
+            if (dto.getPrecioBase() == null || dto.getPrecioBase().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalArgumentException("El precioBase para un servicio FIJO debe ser estrictamente mayor a 0.");
+            }
+            nuevoServicio.setPrecioBase(dto.getPrecioBase());
+        } else if ("VARIABLE".equalsIgnoreCase(dto.getModalidadCobro())) {
+            nuevoServicio.setPrecioBase(BigDecimal.ZERO);
+        } else {
+            nuevoServicio.setPrecioBase(dto.getPrecioBase());
+        }
 
         Servicio servicioGuardado = servicioRepository.save(nuevoServicio);
 
@@ -94,6 +112,8 @@ public class ServicioServiceImpl implements ServicioService {
                 servicioGuardado.getIdServicio(),
                 servicioGuardado.getNombreServicio(),
                 servicioGuardado.getDescripcion(),
+                servicioGuardado.getCategoria(),
+                servicioGuardado.getModalidadCobro(),
                 servicioGuardado.getPrecioBase(),
                 servicioGuardado.getEstado());
     }
@@ -113,7 +133,19 @@ public class ServicioServiceImpl implements ServicioService {
         // Aplicar los cambios y guardar
         servicio.setNombreServicio(dto.getNombreServicio());
         servicio.setDescripcion(dto.getDescripcion());
-        servicio.setPrecioBase(dto.getPrecioBase());
+        servicio.setCategoria(dto.getCategoria());
+        servicio.setModalidadCobro(dto.getModalidadCobro());
+
+        if ("FIJO".equalsIgnoreCase(dto.getModalidadCobro())) {
+            if (dto.getPrecioBase() == null || dto.getPrecioBase().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalArgumentException("El precioBase para un servicio FIJO debe ser estrictamente mayor a 0.");
+            }
+            servicio.setPrecioBase(dto.getPrecioBase());
+        } else if ("VARIABLE".equalsIgnoreCase(dto.getModalidadCobro())) {
+            servicio.setPrecioBase(BigDecimal.ZERO);
+        } else {
+            servicio.setPrecioBase(dto.getPrecioBase());
+        }
 
         Servicio actualizado = servicioRepository.save(servicio);
 
@@ -121,24 +153,33 @@ public class ServicioServiceImpl implements ServicioService {
                 actualizado.getIdServicio(),
                 actualizado.getNombreServicio(),
                 actualizado.getDescripcion(),
+                actualizado.getCategoria(),
+                actualizado.getModalidadCobro(),
                 actualizado.getPrecioBase(),
                 actualizado.getEstado());
     }
 
     @Override
     @Transactional
-    public void inhabilitarLogico(Integer id, String motivo) {
+    public void inhabilitar(Integer id, String motivo) {
         Servicio servicio = servicioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Servicio no encontrado con ID: " + id));
 
-        // Extraer el Administrador logueado
         Usuario admin = securityUtils.getUsuarioAutenticado();
-
-        // Antes de cambiar el estado a false
         auditoriaService.registrarHistorialServicio(servicio, "INHABILITAR", motivo, admin);
-
-        // Aplicar la inhabilitación lógica
         servicio.setEstado(false);
+        servicioRepository.save(servicio);
+    }
+
+    @Override
+    @Transactional
+    public void habilitar(Integer id, String motivo) {
+        Servicio servicio = servicioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Servicio no encontrado con ID: " + id));
+
+        Usuario admin = securityUtils.getUsuarioAutenticado();
+        auditoriaService.registrarHistorialServicio(servicio, "HABILITAR", motivo, admin);
+        servicio.setEstado(true);
         servicioRepository.save(servicio);
     }
 }
