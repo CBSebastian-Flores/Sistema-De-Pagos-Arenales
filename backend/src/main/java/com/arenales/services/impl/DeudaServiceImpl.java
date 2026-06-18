@@ -6,8 +6,10 @@ import com.arenales.entities.Servicio;
 import com.arenales.entities.Usuario;
 import com.arenales.services.DeudaService;
 
+import com.arenales.config.SecurityUtils;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,45 +33,47 @@ public class DeudaServiceImpl implements DeudaService {
     @Autowired
     private ServicioRepository servicioRepository;
 
+    @Autowired
+    private SecurityUtils securityUtils;
+
     @Override
     @Transactional
     public void publicarDeudaMasiva(DeudaDTO dto) {
 
-        Servicio servicio = servicioRepository.findById(dto.getIdServicio().intValue())
+        Servicio servicio = servicioRepository.findById(dto.getIdServicio())
                 .orElseThrow(() -> new RuntimeException("Servicio no encontrado con ID: " + dto.getIdServicio()));
 
-        
         if ("VARIABLE".equalsIgnoreCase(servicio.getModalidadCobro())) {
-            
+            throw new IllegalArgumentException("No se puede emitir una deuda masiva uniforme para servicios con modalidad VARIABLE (Luz/Agua). Debe ser registro individual.");
         }
 
-        Usuario creador = usuarioRepository.findById(dto.getIdUsuarioCreador().intValue())
-                .orElseThrow(() -> new RuntimeException("Usuario creador no encontrado con ID: " + dto.getIdUsuarioCreador()));
+        // el autor sale del token JWT del Administrador logueado
+        Usuario creador = securityUtils.getUsuarioAutenticado();
 
-        List<Usuario> usuariosActivos = usuarioRepository.findAll().stream()
-                .filter(u -> u.getEstado() != null && u.getEstado()) // true = Estado 1 (Activo)
-                .toList();
+        // Consulta filtrada directo desde SQL Server
+        List<Usuario> usuariosActivos = usuarioRepository.findByEstadoTrue();
 
         if (usuariosActivos.isEmpty()) {
-            throw new RuntimeException("No se encontraron usuarios activos en el sistema para asignarles la deuda.");
+            throw new RuntimeException("No se encontraron usuarios activos en el sistema para asignarles la deudas.");
         }
 
         List<Deuda> listaDeudas = new ArrayList<>();
 
-        
         for (Usuario comerciante : usuariosActivos) {
             Deuda deuda = new Deuda();
-            
             deuda.setServicio(servicio);
-            deuda.setMontoBase(dto.getMontoCuotaSocio()); 
-            deuda.setFechaEmision(dto.getFechaEmision()); 
-            deuda.setUsuarioCreador(creador);             
-            
-            deuda.setUsuarioSocio(comerciante);          
-            deuda.setMora(BigDecimal.ZERO);              
-            deuda.setEstadoDeuda("Pendiente");           
-            deuda.setFechaVencimiento(dto.getFechaEmision().plusMonths(1));
-            
+            deuda.setMontoBase(dto.getMontoCuotaSocio());
+            deuda.setFechaEmision(dto.getFechaEmision());
+            deuda.setUsuarioCreador(creador);
+            deuda.setUsuarioSocio(comerciante);
+            deuda.setMora(BigDecimal.ZERO);
+            deuda.setEstadoDeuda("Pendiente");
+            LocalDate vencimiento = (dto.getFechaVencimiento() != null)
+                    ? dto.getFechaVencimiento()
+                    : dto.getFechaEmision().plusMonths(1);
+
+            deuda.setFechaVencimiento(vencimiento);
+
             listaDeudas.add(deuda);
         }
 

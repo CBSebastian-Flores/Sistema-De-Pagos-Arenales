@@ -10,7 +10,7 @@ import lombok.Data;
 public class DeudaDTO {
 
     @NotNull(message = "El ID del servicio es obligatorio.")
-    private Long idServicio;
+    private Integer idServicio;
 
     @NotNull(message = "El monto de la cuota del socio es obligatorio.")
     @Positive(message = "El monto de la cuota debe ser estrictamente mayor a 0.")
@@ -19,7 +19,6 @@ public class DeudaDTO {
     @NotNull(message = "La fecha de emisión es obligatoria.")
     private LocalDate fechaEmision;
 
-    @NotNull(message = "El ID del usuario creador es obligatorio.")
-    private Long idUsuarioCreador;
-
+    @NotNull(message = "La fecha de vencimiento es obligatoria.")
+    private LocalDate fechaVencimiento;
 }

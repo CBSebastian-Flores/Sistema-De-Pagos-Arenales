@@ -50,27 +50,19 @@ public class SecurityConfig {
                                 "/webjars/**")
                         .permitAll()
 
+                        // 3. ROLES Y USUARIOS: Exclusivo del Administrador (El Tesorero no toca esto)
+                        .requestMatchers("/api/roles/**").hasAuthority("Administrador")
                         .requestMatchers("/api/usuarios/listar").hasAuthority("Administrador")
-                        .requestMatchers("/api/roles").hasAuthority("Administrador")
                         .requestMatchers("/api/usuarios/restablecer-forzado").hasAuthority("Administrador")
-
                         .requestMatchers(HttpMethod.PUT, "/api/usuarios/**").hasAuthority("Administrador")
                         .requestMatchers(HttpMethod.PATCH, "/api/usuarios/**").hasAuthority("Administrador")
                         .requestMatchers(HttpMethod.DELETE, "/api/usuarios/**").hasAuthority("Administrador")
 
-                        .requestMatchers("/api/pagos/**").hasAnyAuthority("Tesorero", "Administrador")
+                        // 4. SERVICIOS, DEUDAS, PAGOS Y EGRESOS: Control total compartido (Admin y Tesorero)
+                        .requestMatchers("/api/servicios/**").hasAnyAuthority("Tesorero", "Administrador")
                         .requestMatchers("/api/deudas/**").hasAnyAuthority("Tesorero", "Administrador")
+                        .requestMatchers("/api/pagos/**").hasAnyAuthority("Tesorero", "Administrador")
                         .requestMatchers("/api/egresos/**").hasAnyAuthority("Tesorero", "Administrador")
-                        
-                        .requestMatchers("/api/servicios/**").hasAnyAuthority("Socio", "Tesorero", "Administrador")
-
-                        // Control de acceso para el Mantenimiento de Servicios
-                        .requestMatchers(HttpMethod.GET, "/api/servicios/listar").hasAuthority("Administrador")
-                        .requestMatchers(HttpMethod.GET, "/api/servicios/activos").hasAuthority("Administrador")
-                        .requestMatchers(HttpMethod.GET, "/api/servicios/{id}").hasAuthority("Administrador")
-                        .requestMatchers(HttpMethod.POST, "/api/servicios/crear").hasAuthority("Administrador")
-                        .requestMatchers(HttpMethod.PUT, "/api/servicios/actualizar/**").hasAuthority("Administrador")
-                        .requestMatchers(HttpMethod.DELETE, "/api/servicios/inhabilitar/**").hasAuthority("Administrador")
 
                         .anyRequest().authenticated());
 
