@@ -126,7 +126,6 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setTelefono(dto.getTelefono());
         usuario.setNroPuesto(dto.getNroPuesto());
         usuario.setFechaNacimiento(dto.getFechaNacimiento());
-        usuario.setEstado(dto.getEstado());
 
         if (dto.getIdRol() != null) {
             Rol nuevoRol = rolRepository.findById(dto.getIdRol())

@@ -10,6 +10,5 @@ public class UsuarioActualizarDTO {
     private String telefono;
     private Integer nroPuesto;
     private Integer idRol;
-    private Boolean estado;
     private LocalDate fechaNacimiento;
 }
