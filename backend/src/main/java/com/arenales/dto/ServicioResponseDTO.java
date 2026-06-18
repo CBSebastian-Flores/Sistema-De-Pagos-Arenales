@@ -13,6 +13,8 @@ public class ServicioResponseDTO {
     private Integer idServicio;
     private String nombreServicio;
     private String descripcion;
+    private String categoria;
+    private String modalidadCobro;
     private BigDecimal precioBase;
     private Boolean estado;
 }

@@ -62,6 +62,26 @@ function CampoForm({ label, nombre, valor, onChange, error, type = "text", disab
   )
 }
 
+// ─── Campo de selección (select) reutilizable ──────────────────────────────────
+function CampoSelect({ label, nombre, valor, onChange, opciones, error }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{label}</label>
+      <select
+        value={valor}
+        onChange={(e) => onChange(nombre, e.target.value)}
+        className={`bg-[#0f1b2d] border rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors
+          ${error ? "border-red-500 focus:border-red-400" : "border-[#1e3a5f] focus:border-blue-500"}`}
+      >
+        {opciones.map((op) => (
+          <option key={op.value} value={op.value}>{op.label}</option>
+        ))}
+      </select>
+      {error && <p className="text-red-400 text-xs">{error}</p>}
+    </div>
+  )
+}
+
 // ─── Modal Crear / Editar Servicio ────────────────────────────────────────────
 function ModalServicio({ servicio, onClose, onGuardado }) {
   const esEdicion = !!servicio
@@ -69,6 +89,8 @@ function ModalServicio({ servicio, onClose, onGuardado }) {
   const [form, setForm] = useState({
     nombreServicio: servicio?.nombreServicio || "",
     descripcion: servicio?.descripcion || "",
+    categoria: servicio?.categoria || "ORDINARIO",
+    modalidadCobro: servicio?.modalidadCobro || "FIJO",
     precioBase: servicio?.precioBase !== undefined ? String(servicio.precioBase) : "",
   })
   const [errores, setErrores] = useState({})
@@ -100,6 +122,8 @@ function ModalServicio({ servicio, onClose, onGuardado }) {
     const payload = {
       nombreServicio: form.nombreServicio.trim(),
       descripcion: form.descripcion.trim() || null,
+      categoria: form.categoria,
+      modalidadCobro: form.modalidadCobro,
       precioBase: Number(form.precioBase),
     }
 
@@ -150,8 +174,35 @@ function ModalServicio({ servicio, onClose, onGuardado }) {
           error={errores.descripcion}
           placeholder="Descripción breve del servicio"
         />
+
+        {/* Categoría y Modalidad de Cobro, lado a lado */}
+        <div className="grid grid-cols-2 gap-4">
+          <CampoSelect
+            label="Categoría"
+            nombre="categoria"
+            valor={form.categoria}
+            onChange={handleChange}
+            error={errores.categoria}
+            opciones={[
+              { value: "ORDINARIO", label: "Ordinario" },
+              { value: "EXTRAORDINARIO", label: "Extraordinario" },
+            ]}
+          />
+          <CampoSelect
+            label="Modalidad de Cobro"
+            nombre="modalidadCobro"
+            valor={form.modalidadCobro}
+            onChange={handleChange}
+            error={errores.modalidadCobro}
+            opciones={[
+              { value: "FIJO", label: "Fijo" },
+              { value: "VARIABLE", label: "Variable" },
+            ]}
+          />
+        </div>
+
         <CampoForm
-          label="Precio Base (S/.)"
+          label={form.modalidadCobro === "VARIABLE" ? "Precio Base Referencial (S/.)" : "Precio Base (S/.)"}
           nombre="precioBase"
           valor={form.precioBase}
           onChange={handleChange}
@@ -159,6 +210,11 @@ function ModalServicio({ servicio, onClose, onGuardado }) {
           type="number"
           placeholder="0.00"
         />
+        {form.modalidadCobro === "VARIABLE" && (
+          <p className="text-xs text-gray-500 -mt-2">
+            En servicios variables, este monto es solo referencial. La cuota real se calculará a partir de la factura recibida.
+          </p>
+        )}
       </div>
 
       <div className="flex justify-end gap-3 mt-6">
@@ -187,6 +243,20 @@ function BadgeEstado({ activo }) {
       ${activo ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30" : "bg-red-500/15 text-red-400 border border-red-500/30"}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${activo ? "bg-emerald-400" : "bg-red-400"}`} />
       {activo ? "Activo" : "Inactivo"}
+    </span>
+  )
+}
+
+// ─── Badge de Modalidad de Cobro ────────────────────────────────────────────────
+function BadgeModalidad({ modalidad }) {
+  const esFijo = modalidad === "FIJO"
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap
+      ${esFijo
+        ? "bg-blue-500/15 text-blue-400 border border-blue-500/30"
+        : "bg-amber-500/15 text-amber-400 border border-amber-500/30"}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${esFijo ? "bg-blue-400" : "bg-amber-400"}`} />
+      {esFijo ? "Fijo" : "Variable"}
     </span>
   )
 }
@@ -294,7 +364,7 @@ export default function MantenimientoServicios() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#1e3a5f] bg-[#0f1b2d]">
-                {["ID", "Nombre", "Descripción", "Precio Base", "Estado", "Acciones"].map(col => (
+                {["ID", "Nombre", "Descripción", "Modalidad", "Precio Base", "Estado", "Acciones"].map(col => (
                   <th key={col} className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">
                     {col}
                   </th>
@@ -304,7 +374,7 @@ export default function MantenimientoServicios() {
             <tbody>
               {cargando ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-16 text-gray-500">
+                  <td colSpan={7} className="text-center py-16 text-gray-500">
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
                       <span className="text-xs">Cargando servicios...</span>
@@ -313,7 +383,7 @@ export default function MantenimientoServicios() {
                 </tr>
               ) : serviciosFiltrados.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-16 text-gray-500 text-xs">
+                  <td colSpan={7} className="text-center py-16 text-gray-500 text-xs">
                     No se encontraron servicios
                   </td>
                 </tr>
@@ -327,6 +397,9 @@ export default function MantenimientoServicios() {
                     <td className="px-4 py-3 text-gray-400 font-mono text-xs">{s.idServicio}</td>
                     <td className="px-4 py-3 text-white font-medium">{s.nombreServicio}</td>
                     <td className="px-4 py-3 text-gray-400 text-xs">{s.descripcion || "—"}</td>
+                    <td className="px-4 py-3">
+                      <BadgeModalidad modalidad={s.modalidadCobro} />
+                    </td>
                     <td className="px-4 py-3 text-gray-300 text-xs font-mono">
                       S/. {Number(s.precioBase).toFixed(2)}
                     </td>

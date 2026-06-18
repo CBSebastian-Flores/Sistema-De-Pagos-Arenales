@@ -41,6 +41,8 @@ public class ServicioServiceImpl implements ServicioService {
                         s.getIdServicio(),
                         s.getNombreServicio(),
                         s.getDescripcion(),
+                        s.getCategoria(),
+                        s.getModalidadCobro(),
                         s.getPrecioBase(),
                         s.getEstado()))
                 .collect(Collectors.toList());
@@ -54,6 +56,8 @@ public class ServicioServiceImpl implements ServicioService {
                         s.getIdServicio(),
                         s.getNombreServicio(),
                         s.getDescripcion(),
+                        s.getCategoria(),
+                        s.getModalidadCobro(),
                         s.getPrecioBase(),
                         s.getEstado()))
                 .collect(Collectors.toList());
@@ -69,6 +73,8 @@ public class ServicioServiceImpl implements ServicioService {
                 servicio.getIdServicio(),
                 servicio.getNombreServicio(),
                 servicio.getDescripcion(),
+                servicio.getCategoria(),
+                servicio.getModalidadCobro(),
                 servicio.getPrecioBase(),
                 servicio.getEstado());
     }
@@ -80,6 +86,8 @@ public class ServicioServiceImpl implements ServicioService {
         Servicio nuevoServicio = new Servicio();
         nuevoServicio.setNombreServicio(dto.getNombreServicio());
         nuevoServicio.setDescripcion(dto.getDescripcion());
+        nuevoServicio.setCategoria(dto.getCategoria());
+        nuevoServicio.setModalidadCobro(dto.getModalidadCobro());
         nuevoServicio.setPrecioBase(dto.getPrecioBase());
         nuevoServicio.setEstado(true);
 
@@ -94,6 +102,8 @@ public class ServicioServiceImpl implements ServicioService {
                 servicioGuardado.getIdServicio(),
                 servicioGuardado.getNombreServicio(),
                 servicioGuardado.getDescripcion(),
+                servicioGuardado.getCategoria(),
+                servicioGuardado.getModalidadCobro(),
                 servicioGuardado.getPrecioBase(),
                 servicioGuardado.getEstado());
     }
@@ -113,6 +123,8 @@ public class ServicioServiceImpl implements ServicioService {
         // Aplicar los cambios y guardar
         servicio.setNombreServicio(dto.getNombreServicio());
         servicio.setDescripcion(dto.getDescripcion());
+        servicio.setCategoria(dto.getCategoria());
+        servicio.setModalidadCobro(dto.getModalidadCobro());
         servicio.setPrecioBase(dto.getPrecioBase());
 
         Servicio actualizado = servicioRepository.save(servicio);
@@ -121,6 +133,8 @@ public class ServicioServiceImpl implements ServicioService {
                 actualizado.getIdServicio(),
                 actualizado.getNombreServicio(),
                 actualizado.getDescripcion(),
+                actualizado.getCategoria(),
+                actualizado.getModalidadCobro(),
                 actualizado.getPrecioBase(),
                 actualizado.getEstado());
     }
