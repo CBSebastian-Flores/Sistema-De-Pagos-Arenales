@@ -72,7 +72,7 @@ export default function Sidebar({ paginaActiva, setPaginaActiva, onCerrarSesion 
                 <button
                   key={item.nombre}
                   onClick={() => setPaginaActiva(item.nombre)}
-                  className={`w-full text-left px-4 py-2 text-sm font-medium transition-colors
+                  className={`w-full text-left px-4 py-2 text-sm font-medium transition-colors cursor-pointer
                     ${paginaActiva === item.nombre
                       ? "bg-[#1e3a5f] text-white"
                       : "text-gray-300 hover:bg-[#1a2d4a] hover:text-white"
