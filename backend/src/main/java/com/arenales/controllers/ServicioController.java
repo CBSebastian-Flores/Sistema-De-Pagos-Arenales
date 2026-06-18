@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.arenales.dto.AuditoriaRequestDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -40,43 +39,25 @@ public class ServicioController {
 
     // Crear un nuevo concepto de cobro (Con control de error manual)
     @PostMapping("/crear")
-    public ResponseEntity<?> crear(@Valid @RequestBody ServicioRequestDTO dto) {
-        try {
-            ServicioResponseDTO nuevoServicio = servicioService.crear(dto);
-            return new ResponseEntity<>(nuevoServicio, HttpStatus.CREATED);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "success", false,
-                    "error", "Bad Request",
-                    "mensaje", e.getMessage()
-            ));
-        }
+    public ResponseEntity<ServicioResponseDTO> crear(@Valid @RequestBody ServicioRequestDTO dto) {
+        return new ResponseEntity<>(servicioService.crear(dto), HttpStatus.CREATED);
     }
 
     // Actualizar los datos de un servicio existente (Con control de error manual)
     @PutMapping("/actualizar/{id}")
-    public ResponseEntity<?> actualizar(@PathVariable Integer id, @Valid @RequestBody ServicioRequestDTO dto) {
-        try {
-            ServicioResponseDTO actualizado = servicioService.actualizar(id, dto);
-            return ResponseEntity.ok(actualizado);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "success", false,
-                    "error", "Bad Request",
-                    "mensaje", e.getMessage()
-            ));
-        }
+    public ResponseEntity<ServicioResponseDTO> actualizar(@PathVariable Integer id,
+            @Valid @RequestBody ServicioRequestDTO dto) {
+        return ResponseEntity.ok(servicioService.actualizar(id, dto));
     }
 
     // Eliminación lógica / Inhabilitar servicio (Con control de error manual)
-    
+
     @PutMapping("/{id}/inhabilitar")
     public ResponseEntity<?> inhabilitar(@PathVariable Integer id, @Valid @RequestBody AuditoriaRequestDTO dto) {
         servicioService.inhabilitar(id, dto.getMotivo());
         return ResponseEntity.ok(Map.of(
                 "success", true,
-                "mensaje", "El servicio ha sido inhabilitado correctamente en el sistema."
-        ));
+                "mensaje", "El servicio ha sido inhabilitado correctamente en el sistema."));
     }
 
     @PutMapping("/{id}/habilitar")
@@ -84,9 +65,6 @@ public class ServicioController {
         servicioService.habilitar(id, dto.getMotivo());
         return ResponseEntity.ok(Map.of(
                 "success", true,
-                "mensaje", "El servicio ha sido habilitado correctamente en el sistema."
-        ));
+                "mensaje", "El servicio ha sido habilitado correctamente en el sistema."));
     }
-
-
 }
