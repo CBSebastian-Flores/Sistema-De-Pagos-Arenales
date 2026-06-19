@@ -127,14 +127,11 @@ export default function ConfiguracionObligacion() {
 
     setGenerando(true);
     try {
-      // SDPA-76: el payload solo envía la Cuota por Socio ya calculada.
-      // La Factura Total fue solo un insumo para el cálculo en el frontend y se desecha aquí.
       const payload = {
         idServicio: Number(idServicio),
         montoCuotaSocio: cuotaPorSocio,
         fechaEmision,
         fechaVencimiento,
-        ...(esVariable && { facturaTotal: Number(facturaTotal) }),
       };
 
       // 🚀 Endpoint real corregido
@@ -214,7 +211,7 @@ export default function ConfiguracionObligacion() {
                 </span>
                 <span className="text-xs text-gray-500">
                   {esFijo
-                    ? "El monto se autocompleta con el precio base"
+                    ? "El monto se autocompleta con el precio base definido para este servicio"
                     : "Ingresa la factura para calcular la cuota"}
                 </span>
               </div>
