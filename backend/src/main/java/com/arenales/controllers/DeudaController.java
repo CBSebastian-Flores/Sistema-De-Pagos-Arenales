@@ -42,7 +42,7 @@ public class DeudaController {
     }
 
     @GetMapping("/pendiente")
-    @PreAuthorize("hasAnyAuthority('ROLE_COMERCIANTE', 'ROLE_ADMINISTRADOR', 'Comerciante', 'Administrador')")
+    @PreAuthorize("hasAnyAuthority('Socio', 'Administrador')")
     public ResponseEntity<List<DeudaResponseDTO>> obtenerDeudasPendientesSocio() {
         Usuario socioLogueado = securityUtils.getUsuarioAutenticado();
         Integer idSocio = socioLogueado.getIdUsuario();

@@ -83,12 +83,23 @@ public class DeudaServiceImpl implements DeudaService {
         LocalDate hoy = LocalDate.now();
 
         for (Deuda deuda : deudas) {
+            boolean seModifico = false;
+
             if (deuda.getEstadoDeuda().equalsIgnoreCase("Pendiente") && hoy.isAfter(deuda.getFechaVencimiento())) {
                 deuda.setEstadoDeuda("Vencido");
-                
-                if (deuda.getMora() == null || deuda.getMora().compareTo(BigDecimal.ZERO) == 0) {
-                    deuda.setMora(new BigDecimal("5.00")); 
+
+                BigDecimal tarifaMoraServicio = deuda.getServicio().getTarifaMora();
+                if (tarifaMoraServicio == null) {
+                    tarifaMoraServicio = new BigDecimal("10.00"); // Fallback seguro por si acaso
                 }
+
+                if (deuda.getMora() == null || deuda.getMora().compareTo(BigDecimal.ZERO) == 0) {
+                    deuda.setMora(tarifaMoraServicio);
+                }
+                seModifico = true;
+            }
+
+            if (seModifico) {
                 deudaRepository.save(deuda);
             }
 
