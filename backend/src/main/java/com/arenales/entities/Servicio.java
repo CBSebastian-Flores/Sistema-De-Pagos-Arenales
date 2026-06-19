@@ -40,9 +40,4 @@ public class Servicio {
 
     @Column(name = "estado", nullable = false)
     private Boolean estado;
-<<<<<<< HEAD
 }
-=======
-
-}
->>>>>>> bc7b24b45545921fb73e25405bb1d88a618637d2
