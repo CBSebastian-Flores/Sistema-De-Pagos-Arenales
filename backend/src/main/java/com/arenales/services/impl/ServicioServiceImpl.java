@@ -91,6 +91,7 @@ public class ServicioServiceImpl implements ServicioService {
         nuevoServicio.setDescripcion(dto.getDescripcion());
         nuevoServicio.setCategoria(dto.getCategoria());
         nuevoServicio.setModalidadCobro(dto.getModalidadCobro());
+        nuevoServicio.setTarifaMora(dto.getTarifaMora());
         nuevoServicio.setEstado(true);
 
         if ("FIJO".equalsIgnoreCase(dto.getModalidadCobro())) {

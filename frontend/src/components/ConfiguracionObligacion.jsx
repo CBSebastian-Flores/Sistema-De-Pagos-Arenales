@@ -160,12 +160,9 @@ export default function ConfiguracionObligacion() {
     <div className="p-6 min-h-full flex justify-center">
       <div className="w-full max-w-2xl">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white">
-            Configuración de Nueva Obligación
-          </h1>
+          <h1 className="text-2xl font-bold text-white">Configuración de Nueva Obligación</h1>
           <p className="text-gray-400 text-sm mt-1">
-            Selecciona el servicio y el sistema calculará la cuota por socio
-            automáticamente
+            Selecciona el servicio y el sistema calculará la cuota por socio automáticamente
           </p>
         </div>
 
