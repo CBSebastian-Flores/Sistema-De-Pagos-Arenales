@@ -1,24 +1,24 @@
 package com.arenales.services.impl;
 
-import com.arenales.dto.DeudaRequestDTO;
-import com.arenales.entities.Deuda;
-import com.arenales.entities.Servicio;
-import com.arenales.entities.Usuario;
-import com.arenales.services.DeudaService;
-
-import com.arenales.config.SecurityUtils;
-import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDate; // Importado correctamente en singular
 import java.util.ArrayList;
 import java.util.List;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.arenales.config.SecurityUtils;
+import com.arenales.dto.DeudaRequestDTO;
+import com.arenales.dto.DeudaResponseDTO;
+import com.arenales.entities.Deuda;
+import com.arenales.entities.Servicio;
+import com.arenales.entities.Usuario;
 import com.arenales.repositories.DeudaRepository;
-import com.arenales.repositories.UsuarioRepository;
 import com.arenales.repositories.ServicioRepository;
+import com.arenales.repositories.UsuarioRepository;
+import com.arenales.services.DeudaService;
 
 
 @Service
@@ -45,8 +45,6 @@ public class DeudaServiceImpl implements DeudaService {
 
         // el autor sale del token JWT del Administrador logueado
         Usuario creador = securityUtils.getUsuarioAutenticado();
-
-        // Consulta filtrada directo desde SQL Server
         List<Usuario> usuariosActivos = usuarioRepository.findByEstadoTrue();
 
         if (usuariosActivos.isEmpty()) {
@@ -74,5 +72,52 @@ public class DeudaServiceImpl implements DeudaService {
         }
 
         deudaRepository.saveAll(listaDeudas);
+    }
+
+    @Override
+    @Transactional
+    public List<DeudaResponseDTO> obtenerDeudasNoPagadas(Integer idUsuario) {
+        List<Deuda> deudas = deudaRepository.findDeudasNoPagadasPorUsuario(idUsuario);
+        List<DeudaResponseDTO> respuesta = new ArrayList<>();
+
+        LocalDate hoy = LocalDate.now();
+
+        for (Deuda deuda : deudas) {
+            boolean seModifico = false;
+
+            if (deuda.getEstadoDeuda().equalsIgnoreCase("Pendiente") && hoy.isAfter(deuda.getFechaVencimiento())) {
+                deuda.setEstadoDeuda("Vencido");
+
+                BigDecimal tarifaMoraServicio = deuda.getServicio().getTarifaMora();
+                if (tarifaMoraServicio == null) {
+                    tarifaMoraServicio = new BigDecimal("10.00"); // Fallback seguro por si acaso
+                }
+
+                if (deuda.getMora() == null || deuda.getMora().compareTo(BigDecimal.ZERO) == 0) {
+                    deuda.setMora(tarifaMoraServicio);
+                }
+                seModifico = true;
+            }
+
+            if (seModifico) {
+                deudaRepository.save(deuda);
+            }
+
+            BigDecimal moraValue = deuda.getMora() != null ? deuda.getMora() : BigDecimal.ZERO;
+            BigDecimal montoTotal = deuda.getMontoBase().add(moraValue);
+
+            DeudaResponseDTO dtoRes = new DeudaResponseDTO(
+                    deuda.getIdDeuda(),
+                    deuda.getServicio().getNombreServicio(), 
+                    deuda.getMontoBase(),
+                    moraValue,
+                    montoTotal,
+                    deuda.getEstadoDeuda()
+            );
+
+            respuesta.add(dtoRes);
+        }
+
+        return respuesta;
     }
 }
