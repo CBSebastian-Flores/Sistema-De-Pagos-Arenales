@@ -127,6 +127,8 @@ export default function ConfiguracionObligacion() {
 
     setGenerando(true);
     try {
+      // SDPA-76: el payload solo envía la Cuota por Socio ya calculada.
+      // La Factura Total fue solo un insumo para el cálculo en el frontend y se desecha aquí.
       const payload = {
         idServicio: Number(idServicio),
         montoCuotaSocio: cuotaPorSocio,
