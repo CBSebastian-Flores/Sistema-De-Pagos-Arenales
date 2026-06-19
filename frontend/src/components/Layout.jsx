@@ -4,6 +4,7 @@ import RegisterForm from "./RegisterForm"
 import AccesoDenegado from "./AccesoDenegado"
 import MantenimientoUsuarios from "./MantenimientoUsuarios"
 import MantenimientoServicios from "./MantenimientoServicios"
+import ConfiguracionObligacion from "./ConfiguracionObligacion"
 
 function Placeholder({ titulo }) {
   return (
@@ -17,6 +18,7 @@ const paginasRestringidas = {
   "Registro de Usuario": ["Administrador"],
   "Mantenimiento de Usuarios": ["Administrador"],
   "Mantenimiento de Servicios": ["Administrador", "Tesorero"],
+  "Generación de Pagos": ["Administrador", "Tesorero"],
 }
 
 export default function Layout({ onSubmit, onCerrarSesion }) {
@@ -36,6 +38,8 @@ export default function Layout({ onSubmit, onCerrarSesion }) {
         return <MantenimientoUsuarios />
       case "Mantenimiento de Servicios":
         return <MantenimientoServicios />
+      case "Generación de Pagos":
+        return <ConfiguracionObligacion />
       default:
         return <Placeholder titulo={paginaActiva} />
     }

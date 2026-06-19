@@ -43,10 +43,7 @@ public class DeudaServiceImpl implements DeudaService {
         Servicio servicio = servicioRepository.findById(dto.getIdServicio())
                 .orElseThrow(() -> new RuntimeException("Servicio no encontrado con ID: " + dto.getIdServicio()));
 
-        if ("VARIABLE".equalsIgnoreCase(servicio.getModalidadCobro())) {
-            throw new IllegalArgumentException("No se puede emitir una deuda masiva uniforme para servicios con modalidad VARIABLE (Luz/Agua). Debe ser registro individual.");
-        }
-
+        // el autor sale del token JWT del Administrador logueado
         Usuario creador = securityUtils.getUsuarioAutenticado();
         List<Usuario> usuariosActivos = usuarioRepository.findByEstadoTrue();
 

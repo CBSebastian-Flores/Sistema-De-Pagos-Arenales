@@ -44,6 +44,7 @@ public class ServicioServiceImpl implements ServicioService {
                         s.getCategoria(),
                         s.getModalidadCobro(),
                         s.getPrecioBase(),
+                        s.getTarifaMora(),
                         s.getEstado()))
                 .collect(Collectors.toList());
     }
@@ -59,6 +60,7 @@ public class ServicioServiceImpl implements ServicioService {
                         s.getCategoria(),
                         s.getModalidadCobro(),
                         s.getPrecioBase(),
+                        s.getTarifaMora(),
                         s.getEstado()))
                 .collect(Collectors.toList());
     }
@@ -76,6 +78,7 @@ public class ServicioServiceImpl implements ServicioService {
                 servicio.getCategoria(),
                 servicio.getModalidadCobro(),
                 servicio.getPrecioBase(),
+                servicio.getTarifaMora(),
                 servicio.getEstado());
     }
 
@@ -88,6 +91,8 @@ public class ServicioServiceImpl implements ServicioService {
         nuevoServicio.setDescripcion(dto.getDescripcion());
         nuevoServicio.setCategoria(dto.getCategoria());
         nuevoServicio.setModalidadCobro(dto.getModalidadCobro());
+        nuevoServicio.setTarifaMora(dto.getTarifaMora());
+        nuevoServicio.setPrecioBase(dto.getPrecioBase());
         nuevoServicio.setEstado(true);
 
         if ("FIJO".equalsIgnoreCase(dto.getModalidadCobro())) {
@@ -115,6 +120,7 @@ public class ServicioServiceImpl implements ServicioService {
                 servicioGuardado.getCategoria(),
                 servicioGuardado.getModalidadCobro(),
                 servicioGuardado.getPrecioBase(),
+                servicioGuardado.getTarifaMora(),
                 servicioGuardado.getEstado());
     }
 
@@ -135,6 +141,7 @@ public class ServicioServiceImpl implements ServicioService {
         servicio.setDescripcion(dto.getDescripcion());
         servicio.setCategoria(dto.getCategoria());
         servicio.setModalidadCobro(dto.getModalidadCobro());
+        servicio.setPrecioBase(dto.getPrecioBase());
 
         if ("FIJO".equalsIgnoreCase(dto.getModalidadCobro())) {
             if (dto.getPrecioBase() == null || dto.getPrecioBase().compareTo(BigDecimal.ZERO) <= 0) {
@@ -156,6 +163,7 @@ public class ServicioServiceImpl implements ServicioService {
                 actualizado.getCategoria(),
                 actualizado.getModalidadCobro(),
                 actualizado.getPrecioBase(),
+                actualizado.getTarifaMora(),
                 actualizado.getEstado());
     }
 

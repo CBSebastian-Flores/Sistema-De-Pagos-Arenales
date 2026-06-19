@@ -16,5 +16,6 @@ public class ServicioResponseDTO {
     private String categoria;
     private String modalidadCobro;
     private BigDecimal precioBase;
+    private BigDecimal tarifaMora;
     private Boolean estado;
 }
