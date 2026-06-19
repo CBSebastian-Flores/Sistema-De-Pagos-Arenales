@@ -35,6 +35,9 @@ public class Servicio {
     @Column(name = "precio_base", nullable = false)
     private BigDecimal precioBase;
 
+    @Column(name = "tarifa_mora", nullable = false)
+    private BigDecimal tarifaMora;
+
     @Column(name = "estado", nullable = false)
     private Boolean estado;
 }

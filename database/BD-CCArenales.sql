@@ -63,6 +63,7 @@ CREATE TABLE Servicio (
 	categoria VARCHAR(20) NOT NULL DEFAULT 'ORDINARIO' CHECK (categoria IN ('ORDINARIO', 'EXTRAORDINARIO')),
 	modalidad_cobro VARCHAR(15) NOT NULL DEFAULT 'FIJO'	CHECK (modalidad_cobro IN ('FIJO', 'VARIABLE')),
 	precio_base DECIMAL (10,2) NOT NULL DEFAULT 0.00,
+    tarifa_mora DECIMAL(10,2) NOT NULL DEFAULT 10.00,
     estado BIT NOT NULL DEFAULT 1,
 );
 GO

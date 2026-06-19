@@ -44,6 +44,7 @@ public class ServicioServiceImpl implements ServicioService {
                         s.getCategoria(),
                         s.getModalidadCobro(),
                         s.getPrecioBase(),
+                        s.getTarifaMora(),
                         s.getEstado()))
                 .collect(Collectors.toList());
     }
@@ -59,6 +60,7 @@ public class ServicioServiceImpl implements ServicioService {
                         s.getCategoria(),
                         s.getModalidadCobro(),
                         s.getPrecioBase(),
+                        s.getTarifaMora(),
                         s.getEstado()))
                 .collect(Collectors.toList());
     }
@@ -76,6 +78,7 @@ public class ServicioServiceImpl implements ServicioService {
                 servicio.getCategoria(),
                 servicio.getModalidadCobro(),
                 servicio.getPrecioBase(),
+                servicio.getTarifaMora(),
                 servicio.getEstado());
     }
 
@@ -115,6 +118,7 @@ public class ServicioServiceImpl implements ServicioService {
                 servicioGuardado.getCategoria(),
                 servicioGuardado.getModalidadCobro(),
                 servicioGuardado.getPrecioBase(),
+                servicioGuardado.getTarifaMora(),
                 servicioGuardado.getEstado());
     }
 
@@ -156,6 +160,7 @@ public class ServicioServiceImpl implements ServicioService {
                 actualizado.getCategoria(),
                 actualizado.getModalidadCobro(),
                 actualizado.getPrecioBase(),
+                actualizado.getTarifaMora(),
                 actualizado.getEstado());
     }
 

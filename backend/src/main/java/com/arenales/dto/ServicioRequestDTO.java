@@ -29,4 +29,8 @@ public class ServicioRequestDTO {
     @NotNull(message = "El monto sugerido es obligatorio.")
     @DecimalMin(value = "0.0", inclusive = true, message = "El monto sugerido no puede ser negativo.")
     private BigDecimal precioBase;
+
+    @NotNull(message = "La tarifa de mora es obligatoria")
+    @DecimalMin(value = "0.0", message = "La tarifa de mora no puede ser negativa")
+    private BigDecimal tarifaMora;
 }
