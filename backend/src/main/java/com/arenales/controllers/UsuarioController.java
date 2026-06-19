@@ -61,7 +61,7 @@ public class UsuarioController {
             "mensaje", "El usuario ha sido habilitado nuevamente en el sistema."
         ));
     }
-    
+
     @PutMapping("/restablecer-forzado")
     public ResponseEntity<?> restablecerContrasenaForzado(@Valid @RequestBody RestablecerFuerzaDTO dto) {
         usuarioService.restablecerContrasenaForzado(dto);
