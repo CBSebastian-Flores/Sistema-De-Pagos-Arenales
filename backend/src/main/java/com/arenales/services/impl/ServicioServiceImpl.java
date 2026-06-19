@@ -92,6 +92,7 @@ public class ServicioServiceImpl implements ServicioService {
         nuevoServicio.setCategoria(dto.getCategoria());
         nuevoServicio.setModalidadCobro(dto.getModalidadCobro());
         nuevoServicio.setTarifaMora(dto.getTarifaMora());
+        nuevoServicio.setPrecioBase(dto.getPrecioBase());
         nuevoServicio.setEstado(true);
 
         if ("FIJO".equalsIgnoreCase(dto.getModalidadCobro())) {
@@ -140,6 +141,7 @@ public class ServicioServiceImpl implements ServicioService {
         servicio.setDescripcion(dto.getDescripcion());
         servicio.setCategoria(dto.getCategoria());
         servicio.setModalidadCobro(dto.getModalidadCobro());
+        servicio.setPrecioBase(dto.getPrecioBase());
 
         if ("FIJO".equalsIgnoreCase(dto.getModalidadCobro())) {
             if (dto.getPrecioBase() == null || dto.getPrecioBase().compareTo(BigDecimal.ZERO) <= 0) {
