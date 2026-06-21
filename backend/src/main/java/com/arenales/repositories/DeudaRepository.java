@@ -12,4 +12,8 @@ public interface DeudaRepository extends JpaRepository<Deuda, Integer> {
 
     @Query("SELECT d FROM Deuda d WHERE d.usuarioSocio.idUsuario = :idUsuario AND d.estadoDeuda IN ('Pendiente', 'Vencido')")
     List<Deuda> findDeudasNoPagadasPorUsuario(@Param("idUsuario") Integer idUsuario);
+
+    @Query("SELECT d FROM Deuda d JOIN FETCH d.usuarioSocio JOIN FETCH d.servicio")
+    List<Deuda> findAllWithSocioAndServicio();
+    
 }

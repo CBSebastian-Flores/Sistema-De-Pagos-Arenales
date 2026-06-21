@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.arenales.config.SecurityUtils;
+import com.arenales.dto.DeudaDetalleTesoreriaDTO;
 import com.arenales.dto.DeudaRequestDTO;
 import com.arenales.dto.DeudaResponseDTO;
 import com.arenales.entities.Usuario;
@@ -31,7 +32,6 @@ public class DeudaController {
     @Autowired
     private SecurityUtils securityUtils;
 
-    // Endpoint existente de tus compañeros
     @PostMapping("/publicar-masivo")
     public ResponseEntity<?> publicarDeudaMasiva(@Valid @RequestBody DeudaRequestDTO dto) {
         deudaService.publicarDeudaMasiva(dto);
@@ -49,5 +49,12 @@ public class DeudaController {
         List<DeudaResponseDTO> deudasNoPagadas = deudaService.obtenerDeudasNoPagadas(idSocio);
 
         return ResponseEntity.ok(deudasNoPagadas);
+    }
+
+    @GetMapping("/general")
+    @PreAuthorize("hasAnyAuthority('ROLE_TESORERO', 'ROLE_ADMINISTRADOR', 'Tesorero', 'Administrador')")
+    public ResponseEntity<List<DeudaDetalleTesoreriaDTO>> obtenerReporteGeneralDeudas() {
+        List<DeudaDetalleTesoreriaDTO> reporte = deudaService.obtenerReporteGeneralDeudas();
+        return ResponseEntity.ok(reporte);
     }
 }
