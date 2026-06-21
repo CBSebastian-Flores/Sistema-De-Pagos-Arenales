@@ -2,6 +2,7 @@ package com.arenales.services.impl;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,10 +14,13 @@ import com.arenales.config.SecurityUtils;
 import com.arenales.dto.DeudaDetalleTesoreriaDTO;
 import com.arenales.dto.DeudaRequestDTO;
 import com.arenales.dto.DeudaResponseDTO; 
+import com.arenales.dto.PagoRequestDTO;
 import com.arenales.entities.Deuda;
+import com.arenales.entities.Pago;
 import com.arenales.entities.Servicio;
 import com.arenales.entities.Usuario;
 import com.arenales.repositories.DeudaRepository;
+import com.arenales.repositories.PagoRepository;
 import com.arenales.repositories.ServicioRepository;
 import com.arenales.repositories.UsuarioRepository;
 import com.arenales.services.DeudaService;
@@ -32,6 +36,9 @@ public class DeudaServiceImpl implements DeudaService {
 
     @Autowired
     private ServicioRepository servicioRepository;
+
+    @Autowired
+    private PagoRepository pagoRepository;
 
     @Autowired
     private SecurityUtils securityUtils;
@@ -89,7 +96,7 @@ public class DeudaServiceImpl implements DeudaService {
 
                 BigDecimal tarifaMoraServicio = deuda.getServicio().getTarifaMora();
                 if (tarifaMoraServicio == null) {
-                    tarifaMoraServicio = new BigDecimal("10.00"); // Fallback seguro por si acaso
+                    tarifaMoraServicio = new BigDecimal("10.00");
                 }
 
                 if (deuda.getMora() == null || deuda.getMora().compareTo(BigDecimal.ZERO) == 0) {
@@ -164,5 +171,44 @@ public class DeudaServiceImpl implements DeudaService {
         }
 
         return respuesta;
+    }
+
+    @Override
+    @Transactional
+    public void registrarPagoDeuda(PagoRequestDTO dto) {
+        Deuda deuda = deudaRepository.findById(dto.getIdDeuda())
+                .orElseThrow(() -> new RuntimeException("Deuda no encontrada con ID: " + dto.getIdDeuda()));
+
+        if ("Pagado".equalsIgnoreCase(deuda.getEstadoDeuda())) {
+            throw new RuntimeException("Esta deuda ya se encuentra cancelada.");
+        }
+
+        Usuario tesorero = securityUtils.getUsuarioAutenticado(); 
+        if (tesorero == null) {
+            throw new RuntimeException("No se encontró una sesión de usuario válida para auditar el pago.");
+        }
+
+        LocalDateTime fechaActual = LocalDateTime.now();
+
+        long totalPagosExistentes = pagoRepository.contarTotalPagos();
+        String correlativoPAG = String.format("PAG-%03d", totalPagosExistentes + 1);
+
+        String nroOperacionFinal = (dto.getNroOperacion() != null && !dto.getNroOperacion().trim().isEmpty())
+                ? dto.getNroOperacion()
+                : correlativoPAG;
+
+        Pago nuevoPago = new Pago();
+        nuevoPago.setFechaPago(fechaActual);
+        nuevoPago.setMontoPagado(dto.getMontoPagado());
+        nuevoPago.setMetodoPago(dto.getMetodoPago());
+        nuevoPago.setNroOperacion(nroOperacionFinal);
+        nuevoPago.setVoucherUrl(dto.getVoucherUrl());
+        nuevoPago.setDeuda(deuda);
+        nuevoPago.setUsuarioTesorero(tesorero);
+
+        pagoRepository.save(nuevoPago);
+
+        deuda.setEstadoDeuda("Pagado");
+        deudaRepository.save(deuda);
     }
 }

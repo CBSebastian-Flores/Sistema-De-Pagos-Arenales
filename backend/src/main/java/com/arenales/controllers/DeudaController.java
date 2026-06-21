@@ -17,6 +17,7 @@ import com.arenales.config.SecurityUtils;
 import com.arenales.dto.DeudaDetalleTesoreriaDTO;
 import com.arenales.dto.DeudaRequestDTO;
 import com.arenales.dto.DeudaResponseDTO;
+import com.arenales.dto.PagoRequestDTO;
 import com.arenales.entities.Usuario;
 import com.arenales.services.DeudaService;
 
@@ -56,5 +57,27 @@ public class DeudaController {
     public ResponseEntity<List<DeudaDetalleTesoreriaDTO>> obtenerReporteGeneralDeudas() {
         List<DeudaDetalleTesoreriaDTO> reporte = deudaService.obtenerReporteGeneralDeudas();
         return ResponseEntity.ok(reporte);
+    }
+
+    @PostMapping("/cobrar")
+    @PreAuthorize("hasAnyAuthority('ROLE_TESORERO', 'ROLE_ADMINISTRADOR', 'Tesorero', 'Administrador')")
+    public ResponseEntity<?> registrarPagoDeuda(@Valid @RequestBody PagoRequestDTO dto) {
+        try {
+            deudaService.registrarPagoDeuda(dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                    "success", true,
+                    "mensaje", "El pago ha sido registrado con éxito y la deuda se encuentra CANCELADA."
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                    "success", false,
+                    "error", e.getMessage()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "success", false,
+                    "error", "Ocurrió un error inesperado al procesar el cobro en el sistema."
+            ));
+        }
     }
 }
