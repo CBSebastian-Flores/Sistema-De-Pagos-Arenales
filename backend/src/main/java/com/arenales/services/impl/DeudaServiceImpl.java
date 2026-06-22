@@ -135,17 +135,24 @@ public class DeudaServiceImpl implements DeudaService {
             String estadoActual = deuda.getEstadoDeuda();
             BigDecimal moraCalculada = deuda.getMora() != null ? deuda.getMora() : BigDecimal.ZERO;
 
-            if (estadoActual.equalsIgnoreCase("Pendiente") && hoy.isAfter(deuda.getFechaVencimiento())) {
+            // Lógica de Jira: Si está pendiente pero la fecha ya pasó, calcular en caliente
+            if ("Pendiente".equalsIgnoreCase(estadoActual) && hoy.isAfter(deuda.getFechaVencimiento())) {
                 estadoActual = "Vencido";
+
                 if (moraCalculada.compareTo(BigDecimal.ZERO) == 0) {
-                    BigDecimal tarifaMora = servicio.getTarifaMora() != null ? servicio.getTarifaMora() : new BigDecimal("10.00");
-                    moraCalculada = tarifaMora;
+                    // 🚀 CORRECCIÓN 1: Se elimina el 10.00 hardcodeado. Se jala directo de la BD.
+                    moraCalculada = servicio.getTarifaMora() != null ? servicio.getTarifaMora() : BigDecimal.ZERO;
                 }
             }
 
-            BigDecimal montoTotalPagar = deuda.getMontoBase().add(moraCalculada);
+            // 🚀 CORRECCIÓN 2: Blindaje contra NullPointerException en montos
+            BigDecimal montoBaseSeguro = deuda.getMontoBase() != null ? deuda.getMontoBase() : BigDecimal.ZERO;
+            BigDecimal montoTotalPagar = montoBaseSeguro.add(moraCalculada);
 
-            String nombreCompletoSocio = socio.getNombres() + " " + socio.getApellidos();
+            // Validar nulos en nombres para evitar espacios vacíos raros (ej: "null null")
+            String nombreSeguro = socio.getNombres() != null ? socio.getNombres() : "";
+            String apellidoSeguro = socio.getApellidos() != null ? socio.getApellidos() : "";
+            String nombreCompletoSocio = (nombreSeguro + " " + apellidoSeguro).trim();
 
             DeudaDetalleTesoreriaDTO dto = new DeudaDetalleTesoreriaDTO(
                     deuda.getIdDeuda(),
@@ -153,7 +160,7 @@ public class DeudaServiceImpl implements DeudaService {
                     nombreCompletoSocio,
                     String.valueOf(socio.getNroPuesto()),
                     servicio.getNombreServicio(),
-                    deuda.getMontoBase(),
+                    montoBaseSeguro,
                     moraCalculada,
                     montoTotalPagar,
                     deuda.getFechaVencimiento(),
