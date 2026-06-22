@@ -1,7 +1,7 @@
 package com.arenales.services.impl;
 
 import java.math.BigDecimal;
-import java.time.LocalDate; // Importado correctamente en singular
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,8 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.arenales.config.SecurityUtils;
+import com.arenales.dto.DeudaDetalleTesoreriaDTO;
 import com.arenales.dto.DeudaRequestDTO;
-import com.arenales.dto.DeudaResponseDTO;
+import com.arenales.dto.DeudaResponseDTO; 
 import com.arenales.entities.Deuda;
 import com.arenales.entities.Servicio;
 import com.arenales.entities.Usuario;
@@ -19,7 +20,6 @@ import com.arenales.repositories.DeudaRepository;
 import com.arenales.repositories.ServicioRepository;
 import com.arenales.repositories.UsuarioRepository;
 import com.arenales.services.DeudaService;
-
 
 @Service
 public class DeudaServiceImpl implements DeudaService {
@@ -42,8 +42,7 @@ public class DeudaServiceImpl implements DeudaService {
 
         Servicio servicio = servicioRepository.findById(dto.getIdServicio())
                 .orElseThrow(() -> new RuntimeException("Servicio no encontrado con ID: " + dto.getIdServicio()));
-
-        // el autor sale del token JWT del Administrador logueado
+                
         Usuario creador = securityUtils.getUsuarioAutenticado();
         List<Usuario> usuariosActivos = usuarioRepository.findByEstadoTrue();
 
@@ -117,6 +116,59 @@ public class DeudaServiceImpl implements DeudaService {
             );
 
             respuesta.add(dtoRes);
+        }
+
+        return respuesta;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DeudaDetalleTesoreriaDTO> obtenerReporteGeneralDeudas() {
+        List<Deuda> deudas = deudaRepository.findAllWithSocioAndServicio();
+        List<DeudaDetalleTesoreriaDTO> respuesta = new ArrayList<>();
+
+        LocalDate hoy = LocalDate.now();
+
+        for (Deuda deuda : deudas) {
+            Usuario socio = deuda.getUsuarioSocio();
+            Servicio servicio = deuda.getServicio();
+
+            String estadoActual = deuda.getEstadoDeuda();
+            BigDecimal moraCalculada = deuda.getMora() != null ? deuda.getMora() : BigDecimal.ZERO;
+
+            // Lógica de Jira: Si está pendiente pero la fecha ya pasó, calcular en caliente
+            if ("Pendiente".equalsIgnoreCase(estadoActual) && hoy.isAfter(deuda.getFechaVencimiento())) {
+                estadoActual = "Vencido";
+
+                if (moraCalculada.compareTo(BigDecimal.ZERO) == 0) {
+                    // 🚀 CORRECCIÓN 1: Se elimina el 10.00 hardcodeado. Se jala directo de la BD.
+                    moraCalculada = servicio.getTarifaMora() != null ? servicio.getTarifaMora() : BigDecimal.ZERO;
+                }
+            }
+
+            // 🚀 CORRECCIÓN 2: Blindaje contra NullPointerException en montos
+            BigDecimal montoBaseSeguro = deuda.getMontoBase() != null ? deuda.getMontoBase() : BigDecimal.ZERO;
+            BigDecimal montoTotalPagar = montoBaseSeguro.add(moraCalculada);
+
+            // Validar nulos en nombres para evitar espacios vacíos raros (ej: "null null")
+            String nombreSeguro = socio.getNombres() != null ? socio.getNombres() : "";
+            String apellidoSeguro = socio.getApellidos() != null ? socio.getApellidos() : "";
+            String nombreCompletoSocio = (nombreSeguro + " " + apellidoSeguro).trim();
+
+            DeudaDetalleTesoreriaDTO dto = new DeudaDetalleTesoreriaDTO(
+                    deuda.getIdDeuda(),
+                    socio.getDni(),
+                    nombreCompletoSocio,
+                    String.valueOf(socio.getNroPuesto()),
+                    servicio.getNombreServicio(),
+                    montoBaseSeguro,
+                    moraCalculada,
+                    montoTotalPagar,
+                    deuda.getFechaVencimiento(),
+                    estadoActual
+            );
+
+            respuesta.add(dto);
         }
 
         return respuesta;

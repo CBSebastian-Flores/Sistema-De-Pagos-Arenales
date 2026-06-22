@@ -52,7 +52,7 @@ public class Deuda {
     @JoinColumn(name = "id_usuario_creador", nullable = false)
     private Usuario usuarioCreador;
 
-    // Columna emparejada con el cambio que acabamos de hacer en SQL Server
+    // Columna emparejada con el cambio de sql server
     @Column(name = "fecha_registro_sistema", nullable = false, insertable = false, updatable = false)
     private LocalDateTime fechaRegistroSistema;
 }
