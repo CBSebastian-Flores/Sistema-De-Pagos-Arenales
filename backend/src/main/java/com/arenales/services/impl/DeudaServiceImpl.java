@@ -112,7 +112,8 @@ public class DeudaServiceImpl implements DeudaService {
                     deuda.getMontoBase(),
                     moraValue,
                     montoTotal,
-                    deuda.getEstadoDeuda()
+                    deuda.getEstadoDeuda(),
+                    deuda.getFechaVencimiento()
             );
 
             respuesta.add(dtoRes);

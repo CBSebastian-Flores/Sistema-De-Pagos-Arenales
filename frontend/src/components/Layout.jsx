@@ -5,6 +5,7 @@ import AccesoDenegado from "./AccesoDenegado"
 import MantenimientoUsuarios from "./MantenimientoUsuarios"
 import MantenimientoServicios from "./MantenimientoServicios"
 import ConfiguracionObligacion from "./ConfiguracionObligacion"
+import MisPagosPendientes from "./MisPagosPendientes"
 
 function Placeholder({ titulo }) {
   return (
@@ -40,6 +41,8 @@ export default function Layout({ onSubmit, onCerrarSesion }) {
         return <MantenimientoServicios />
       case "Generación de Pagos":
         return <ConfiguracionObligacion />
+      case "Mis Pagos Pendientes":
+        return <MisPagosPendientes />
       default:
         return <Placeholder titulo={paginaActiva} />
     }
