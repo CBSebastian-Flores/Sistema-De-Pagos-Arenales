@@ -63,7 +63,7 @@ CREATE TABLE Servicio (
 	categoria VARCHAR(20) NOT NULL DEFAULT 'ORDINARIO' CHECK (categoria IN ('ORDINARIO', 'EXTRAORDINARIO')),
 	modalidad_cobro VARCHAR(15) NOT NULL DEFAULT 'FIJO'	CHECK (modalidad_cobro IN ('FIJO', 'VARIABLE')),
 	precio_base DECIMAL (10,2) NOT NULL DEFAULT 0.00,
-    tarifa_mora DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    tarifa_mora DECIMAL(10,2) NULL,
     estado BIT NOT NULL DEFAULT 1,
 );
 GO
@@ -79,7 +79,7 @@ CREATE TABLE Deuda (
     id_servicio INT NOT NULL,
     id_usuario INT NOT NULL,
 
-	id_usuario_creador INT NOT NULL,
+	id_usuario_creador INT NULL,
 	fecha_registro_sistema DATETIME NOT NULL DEFAULT GETDATE(),
 
     -- Llaves foráneas
@@ -91,31 +91,34 @@ GO
 
 CREATE TABLE Pago (
     id_pago INT PRIMARY KEY IDENTITY(1,1),
+    codigo_pago VARCHAR(20) NOT NULL UNIQUE,
     fecha_pago DATETIME NOT NULL DEFAULT GETDATE(),
     monto_pagado DECIMAL(10,2) NOT NULL,
     metodo_pago VARCHAR(50) NOT NULL
     CHECK (metodo_pago IN ('Efectivo', 'Transferencia', 'Yape', 'Plin')),
     nro_operacion VARCHAR(100) NULL,
     voucher_url VARCHAR(255) NULL,
+
     id_deuda INT NOT NULL,
-    id_usuario_tesorero INT NOT NULL,
+    id_usuario_registro INT NOT NULL,
 
     -- Llave foránea
     CONSTRAINT FK_Pago_Deuda FOREIGN KEY (id_deuda) REFERENCES Deuda(id_deuda),
-    CONSTRAINT FK_Pago_Tesorero FOREIGN KEY (id_usuario_tesorero) REFERENCES Usuario(id_usuario)
+    CONSTRAINT FK_Pago_UsuarioRegistro FOREIGN KEY (id_usuario_registro) REFERENCES Usuario(id_usuario)
 );
 GO
 
 CREATE TABLE Egreso (
     id_egreso INT PRIMARY KEY IDENTITY(1,1),
+    codigo_egreso VARCHAR(20) NOT NULL UNIQUE,
     descripcion VARCHAR(255) NOT NULL,
     monto DECIMAL(10,2) NOT NULL,
-    fecha_gasto DATE NOT NULL,
+    fecha_gasto DATETIME NOT NULL,
     comprobante_url VARCHAR(255) NULL,
     categoria_egreso VARCHAR(100) NOT NULL,
     metodo_retiro VARCHAR(50) NOT NULL CHECK (metodo_retiro IN ('Efectivo', 'Transferencia', 'Yape', 'Plin')),
     beneficiario VARCHAR(150) NOT NULL,
-    id_usuario INT NOT NULL,
+    id_usuario_registro INT NOT NULL,
 
     -- Llave foránea
     CONSTRAINT FK_Egreso_Usuario FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario)

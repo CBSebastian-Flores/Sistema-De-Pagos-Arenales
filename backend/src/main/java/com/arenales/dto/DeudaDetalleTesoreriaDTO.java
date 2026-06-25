@@ -18,8 +18,6 @@ public class DeudaDetalleTesoreriaDTO {
     private LocalDate fechaVencimiento;
     private String estadoDeuda;
 
-    public DeudaDetalleTesoreriaDTO() {}
-
     public DeudaDetalleTesoreriaDTO(Integer idDeuda, String dniSocio, String nombreCompletoSocio, 
                                     String numeroPuesto, String nombreServicio, BigDecimal montoBase, 
                                     BigDecimal mora, BigDecimal montoTotalPagar, LocalDate fechaVencimiento, 
