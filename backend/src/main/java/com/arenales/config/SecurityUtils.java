@@ -15,6 +15,6 @@ public class SecurityUtils {
     public Usuario getUsuarioAutenticado() {
         String dniAdmin = SecurityContextHolder.getContext().getAuthentication().getName();
         return usuarioRepository.findByDni(dniAdmin)
-                .orElseThrow(() -> new RuntimeException("Administrador no encontrado en la sesión activa."));
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado en la sesión activa."));
     }
 }

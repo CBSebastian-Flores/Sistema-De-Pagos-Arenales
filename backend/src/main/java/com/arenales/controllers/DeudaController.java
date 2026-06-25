@@ -42,7 +42,7 @@ public class DeudaController {
     }
 
     @GetMapping("/pendiente")
-    @PreAuthorize("hasAnyAuthority('Socio', 'Administrador')")
+    @PreAuthorize("hasAnyAuthority('Socio', 'Administrador', 'Tesorero')")
     public ResponseEntity<List<DeudaResponseDTO>> obtenerDeudasPendientesSocio() {
         Usuario socioLogueado = securityUtils.getUsuarioAutenticado();
         Integer idSocio = socioLogueado.getIdUsuario();
@@ -52,7 +52,7 @@ public class DeudaController {
     }
 
     @GetMapping("/general")
-    @PreAuthorize("hasAnyAuthority('ROLE_TESORERO', 'ROLE_ADMINISTRADOR', 'Tesorero', 'Administrador')")
+    @PreAuthorize("hasAnyAuthority('Tesorero', 'Administrador')")
     public ResponseEntity<List<DeudaDetalleTesoreriaDTO>> obtenerReporteGeneralDeudas() {
         List<DeudaDetalleTesoreriaDTO> reporte = deudaService.obtenerReporteGeneralDeudas();
         return ResponseEntity.ok(reporte);

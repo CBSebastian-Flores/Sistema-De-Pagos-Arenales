@@ -6,7 +6,6 @@ const menuItems = [
     items: [
       { nombre: "Mis Pagos Pendientes", roles: ["ADMINISTRADOR", "SOCIO", "TESORERO"] },
       { nombre: "Mi Historial de Pagos", roles: ["ADMINISTRADOR", "SOCIO", "TESORERO"] },
-      { nombre: "Estado de Cuenta", roles: ["ADMINISTRADOR", "SOCIO"] },
     ],
   },
   {
