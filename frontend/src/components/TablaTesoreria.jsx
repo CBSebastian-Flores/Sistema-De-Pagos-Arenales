@@ -1,25 +1,29 @@
-import { useState, useEffect } from "react"
-import api from "../services/axiosConfig"
-import { toast } from "react-toastify"
+import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
+import { obtenerReporteGeneral } from "../services/deudaService";
 
 export default function TablaTesoreria() {
-  const [deudas, setDeudas] = useState([])
-  const [cargando, setCargando] = useState(true)
+  const [deudas, setDeudas] = useState([]);
+  const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
     const cargarDeudas = async () => {
       try {
-        const res = await api.get("/api/deudas/general")
-        setDeudas(res.data)
+        const data = await obtenerReporteGeneral();
+        setDeudas(data);
       } catch (error) {
-        console.error("ERROR AL CARGAR DEUDAS:", error.response?.status, error.response?.data)
-        toast.error("No se pudieron cargar las deudas")
+        console.error(
+          "ERROR AL CARGAR DEUDAS:",
+          error.response?.status,
+          error.response?.data,
+        );
+        toast.error("No se pudieron cargar las deudas");
       } finally {
-        setCargando(false)
+        setCargando(false);
       }
-    }
-    cargarDeudas()
-  }, [])
+    };
+    cargarDeudas();
+  }, []);
 
   return (
     <div className="p-6 min-h-full">
@@ -80,14 +84,17 @@ export default function TablaTesoreria() {
                 </tr>
               ) : deudas.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="text-center py-16 text-gray-400 text-xs">
+                  <td
+                    colSpan={9}
+                    className="text-center py-16 text-gray-400 text-xs"
+                  >
                     No se encontraron deudas registradas.
                   </td>
                 </tr>
               ) : (
                 deudas.map((d, i) => {
-                  const esVencido = d.estadoDeuda?.toUpperCase() === "VENCIDO"
-                  const esPagado = d.estadoDeuda?.toUpperCase() === "PAGADO"
+                  const esVencido = d.estadoDeuda?.toUpperCase() === "VENCIDO";
+                  const esPagado = d.estadoDeuda?.toUpperCase() === "PAGADO";
 
                   return (
                     <tr
@@ -110,7 +117,9 @@ export default function TablaTesoreria() {
                       <td className="px-4 py-3 text-gray-300 font-mono">
                         S/. {Number(d.montoBase).toFixed(2)}
                       </td>
-                      <td className={`px-4 py-3 font-mono ${Number(d.mora) > 0 ? "text-red-400 font-semibold" : "text-gray-500"}`}>
+                      <td
+                        className={`px-4 py-3 font-mono ${Number(d.mora) > 0 ? "text-red-400 font-semibold" : "text-gray-500"}`}
+                      >
                         S/. {Number(d.mora).toFixed(2)}
                       </td>
                       <td className="px-4 py-3 text-emerald-400 font-mono font-bold text-base">
@@ -119,31 +128,43 @@ export default function TablaTesoreria() {
                       <td className="px-4 py-3">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider
-                          ${esPagado
-                            ? "bg-green-500/15 text-green-400 border border-green-500/30"
-                            : esVencido
-                              ? "bg-red-500/15 text-red-400 border border-red-500/30"
-                              : "bg-amber-500/15 text-amber-400 border border-amber-500/25"
+                          ${
+                            esPagado
+                              ? "bg-green-500/15 text-green-400 border border-green-500/30"
+                              : esVencido
+                                ? "bg-red-500/15 text-red-400 border border-red-500/30"
+                                : "bg-amber-500/15 text-amber-400 border border-amber-500/25"
                           }`}
                         >
-                          {esPagado ? "Pagado" : esVencido ? "Vencido" : "Pendiente"}
+                          {esPagado
+                            ? "Pagado"
+                            : esVencido
+                              ? "Vencido"
+                              : "Pendiente"}
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <button
-                          onClick={() =>
-                            toast.info(
-                              `Registrar pago para ${d.nombreCompletoSocio} — S/. ${Number(d.montoTotalPagar).toFixed(2)}`,
-                              { autoClose: 5000 }
-                            )
-                          }
-                          className="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 font-medium text-xs px-3 py-1.5 rounded transition-colors border border-emerald-600/40"
-                        >
-                          Pagar
-                        </button>
+                        {/* 🚀 CORRECCIÓN 2: Lógica condicional para el botón de Pagar */}
+                        {esPagado ? (
+                          <span className="text-gray-500 text-xs font-semibold select-none">
+                            Cancelado
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() =>
+                              toast.info(
+                                `Registrar pago para ${d.nombreCompletoSocio} — S/. ${Number(d.montoTotalPagar).toFixed(2)}`,
+                                { autoClose: 5000 },
+                              )
+                            }
+                            className="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 font-medium text-xs px-3 py-1.5 rounded transition-colors border border-emerald-600/40"
+                          >
+                            Pagar
+                          </button>
+                        )}
                       </td>
                     </tr>
-                  )
+                  );
                 })
               )}
             </tbody>
@@ -160,5 +181,5 @@ export default function TablaTesoreria() {
         </div>
       )}
     </div>
-  )
+  );
 }
