@@ -120,8 +120,8 @@ CREATE TABLE Egreso (
     beneficiario VARCHAR(150) NOT NULL,
     id_usuario_registro INT NOT NULL,
 
-    -- Llave foránea
-    CONSTRAINT FK_Egreso_Usuario FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario)
+    -- Llave foránea corregida
+    CONSTRAINT FK_Egreso_Usuario FOREIGN KEY (id_usuario_registro) REFERENCES Usuario(id_usuario)
 );
 GO
 
