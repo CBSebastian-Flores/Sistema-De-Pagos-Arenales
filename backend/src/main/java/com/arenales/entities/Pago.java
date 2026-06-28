@@ -19,11 +19,13 @@ import lombok.Data;
 @Table(name = "Pago")
 @Data
 public class Pago {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_pago")
     private Integer idPago;
+
+    @Column(name = "codigo_pago", nullable = false, unique = true, length = 20)
+    private String codigoPago;
 
     @Column(name = "fecha_pago", nullable = false, insertable = false, updatable = false)
     private LocalDateTime fechaPago;
@@ -44,7 +46,8 @@ public class Pago {
     @JoinColumn(name = "id_deuda", nullable = false, foreignKey = @ForeignKey(name = "FK_Pago_Deuda"))
     private Deuda deuda;
 
+    // 🚀 CORREGIDO: Actualizado al estándar de auditoría que definimos
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_usuario_tesorero", nullable = false, foreignKey = @ForeignKey(name = "FK_Pago_Tesorero"))
-    private Usuario usuarioTesorero;
+    @JoinColumn(name = "id_usuario_registro", nullable = false, foreignKey = @ForeignKey(name = "FK_Pago_UsuarioRegistro"))
+    private Usuario usuarioRegistro;
 }

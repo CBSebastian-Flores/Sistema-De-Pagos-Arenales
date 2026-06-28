@@ -183,28 +183,37 @@ public class DeudaServiceImpl implements DeudaService {
             throw new RuntimeException("Esta deuda ya se encuentra cancelada.");
         }
 
-        Usuario tesorero = securityUtils.getUsuarioAutenticado(); 
+        BigDecimal mora = deuda.getMora() != null ? deuda.getMora() : BigDecimal.ZERO;
+        BigDecimal totalExigido = deuda.getMontoBase().add(mora);
+
+        if (dto.getMontoPagado().compareTo(totalExigido) != 0) {
+            throw new RuntimeException("Rechazado: El monto ingresado (S/. " + dto.getMontoPagado() + ") no coincide con el total adeudado (S/. " + totalExigido + ").");
+        }
+
+        Usuario tesorero = securityUtils.getUsuarioAutenticado();
         if (tesorero == null) {
             throw new RuntimeException("No se encontró una sesión de usuario válida para auditar el pago.");
         }
 
-        LocalDateTime fechaActual = LocalDateTime.now();
-
         long totalPagosExistentes = pagoRepository.contarTotalPagos();
         String correlativoPAG = String.format("PAG-%03d", totalPagosExistentes + 1);
 
-        String nroOperacionFinal = (dto.getNroOperacion() != null && !dto.getNroOperacion().trim().isEmpty())
-                ? dto.getNroOperacion()
-                : correlativoPAG;
-
         Pago nuevoPago = new Pago();
-        nuevoPago.setFechaPago(fechaActual);
+        // nuevoPago.setFechaPago(LocalDateTime.now()); // No es necesario setearlo si en SQL le pusiste DEFAULT GETDATE()
+        nuevoPago.setCodigoPago(correlativoPAG);
         nuevoPago.setMontoPagado(dto.getMontoPagado());
         nuevoPago.setMetodoPago(dto.getMetodoPago());
-        nuevoPago.setNroOperacion(nroOperacionFinal);
-        nuevoPago.setVoucherUrl(dto.getVoucherUrl());
+        nuevoPago.setNroOperacion(dto.getNroOperacion());
         nuevoPago.setDeuda(deuda);
-        nuevoPago.setUsuarioTesorero(tesorero);
+        nuevoPago.setUsuarioRegistro(tesorero);
+
+        if ("TRANSFERENCIA".equalsIgnoreCase(dto.getMetodoPago()) && dto.getComprobante() != null && !dto.getComprobante().isEmpty()) {
+
+            // Aquí se sube la imagen a un servidor (AWS, Cloudinary o tu VPS local)
+            // String urlGenerada = storageService.subirArchivo(dto.getComprobante());
+            // nuevoPago.setVoucherUrl(urlGenerada);
+
+        }
 
         pagoRepository.save(nuevoPago);
 

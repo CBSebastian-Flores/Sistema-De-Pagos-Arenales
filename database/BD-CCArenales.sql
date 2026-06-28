@@ -98,11 +98,11 @@ CREATE TABLE Pago (
     nro_operacion VARCHAR(100) NULL,
     voucher_url VARCHAR(255) NULL,
     id_deuda INT NOT NULL,
-    id_usuario_tesorero INT NOT NULL,
+    id_usuario_registro INT NOT NULL,
 
     -- Llave foránea
     CONSTRAINT FK_Pago_Deuda FOREIGN KEY (id_deuda) REFERENCES Deuda(id_deuda),
-    CONSTRAINT FK_Pago_Tesorero FOREIGN KEY (id_usuario_tesorero) REFERENCES Usuario(id_usuario)
+    CONSTRAINT FK_Pago_UsuarioRegistro FOREIGN KEY (id_usuario_registro) REFERENCES Usuario(id_usuario)
 );
 GO
 
