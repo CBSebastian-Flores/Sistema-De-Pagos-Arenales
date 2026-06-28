@@ -6,6 +6,7 @@ import MantenimientoUsuarios from "./MantenimientoUsuarios"
 import MantenimientoServicios from "./MantenimientoServicios"
 import ConfiguracionObligacion from "./ConfiguracionObligacion"
 import MisPagosPendientes from "./MisPagosPendientes"
+import TablaTesoreria from "./TablaTesoreria"
 
 function Placeholder({ titulo }) {
   return (
@@ -20,6 +21,7 @@ const paginasRestringidas = {
   "Mantenimiento de Usuarios": ["Administrador"],
   "Mantenimiento de Servicios": ["Administrador", "Tesorero"],
   "Generación de Pagos": ["Administrador", "Tesorero"],
+  "Vista de Pagos": ["Administrador", "Tesorero"],
 }
 
 export default function Layout({ onSubmit, onCerrarSesion }) {
@@ -41,6 +43,8 @@ export default function Layout({ onSubmit, onCerrarSesion }) {
         return <MantenimientoServicios />
       case "Generación de Pagos":
         return <ConfiguracionObligacion />
+      case "Vista de Pagos":
+        return <TablaTesoreria />
       case "Mis Pagos Pendientes":
         return <MisPagosPendientes />
       default:
