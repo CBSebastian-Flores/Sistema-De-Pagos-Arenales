@@ -7,6 +7,7 @@ import MantenimientoServicios from "./MantenimientoServicios"
 import ConfiguracionObligacion from "./ConfiguracionObligacion"
 import MisPagosPendientes from "./MisPagosPendientes"
 import TablaTesoreria from "./TablaTesoreria"
+import RegistrarEgresos from "./RegistrarEgresos"
 
 function Placeholder({ titulo }) {
   return (
@@ -22,6 +23,7 @@ const paginasRestringidas = {
   "Mantenimiento de Servicios": ["Administrador", "Tesorero"],
   "Generación de Pagos": ["Administrador", "Tesorero"],
   "Vista de Pagos": ["Administrador", "Tesorero"],
+  "Registrar Egresos": ["Administrador", "Tesorero"],
 }
 
 export default function Layout({ onSubmit, onCerrarSesion }) {
@@ -47,6 +49,8 @@ export default function Layout({ onSubmit, onCerrarSesion }) {
         return <TablaTesoreria />
       case "Mis Pagos Pendientes":
         return <MisPagosPendientes />
+      case "Registrar Egresos":
+        return <RegistrarEgresos />
       default:
         return <Placeholder titulo={paginaActiva} />
     }

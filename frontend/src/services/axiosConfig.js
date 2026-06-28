@@ -3,7 +3,6 @@ import { obtenerToken, cerrarSesion } from './loginService'
 
 const api = axios.create({
   baseURL: 'http://localhost:8080/sistemapagoarenales',
-  headers: { 'Content-Type': 'application/json' },
 })
 
 // Interceptor — agrega el token automáticamente a cada petición
