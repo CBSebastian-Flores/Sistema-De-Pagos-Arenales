@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { obtenerReporteGeneral } from "../services/deudaService";
+import ModalPago from "./ModalPago";
 
 export default function TablaTesoreria() {
   const [deudas, setDeudas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [filtroEstado, setFiltroEstado] = useState("TODOS");
   const [busqueda, setBusqueda] = useState("");
+  const [deudaSeleccionada, setDeudaSeleccionada] = useState(null);
 
   const filtros = [
     {
@@ -31,28 +33,9 @@ export default function TablaTesoreria() {
     },
   ];
 
-  const deudasFiltradas = deudas.filter((d) => {
-    // 1. Validar si cumple el botón de estado
-    const cumpleEstado =
-      filtroEstado === "TODOS" || d.estadoDeuda?.toUpperCase() === filtroEstado;
-
-    // 2. Validar si cumple el buscador (ID, DNI o Nombre)
-    const termino = busqueda.toLowerCase().trim();
-    const cumpleBusqueda =
-      termino === "" ||
-      d.dniSocio?.toLowerCase().includes(termino) ||
-      d.nombreCompletoSocio?.toLowerCase().includes(termino);
-
-    return cumpleEstado && cumpleBusqueda;
-  });
-
-  const totalCalculado = deudasFiltradas.reduce(
-    (suma, d) => suma + Number(d.montoTotalPagar),
-    0,
-  );
-
   useEffect(() => {
     const cargarDeudas = async () => {
+      setCargando(true);
       try {
         const data = await obtenerReporteGeneral();
         setDeudas(data);
@@ -64,6 +47,23 @@ export default function TablaTesoreria() {
     };
     cargarDeudas();
   }, []);
+
+  const deudasFiltradas = deudas.filter((d) => {
+    const cumpleEstado =
+      filtroEstado === "TODOS" || d.estadoDeuda?.toUpperCase() === filtroEstado;
+    const termino = busqueda.toLowerCase().trim();
+    const cumpleBusqueda =
+      termino === "" ||
+      d.dniSocio?.toLowerCase().includes(termino) ||
+      d.nombreCompletoSocio?.toLowerCase().includes(termino);
+
+    return cumpleEstado && cumpleBusqueda;
+  });
+
+  const totalCalculado = deudasFiltradas.reduce(
+    (suma, d) => suma + Number(d.montoTotalPagar || 0),
+    0,
+  );
 
   return (
     <div className="p-6 min-h-full">
@@ -245,11 +245,7 @@ export default function TablaTesoreria() {
                           </span>
                         ) : (
                           <button
-                            onClick={() =>
-                              toast.info(
-                                `Registrar pago para ${d.nombreCompletoSocio}`,
-                              )
-                            }
+                            onClick={() => setDeudaSeleccionada(d)}
                             className="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 font-medium text-xs px-3 py-1.5 rounded transition-colors border border-emerald-600/40"
                           >
                             Pagar
@@ -281,6 +277,15 @@ export default function TablaTesoreria() {
           </div>
         )}
       </div>
+
+      <ModalPago
+        deuda={deudaSeleccionada}
+        isOpen={!!deudaSeleccionada}
+        onClose={() => setDeudaSeleccionada(null)}
+        onPagoExitoso={() => {
+          setDeudaSeleccionada(null);
+        }}
+      />
     </div>
   );
 }
