@@ -59,25 +59,36 @@ public class DeudaServiceImpl implements DeudaService {
 
         List<Deuda> listaDeudas = new ArrayList<>();
 
+        int diaFijoCorte = 15;
+        LocalDate vencimientoAutomatico = calcularFechaVencimientoAutomatica(diaFijoCorte);
+
         for (Usuario comerciante : usuariosActivos) {
             Deuda deuda = new Deuda();
             deuda.setServicio(servicio);
             deuda.setMontoBase(dto.getMontoCuotaSocio());
-            deuda.setFechaEmision(dto.getFechaEmision());
+
+            deuda.setFechaEmision(dto.getFechaEmision() != null ? dto.getFechaEmision() : LocalDate.now());
             deuda.setUsuarioCreador(creador);
             deuda.setUsuarioSocio(comerciante);
             deuda.setMora(BigDecimal.ZERO);
             deuda.setEstadoDeuda("Pendiente");
-            LocalDate vencimiento = (dto.getFechaVencimiento() != null)
-                    ? dto.getFechaVencimiento()
-                    : dto.getFechaEmision().plusMonths(1);
 
-            deuda.setFechaVencimiento(vencimiento);
+            deuda.setFechaVencimiento(vencimientoAutomatico);
 
             listaDeudas.add(deuda);
         }
 
         deudaRepository.saveAll(listaDeudas);
+    }
+
+    private LocalDate calcularFechaVencimientoAutomatica(int diaVencimientoProgramado) {
+        LocalDate fechaHoy = LocalDate.now();
+        LocalDate fechaVencimientoTentativa = fechaHoy.withDayOfMonth(diaVencimientoProgramado);
+
+        if (fechaHoy.isAfter(fechaVencimientoTentativa)) {
+            return fechaVencimientoTentativa.plusMonths(1);
+        }
+        return fechaVencimientoTentativa;
     }
 
     @Override
