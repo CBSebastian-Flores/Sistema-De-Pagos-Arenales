@@ -33,18 +33,19 @@ export default function TablaTesoreria() {
     },
   ];
 
+  const cargarDeudas = async () => {
+    setCargando(true);
+    try {
+      const data = await obtenerReporteGeneral();
+      setDeudas(data);
+    } catch (error) {
+      toast.error("No se pudieron cargar las deudas ", error);
+    } finally {
+      setCargando(false);
+    }
+  };
+
   useEffect(() => {
-    const cargarDeudas = async () => {
-      setCargando(true);
-      try {
-        const data = await obtenerReporteGeneral();
-        setDeudas(data);
-      } catch (error) {
-        toast.error("No se pudieron cargar las deudas ", error);
-      } finally {
-        setCargando(false);
-      }
-    };
     cargarDeudas();
   }, []);
 
@@ -284,6 +285,7 @@ export default function TablaTesoreria() {
         onClose={() => setDeudaSeleccionada(null)}
         onPagoExitoso={() => {
           setDeudaSeleccionada(null);
+          cargarDeudas();
         }}
       />
     </div>

@@ -7,6 +7,9 @@ export default function ModalPago({ deuda, isOpen, onClose, onPagoExitoso }) {
   const [numeroOperacion, setNumeroOperacion] = useState("");
   const [comprobante, setComprobante] = useState(null);
   const [enviando, setEnviando] = useState(false);
+  const [pagoExitoso, setPagoExitoso] = useState(false);
+  const [mensajeConfirmacion, setMensajeConfirmacion] = useState("");
+  const [boletaUrl, setBoletaUrl] = useState(null);
   const fileInputRef = useRef(null);
 
   if (!isOpen || !deuda) return null;
@@ -34,13 +37,13 @@ export default function ModalPago({ deuda, isOpen, onClose, onPagoExitoso }) {
         }
       }
 
-      await registrarPagoDeuda(formData);
+      const response = await registrarPagoDeuda(formData);
 
-      toast.success(
-        `Pago registrado correctamente — ${deuda.nombreCompletoSocio}`,
+      setMensajeConfirmacion(
+        response?.mensaje || "Pago procesado con éxito. La boleta digital ha sido enviada al correo del socio",
       );
-      onPagoExitoso();
-      handleCerrar();
+      setBoletaUrl(response?.boletaUrl || null);
+      setPagoExitoso(true);
     } catch (error) {
       toast.error(error.response?.data?.error || "Error al registrar el pago");
     } finally {
@@ -48,12 +51,69 @@ export default function ModalPago({ deuda, isOpen, onClose, onPagoExitoso }) {
     }
   };
 
+  const handleDescargarBoleta = () => {
+    if (boletaUrl) {
+      const link = document.createElement("a");
+      link.href = boletaUrl;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.click();
+    }
+  };
+
   const handleCerrar = () => {
     setMetodoPago("EFECTIVO");
     setNumeroOperacion("");
     setComprobante(null);
+    setPagoExitoso(false);
+    setMensajeConfirmacion("");
+    setBoletaUrl(null);
     onClose();
   };
+
+  const handleCerrarConfirmacion = () => {
+    onPagoExitoso();
+    handleCerrar();
+  };
+
+  if (pagoExitoso) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="w-full max-w-lg mx-auto bg-[#111e30] border border-[#1e3a5f] rounded-2xl shadow-2xl">
+          <div className="px-6 py-10 text-center space-y-6">
+            <div className="mx-auto w-16 h-16 bg-emerald-500/10 border-2 border-emerald-500 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+
+            <p className="text-white text-base leading-relaxed">
+              {mensajeConfirmacion}
+            </p>
+
+            <div className="flex justify-center gap-3 pt-2">
+              {boletaUrl && (
+                <button
+                  type="button"
+                  onClick={handleDescargarBoleta}
+                  className="px-5 py-2.5 rounded-lg text-sm font-semibold bg-blue-600 text-white transition-colors hover:bg-blue-500"
+                >
+                  Descargar Boleta
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleCerrarConfirmacion}
+                className="px-5 py-2.5 rounded-lg text-sm font-semibold bg-emerald-600 text-white transition-colors hover:bg-emerald-500"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
