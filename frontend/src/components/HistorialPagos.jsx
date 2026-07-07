@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { obtenerHistorialPagos, descargarBoleta } from "../services/deudaService";
+import { obtenerHistorialPagos } from "../services/deudaService"; // Ajusta la ruta de importación si es necesario
 
 export default function HistorialPagos() {
   const [pagos, setPagos] = useState([]);
   const [cargando, setCargando] = useState(true);
-  const [descargandoId, setDescargandoId] = useState(null);
 
   useEffect(() => {
     const cargarHistorial = async () => {
       try {
         const data = await obtenerHistorialPagos();
+        // Ordenamiento seguro por fechaPago
         const ordenados = (data || []).sort(
-          (a, b) => new Date(b.fechaPago || b.fechaVencimiento) - new Date(a.fechaPago || a.fechaVencimiento),
+          (a, b) => new Date(b.fechaPago) - new Date(a.fechaPago)
         );
         setPagos(ordenados);
       } catch (error) {
@@ -25,31 +25,24 @@ export default function HistorialPagos() {
     cargarHistorial();
   }, []);
 
-  const handleDescargar = async (idDeuda, nombreServicio) => {
-    setDescargandoId(idDeuda);
-    try {
-      const blob = await descargarBoleta(idDeuda);
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `boleta-${idDeuda}-${nombreServicio.replace(/\s+/g, "-")}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      toast.error("Error al descargar la boleta");
-    } finally {
-      setDescargandoId(null);
+  const handleVerComprobante = (url) => {
+    if (url && url.trim() !== "") {
+      window.open(url, "_blank", "noopener,noreferrer");
+    } else {
+      toast.warning("El comprobante no está disponible para este pago.");
     }
   };
 
-  const formatearFecha = (fecha) =>
-    fecha ? fecha.split("-").reverse().join("/") : "—";
+  const formatearFecha = (fecha) => {
+    if (!fecha) return "—";
+    // Asumiendo formato de BD: "YYYY-MM-DDTHH:mm:ss"
+    const [datePart] = fecha.split("T"); 
+    return datePart.split("-").reverse().join("/");
+  };
 
   const totalPagado = pagos.reduce(
-    (sum, p) => sum + Number(p.montoTotalPagar || 0),
-    0,
+    (sum, p) => sum + Number(p.montoPagado || 0),
+    0
   );
 
   return (
@@ -58,7 +51,7 @@ export default function HistorialPagos() {
         <div>
           <h1 className="text-2xl font-bold text-white">Mi Historial de Pagos</h1>
           <p className="text-gray-400 text-sm mt-1">
-            Registro de todos tus pagos realizados y boletas digitales
+            Registro de todos tus pagos realizados y comprobantes
           </p>
         </div>
         {!cargando && pagos.length > 0 && (
@@ -79,16 +72,14 @@ export default function HistorialPagos() {
             <thead>
               <tr className="border-b border-[#1e3a5f] bg-[#0f1b2d]">
                 {[
-                  "ID",
-                  "Concepto",
-                  "Vencimiento",
+                  "ID Pago",
+                  "ID Deuda",
                   "Fecha de Pago",
-                  "Monto Base",
-                  "Recargo Mora",
-                  "Total Pagado",
+                  "Monto Pagado",
                   "Método",
+                  "Nro. Operación",
                   "Código",
-                  "Acción",
+                  "Comprobante",
                 ].map((col) => (
                   <th
                     key={col}
@@ -102,7 +93,7 @@ export default function HistorialPagos() {
             <tbody className="divide-y divide-[#1e3a5f]/40">
               {cargando ? (
                 <tr>
-                  <td colSpan={10} className="text-center py-16 text-gray-500">
+                  <td colSpan={8} className="text-center py-16 text-gray-500">
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
                       <span className="text-xs">Cargando historial de pagos...</span>
@@ -111,44 +102,28 @@ export default function HistorialPagos() {
                 </tr>
               ) : pagos.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="text-center py-16 text-gray-400 text-xs">
+                  <td colSpan={8} className="text-center py-16 text-gray-400 text-xs">
                     No registras pagos realizados hasta el momento.
                   </td>
                 </tr>
               ) : (
                 pagos.map((p, i) => {
-                  const tieneMora = Number(p.mora) > 0;
                   const esTransferencia = p.metodoPago?.toUpperCase() === "TRANSFERENCIA";
 
                   return (
                     <tr
-                      key={p.idDeuda}
+                      key={p.idPago}
                       className={`text-center transition-colors hover:bg-[#1a2d4a]/40 ${
                         i % 2 === 0 ? "" : "bg-[#0f1b2d]/20"
                       }`}
                     >
-                      <td className="px-4 py-3 text-white font-medium">{p.idDeuda}</td>
-                      <td className="text-left px-4 py-3 text-white font-medium">
-                        {p.nombreServicio}
-                      </td>
-                      <td className="px-4 py-3 text-gray-400 font-mono text-xs">
-                        {formatearFecha(p.fechaVencimiento)}
-                      </td>
+                      <td className="px-4 py-3 text-white font-medium">{p.idPago}</td>
+                      <td className="px-4 py-3 text-gray-400">{p.idDeuda || "—"}</td>
                       <td className="px-4 py-3 text-emerald-400 font-mono text-xs font-semibold">
                         {formatearFecha(p.fechaPago)}
                       </td>
-                      <td className="px-4 py-3 text-gray-300 font-mono">
-                        S/. {Number(p.montoBase).toFixed(2)}
-                      </td>
-                      <td
-                        className={`px-4 py-3 font-mono ${
-                          tieneMora ? "text-red-400 font-semibold" : "text-gray-500"
-                        }`}
-                      >
-                        S/. {Number(p.mora).toFixed(2)}
-                      </td>
                       <td className="px-4 py-3 text-emerald-400 font-mono font-bold text-base">
-                        S/. {Number(p.montoTotalPagar).toFixed(2)}
+                        S/. {Number(p.montoPagado).toFixed(2)}
                       </td>
                       <td className="px-4 py-3">
                         <span
@@ -158,31 +133,25 @@ export default function HistorialPagos() {
                               : "bg-gray-500/15 text-gray-400 border border-gray-500/30"
                           }`}
                         >
-                          {esTransferencia ? "Transferencia" : "Efectivo"}
+                          {p.metodoPago || "EFECTIVO"}
                         </span>
+                      </td>
+                      <td className="px-4 py-3 text-gray-400 font-mono text-xs">
+                        {p.nroOperacion || "—"}
                       </td>
                       <td className="px-4 py-3 text-gray-400 font-mono text-xs">
                         {p.codigoPago || "—"}
                       </td>
                       <td className="px-4 py-3">
                         <button
-                          onClick={() => handleDescargar(p.idDeuda, p.nombreServicio)}
-                          disabled={descargandoId === p.idDeuda}
-                          className="bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 font-medium text-xs px-2.5 py-1.5 rounded transition-colors border border-blue-500/30 disabled:opacity-50 flex items-center gap-1.5 mx-auto"
+                          onClick={() => handleVerComprobante(p.voucherUrl)}
+                          className="bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 font-medium text-xs px-2.5 py-1.5 rounded transition-colors border border-blue-500/30 flex items-center gap-1.5 mx-auto"
                         >
-                          {descargandoId === p.idDeuda ? (
-                            <>
-                              <div className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-                              Descargando...
-                            </>
-                          ) : (
-                            <>
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                              </svg>
-                              Boleta PDF
-                            </>
-                          )}
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                          Ver Voucher
                         </button>
                       </td>
                     </tr>

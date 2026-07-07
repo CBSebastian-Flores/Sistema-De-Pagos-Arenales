@@ -13,9 +13,9 @@ export const registrarPagoDeuda = async (formData) => {
 }
 
 export const obtenerHistorialPagos = async () => {
-  const response = await api.get("/api/deudas/historial")
-  return response.data
-}
+  const response = await api.get("/api/pagos/historial");
+  return response.data;
+};
 
 export const descargarBoleta = async (idDeuda) => {
   const response = await api.get(`/api/deudas/${idDeuda}/boleta`, {
