@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import api from "../services/axiosConfig";
 import { obtenerServiciosActivos } from "../services/servicioService";
 import { obtenerReporteGeneral } from "../services/deudaService";
-import StatCard from "./StatCard";
 
 function SkeletonCard() {
   return (
@@ -76,16 +75,66 @@ export default function DashboardAnalitico() {
 
   const balanceNeto = totalIngresos - totalEgresos;
 
-  const iconos = {
-    ingresos: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
-    egresos: "M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z",
-    balance: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z",
-    alerta: "M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
-    check: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
-    warning: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z",
-    servicios: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10",
-    usuarios: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z",
-  };
+  const metricas = [
+    {
+      label: "Total Ingresos",
+      valor: `S/. ${totalIngresos.toFixed(2)}`,
+      color: "text-emerald-400",
+      bg: "bg-emerald-500/10 border-emerald-500/20",
+      icono: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+    },
+    {
+      label: "Total Egresos",
+      valor: `S/. ${totalEgresos.toFixed(2)}`,
+      color: "text-red-400",
+      bg: "bg-red-500/10 border-red-500/20",
+      icono: "M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z",
+    },
+    {
+      label: "Balance Neto",
+      valor: `S/. ${balanceNeto.toFixed(2)}`,
+      color: balanceNeto >= 0 ? "text-emerald-400" : "text-red-400",
+      bg: balanceNeto >= 0
+        ? "bg-emerald-500/10 border-emerald-500/20"
+        : "bg-red-500/10 border-red-500/20",
+      icono: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z",
+    },
+    {
+      label: "Deudas Pendientes",
+      valor: deudasPendientes,
+      color: "text-amber-400",
+      bg: "bg-amber-500/10 border-amber-500/20",
+      icono: "M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+    },
+    {
+      label: "Deudas Pagadas",
+      valor: deudasPagadas,
+      color: "text-emerald-400",
+      bg: "bg-emerald-500/10 border-emerald-500/20",
+      icono: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
+    },
+    {
+      label: "Deudas Vencidas",
+      valor: deudasVencidas,
+      color: "text-red-400",
+      bg: "bg-red-500/10 border-red-500/20",
+      icono: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z",
+    },
+    {
+      label: "Servicios Activos",
+      valor: serviciosActivos,
+      color: "text-blue-400",
+      bg: "bg-blue-500/10 border-blue-500/20",
+      icono: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10",
+    },
+    {
+      label: "Socios Activos",
+      valor: "—",
+      color: "text-gray-400",
+      bg: "bg-gray-500/10 border-gray-500/20",
+      icono: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z",
+    },
+  ];
 
   const formatearFecha = (fechaStr) => {
     if (!fechaStr) return "-";
@@ -118,14 +167,26 @@ export default function DashboardAnalitico() {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <StatCard titulo="Total Ingresos" valor={totalIngresos} icono={iconos.ingresos} formato="S/." />
-            <StatCard titulo="Total Egresos" valor={totalEgresos} icono={iconos.egresos} formato="S/." color={{ texto: "text-red-400", bg: "bg-red-500/10 border-red-500/20" }} />
-            <StatCard titulo="Balance Neto" valor={balanceNeto} icono={iconos.balance} formato="S/." />
-            <StatCard titulo="Deudas Pendientes" valor={deudasPendientes} icono={iconos.alerta} color={{ texto: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" }} />
-            <StatCard titulo="Deudas Pagadas" valor={deudasPagadas} icono={iconos.check} />
-            <StatCard titulo="Deudas Vencidas" valor={deudasVencidas} icono={iconos.warning} color={{ texto: "text-red-400", bg: "bg-red-500/10 border-red-500/20" }} />
-            <StatCard titulo="Servicios Activos" valor={serviciosActivos} icono={iconos.servicios} color={{ texto: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" }} />
-            <StatCard titulo="Socios Activos" valor="—" icono={iconos.usuarios} color={{ texto: "text-gray-400", bg: "bg-gray-500/10 border-gray-500/20" }} />
+            {metricas.map((m) => (
+              <div
+                key={m.label}
+                className={`${m.bg} border rounded-xl p-5 flex items-start gap-4 transition-colors`}
+              >
+                <div className={`p-2 rounded-lg ${m.bg}`}>
+                  <svg className={`w-6 h-6 ${m.color}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={m.icono} />
+                  </svg>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    {m.label}
+                  </p>
+                  <p className={`text-xl font-bold font-mono mt-1 ${m.color}`}>
+                    {m.valor}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
 
           <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl overflow-hidden">
