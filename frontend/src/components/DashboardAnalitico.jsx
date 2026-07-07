@@ -3,6 +3,10 @@ import api from "../services/axiosConfig";
 import { obtenerServiciosActivos } from "../services/servicioService";
 import { obtenerReporteGeneral } from "../services/deudaService";
 import StatCard from "./StatCard";
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, Legend,
+} from "recharts";
 
 function SkeletonCard() {
   return (
@@ -25,6 +29,15 @@ function SkeletonTable() {
           <div className="h-3 w-20 bg-[#1e3a5f] rounded" />
         </div>
       ))}
+    </div>
+  );
+}
+
+function SkeletonChart() {
+  return (
+    <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl p-5 animate-pulse">
+      <div className="h-4 w-40 bg-[#1e3a5f] rounded mb-6" />
+      <div className="h-48 bg-[#1e3a5f]/40 rounded" />
     </div>
   );
 }
@@ -87,6 +100,19 @@ export default function DashboardAnalitico() {
     usuarios: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z",
   };
 
+  const DONUT_COLORS = ["#34d399", "#fbbf24", "#f87171"];
+
+  const dataBar = [
+    { name: "Ingresos", monto: totalIngresos },
+    { name: "Egresos", monto: totalEgresos },
+  ];
+
+  const dataDonut = [
+    { name: "Pagadas", value: deudasPagadas },
+    { name: "Pendientes", value: deudasPendientes },
+    { name: "Vencidas", value: deudasVencidas },
+  ].filter((d) => d.value > 0);
+
   const formatearFecha = (fechaStr) => {
     if (!fechaStr) return "-";
     try {
@@ -113,6 +139,10 @@ export default function DashboardAnalitico() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => <SkeletonCard key={i + 4} />)}
           </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <SkeletonChart />
+            <SkeletonChart />
+          </div>
           <SkeletonTable />
         </div>
       ) : (
@@ -126,6 +156,53 @@ export default function DashboardAnalitico() {
             <StatCard titulo="Deudas Vencidas" valor={deudasVencidas} icono={iconos.warning} color={{ texto: "text-red-400", bg: "bg-red-500/10 border-red-500/20" }} />
             <StatCard titulo="Servicios Activos" valor={serviciosActivos} icono={iconos.servicios} color={{ texto: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" }} />
             <StatCard titulo="Socios Activos" valor="—" icono={iconos.usuarios} color={{ texto: "text-gray-400", bg: "bg-gray-500/10 border-gray-500/20" }} />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl p-5">
+              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
+                Ingresos vs Egresos
+              </h3>
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={dataBar}>
+                  <XAxis dataKey="name" tick={{ fill: "#9ca3af", fontSize: 12 }} axisLine={{ stroke: "#1e3a5f" }} tickLine={false} />
+                  <YAxis tick={{ fill: "#9ca3af", fontSize: 12 }} axisLine={{ stroke: "#1e3a5f" }} tickLine={false} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "#0f1b2d", border: "1px solid #1e3a5f", borderRadius: 8, color: "#fff" }}
+                    formatter={(value) => [`S/. ${value.toFixed(2)}`, "Monto"]}
+                  />
+                  <Bar dataKey="monto" radius={[6, 6, 0, 0]} maxBarSize={80}>
+                    <Cell fill="#34d399" />
+                    <Cell fill="#f87171" />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl p-5">
+              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
+                Distribución de Deudas
+              </h3>
+              {dataDonut.length === 0 ? (
+                <p className="text-center py-16 text-gray-500 text-xs">Sin datos de deudas</p>
+              ) : (
+                <ResponsiveContainer width="100%" height={240}>
+                  <PieChart>
+                    <Pie data={dataDonut} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={4} dataKey="value">
+                      {dataDonut.map((_, i) => (
+                        <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ backgroundColor: "#0f1b2d", border: "1px solid #1e3a5f", borderRadius: 8, color: "#fff" }}
+                    />
+                    <Legend
+                      formatter={(value) => <span style={{ color: "#9ca3af", fontSize: 12 }}>{value}</span>}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
+            </div>
           </div>
 
           <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl overflow-hidden">
