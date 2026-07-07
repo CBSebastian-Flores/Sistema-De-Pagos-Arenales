@@ -11,7 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import com.arenales.config.SecurityUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -21,8 +20,6 @@ import java.util.Map;
 @RequestMapping("/api/egresos")
 public class EgresoController {
     @Autowired private EgresoService egresoService;
-    @Autowired private SecurityUtils securityUtils;
-
 
     @PostMapping(value = "/registrar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyAuthority('Tesorero', 'Administrador')")

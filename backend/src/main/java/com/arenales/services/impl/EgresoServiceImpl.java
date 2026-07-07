@@ -8,6 +8,7 @@ import com.arenales.entities.Servicio;
 import com.arenales.entities.Usuario;
 import com.arenales.repositories.EgresoRepository;
 import com.arenales.services.EgresoService;
+import com.arenales.services.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class EgresoServiceImpl implements EgresoService {
     @Autowired private EgresoRepository egresoRepository;
     @Autowired private ServicioRepository servicioRepository;
     @Autowired private SecurityUtils securityUtils;
+    @Autowired private StorageService storageService;
 
     @Override
     @Transactional
@@ -40,23 +42,28 @@ public class EgresoServiceImpl implements EgresoService {
         }
 
         Servicio servicio = servicioRepository.findById(dto.getIdServicio())
-            .orElseThrow(() -> new RuntimeException("El servicio con ID " + dto.getIdServicio() + " no existe o no es válido."));
+                .orElseThrow(() -> new RuntimeException("El servicio con ID " + dto.getIdServicio() + " no existe o no es válido."));
 
         if (dto.getComprobante() == null || dto.getComprobante().isEmpty()) {
             throw new RuntimeException("El archivo del comprobante/voucher no puede estar vacío.");
         }
 
-        String nombreArchivo = UUID.randomUUID() + "_" + dto.getComprobante().getOriginalFilename();
-        String rutaVoucher = "/uploads/comprobantes/" + nombreArchivo;
+        // Subida a la nube delegada al servicio de Storage (Cloudinary)
+        String urlComprobante;
+        try {
+            urlComprobante = storageService.subirArchivo(dto.getComprobante());
+        } catch (Exception e) {
+            throw new RuntimeException("Error crítico al subir el comprobante a la nube: " + e.getMessage());
+        }
 
         Egreso nuevoEgreso = new Egreso();
-        nuevoEgreso.setServicio(servicio); // Asignamos el servicio validado
-        nuevoEgreso.setComprobanteUrl(rutaVoucher);
+        nuevoEgreso.setServicio(servicio);
+        nuevoEgreso.setComprobanteUrl(urlComprobante); // Persistencia de la URL segura
 
-        long totalEgresos = egresoRepository.contarTotalEgresos();
-        String correlativo = String.format("EGR-%03d", totalEgresos + 1);
+        // Generación de código seguro contra concurrencia
+        String codigoSeguro = "EGR-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+        nuevoEgreso.setCodigoEgreso(codigoSeguro);
 
-        nuevoEgreso.setCodigoEgreso(correlativo);
         nuevoEgreso.setDescripcion(dto.getDescripcion());
         nuevoEgreso.setMonto(dto.getMonto());
         nuevoEgreso.setFechaGasto(LocalDateTime.now());
@@ -64,12 +71,6 @@ public class EgresoServiceImpl implements EgresoService {
         nuevoEgreso.setMetodoRetiro(dto.getMetodoRetiro());
         nuevoEgreso.setBeneficiario(dto.getBeneficiario());
         nuevoEgreso.setUsuarioRegistro(tesorero);
-
-        // Bloque listo para Cloudinary u otra solución de almacenamiento
-        // if (dto.getComprobante() != null && !dto.getComprobante().isEmpty()) {
-        //     String url = storageService.subirArchivo(dto.getComprobante());
-        //     nuevoEgreso.setComprobanteUrl(url);
-        // }
 
         return egresoRepository.save(nuevoEgreso);
     }

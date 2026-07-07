@@ -18,6 +18,6 @@ public interface PagoRepository extends JpaRepository<Pago, Integer> {
     @Query("SELECT COALESCE(SUM(p.montoPagado), 0) FROM Pago p")
     BigDecimal sumarTotalIngresos();
 
-    @Query("SELECT p FROM Pago p WHERE p.usuarioRegistro.idUsuario = :idUsuario")
-    List<Pago> findHistorialPagosCompletados(@Param("idUsuario") Integer idUsuario);
+    @Query("SELECT p FROM Pago p WHERE p.deuda.socio.usuarioSocio = :idUsuario")
+    List<Pago> findHistorialPagosByUsurioId(@Param("idUsuario") Integer idUsuario);
 }
