@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import com.arenales.config.SecurityUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -20,16 +21,31 @@ import java.util.Map;
 @RequestMapping("/api/egresos")
 public class EgresoController {
     @Autowired private EgresoService egresoService;
+    @Autowired private SecurityUtils securityUtils;
+
 
     @PostMapping(value = "/registrar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyAuthority('Tesorero', 'Administrador')")
     public ResponseEntity<?> registrarEgreso(@Valid @ModelAttribute EgresoRequestDTO dto) {
-        egresoService.registrarEgreso(dto);
+        try {
+            Egreso nuevoEgreso = egresoService.registrarEgreso(dto);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                "success", true,
-                "mensaje", "Egreso registrado en caja exitosamente"
-        ));
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                    "success", true,
+                    "mensaje", "Egreso registrado en caja exitosamente",
+                    "codigoEgreso", nuevoEgreso.getCodigoEgreso()
+            ));
+            } catch (RuntimeException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                    "success", false,
+                    "error", e.getMessage()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "success", false,
+                    "error", "Ocurrió un error inesperado al procesar el egreso."
+            ));
+        }
     }
 
     @GetMapping("/total")
