@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react"
 import api from "../services/axiosConfig"
 import { toast } from "react-toastify"
+import { obtenerServiciosActivos } from "../services/servicioService"
 
 const CATEGORIAS = [
   "Servicios Públicos",
@@ -14,6 +15,7 @@ const CATEGORIAS = [
 const METODOS_RETIRO = ["Efectivo", "Transferencia", "Yape", "Plin"]
 
 const INITIAL_FORM = {
+  servicio: "",
   categoriaEgreso: "",
   beneficiario: "",
   monto: "",
@@ -32,6 +34,10 @@ export default function RegistrarEgresos() {
   const [totalIngresos, setTotalIngresos] = useState(0)
   const [totalEgresos, setTotalEgresos] = useState(0)
   const [cargandoCaja, setCargandoCaja] = useState(true)
+
+  // Estados para el selector dinámico de servicios
+  const [servicios, setServicios] = useState([])
+  const [cargandoServicios, setCargandoServicios] = useState(true)
 
   const balanceNeto = totalIngresos - totalEgresos
 
@@ -61,14 +67,31 @@ export default function RegistrarEgresos() {
 
   useEffect(() => {
     const ejecutarCargaInicial = async () => {
-      await actualizarDatosCaja()
+      await Promise.all([
+        actualizarDatosCaja(),
+        obtenerServiciosActivos()
+          .then(setServicios)
+          .catch(() => toast.error("No se pudieron cargar los servicios"))
+          .finally(() => setCargandoServicios(false)),
+      ])
     }
     ejecutarCargaInicial()
   }, [actualizarDatosCaja])
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setForm((prev) => ({ ...prev, [name]: value }))
+
+    if (name === "servicio") {
+      const servicioSel = servicios.find((s) => String(s.idServicio) === value)
+      setForm((prev) => ({
+        ...prev,
+        servicio: value,
+        categoriaEgreso: servicioSel?.categoria || prev.categoriaEgreso,
+      }))
+    } else {
+      setForm((prev) => ({ ...prev, [name]: value }))
+    }
+
     if (errores[name]) {
       setErrores((prev) => ({ ...prev, [name]: null }))
     }
@@ -121,6 +144,7 @@ export default function RegistrarEgresos() {
 
     try {
       const formData = new FormData()
+      formData.append("idServicio", form.servicio)
       formData.append("categoriaEgreso", form.categoriaEgreso.trim())
       formData.append("beneficiario", form.beneficiario.trim())
       formData.append("monto", parseFloat(form.monto))
@@ -234,6 +258,29 @@ export default function RegistrarEgresos() {
         <div className="lg:col-span-2">
           <form onSubmit={handleSubmit} noValidate className="bg-[#111e30] border border-[#1e3a5f] rounded-2xl p-6 space-y-5">
             <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Nuevo Egreso</h3>
+
+            <div>
+              <label htmlFor="servicio" className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                Servicio <span className="text-gray-600 font-normal">(selecciona uno para auto-asignar la categoría)</span>
+              </label>
+              <select
+                id="servicio"
+                name="servicio"
+                value={form.servicio}
+                onChange={handleChange}
+                className={inputClasses("servicio")}
+              >
+                <option value="" disabled hidden>
+                  {cargandoServicios ? "Cargando servicios..." : "Seleccionar servicio..."}
+                </option>
+                {servicios.map((s) => (
+                  <option key={s.idServicio} value={s.idServicio} className="bg-[#0f1b2d]">
+                    {s.nombreServicio} — {s.categoria}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="categoriaEgreso" className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Categoría</label>

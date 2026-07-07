@@ -1,5 +1,10 @@
 import api from "./axiosConfig"
 
+export const obtenerServiciosActivos = async () => {
+  const response = await api.get("/api/servicios/activos")
+  return response.data
+}
+
 export const inhabilitarServicio = async (id, motivo) => {
     const response = await api.put(
         `/api/servicios/${id}/inhabilitar`,
