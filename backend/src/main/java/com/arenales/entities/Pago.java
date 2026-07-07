@@ -2,6 +2,7 @@ package com.arenales.entities;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -42,11 +43,14 @@ public class Pago {
     @Column(name = "voucher_url", length = 255)
     private String voucherUrl;
 
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_deuda", nullable = false, foreignKey = @ForeignKey(name = "FK_Pago_Deuda"))
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Deuda deuda;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario_registro", nullable = false, foreignKey = @ForeignKey(name = "FK_Pago_UsuarioRegistro"))
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Usuario usuarioRegistro;
 }
