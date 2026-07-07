@@ -6,6 +6,7 @@ import MantenimientoUsuarios from "./MantenimientoUsuarios"
 import MantenimientoServicios from "./MantenimientoServicios"
 import ConfiguracionObligacion from "./ConfiguracionObligacion"
 import MisPagosPendientes from "./MisPagosPendientes"
+import HistorialPagos from "./HistorialPagos"
 import TablaTesoreria from "./TablaTesoreria"
 import RegistrarEgresos from "./RegistrarEgresos"
 
@@ -49,6 +50,8 @@ export default function Layout({ onSubmit, onCerrarSesion }) {
         return <TablaTesoreria />
       case "Mis Pagos Pendientes":
         return <MisPagosPendientes />
+      case "Mi Historial de Pagos":
+        return <HistorialPagos />
       case "Registrar Egresos":
         return <RegistrarEgresos />
       default:
