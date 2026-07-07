@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { obtenerHistorialPagos } from "../services/deudaService"; // Ajusta la ruta de importación si es necesario
+import { obtenerHistorialPagos } from "../services/deudaService";
 
 export default function HistorialPagos() {
   const [pagos, setPagos] = useState([]);
@@ -10,7 +10,7 @@ export default function HistorialPagos() {
     const cargarHistorial = async () => {
       try {
         const data = await obtenerHistorialPagos();
-        // Ordenamiento seguro por fechaPago
+        // Ordenamiento seguro descendentemente por la fecha del pago
         const ordenados = (data || []).sort(
           (a, b) => new Date(b.fechaPago) - new Date(a.fechaPago)
         );
@@ -35,23 +35,20 @@ export default function HistorialPagos() {
 
   const formatearFecha = (fecha) => {
     if (!fecha) return "—";
-    // Asumiendo formato de BD: "YYYY-MM-DDTHH:mm:ss"
     const [datePart] = fecha.split("T"); 
     return datePart.split("-").reverse().join("/");
   };
 
-  const totalPagado = pagos.reduce(
-    (sum, p) => sum + Number(p.montoPagado || 0),
-    0
-  );
+  const totalPagado = pagos.reduce((sum, p) => sum + Number(p.montoPagado || 0), 0);
 
   return (
     <div className="p-6 min-h-full">
+      {/* Cabecera y Tarjeta de Total */}
       <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white">Mi Historial de Pagos</h1>
           <p className="text-gray-400 text-sm mt-1">
-            Registro de todos tus pagos realizados y comprobantes
+            Registro de todos tus pagos realizados y comprobantes digitales
           </p>
         </div>
         {!cargando && pagos.length > 0 && (
@@ -66,24 +63,27 @@ export default function HistorialPagos() {
         )}
       </div>
 
+      {/* Contenedor de la Tabla */}
       <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#1e3a5f] bg-[#0f1b2d]">
                 {[
-                  "ID Pago",
-                  "ID Deuda",
-                  "Fecha de Pago",
-                  "Monto Pagado",
-                  "Método",
-                  "Nro. Operación",
-                  "Código",
-                  "Comprobante",
+                  "ID Pago", 
+                  "Fecha de Pago", 
+                  "Concepto", 
+                  "Monto Pagado", 
+                  "Método", 
+                  "Nro. Operación", 
+                  "Código", 
+                  "Comprobante"
                 ].map((col) => (
-                  <th
-                    key={col}
-                    className="text-center px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap"
+                  <th 
+                    key={col} 
+                    className={`px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap ${
+                      col === "Concepto" ? "text-left" : "text-center"
+                    }`}
                   >
                     {col}
                   </th>
@@ -109,40 +109,40 @@ export default function HistorialPagos() {
               ) : (
                 pagos.map((p, i) => {
                   const esTransferencia = p.metodoPago?.toUpperCase() === "TRANSFERENCIA";
-
                   return (
-                    <tr
-                      key={p.idPago}
-                      className={`text-center transition-colors hover:bg-[#1a2d4a]/40 ${
+                    <tr 
+                      key={p.idPago} 
+                      className={`transition-colors hover:bg-[#1a2d4a]/40 ${
                         i % 2 === 0 ? "" : "bg-[#0f1b2d]/20"
                       }`}
                     >
-                      <td className="px-4 py-3 text-white font-medium">{p.idPago}</td>
-                      <td className="px-4 py-3 text-gray-400">{p.idDeuda || "—"}</td>
-                      <td className="px-4 py-3 text-emerald-400 font-mono text-xs font-semibold">
+                      <td className="text-center px-4 py-3 text-white font-medium">{p.idPago}</td>
+                      <td className="text-center px-4 py-3 text-emerald-400 font-mono text-xs font-semibold">
                         {formatearFecha(p.fechaPago)}
                       </td>
-                      <td className="px-4 py-3 text-emerald-400 font-mono font-bold text-base">
+                      {/* Concepto alineado a la izquierda con buen peso visual */}
+                      <td className="text-left px-4 py-3 text-slate-200 font-medium">
+                        {p.nombreServicio || p.concepto || "Servicio General"}
+                      </td>
+                      <td className="text-center px-4 py-3 text-emerald-400 font-mono font-bold text-base">
                         S/. {Number(p.montoPagado).toFixed(2)}
                       </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider ${
-                            esTransferencia
-                              ? "bg-blue-500/15 text-blue-400 border border-blue-500/30"
-                              : "bg-gray-500/15 text-gray-400 border border-gray-500/30"
-                          }`}
-                        >
+                      <td className="text-center px-4 py-3">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider ${
+                          esTransferencia 
+                            ? "bg-blue-500/15 text-blue-400 border border-blue-500/30" 
+                            : "bg-gray-500/15 text-gray-400 border border-gray-500/30"
+                        }`}>
                           {p.metodoPago || "EFECTIVO"}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-gray-400 font-mono text-xs">
+                      <td className="text-center px-4 py-3 text-slate-300 font-mono text-xs">
                         {p.nroOperacion || "—"}
                       </td>
-                      <td className="px-4 py-3 text-gray-400 font-mono text-xs">
+                      <td className="text-center px-4 py-3 text-slate-300 font-mono text-xs">
                         {p.codigoPago || "—"}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="text-center px-4 py-3">
                         <button
                           onClick={() => handleVerComprobante(p.voucherUrl)}
                           className="bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 font-medium text-xs px-2.5 py-1.5 rounded transition-colors border border-blue-500/30 flex items-center gap-1.5 mx-auto"
@@ -163,11 +163,11 @@ export default function HistorialPagos() {
         </div>
       </div>
 
+      {/* Footer de la grilla */}
       {!cargando && pagos.length > 0 && (
         <div className="mt-4 text-right">
           <span className="text-xs text-gray-400 bg-[#111e30] border border-[#1e3a5f] px-3 py-1.5 rounded-lg">
-            Total de pagos registrados:{" "}
-            <strong className="text-white">{pagos.length}</strong>
+            Total de pagos registrados: <strong className="text-white">{pagos.length}</strong>
           </span>
         </div>
       )}

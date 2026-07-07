@@ -35,6 +35,7 @@ public class PagoServiceImpl implements PagoService {
             PagoResponseDTO dto = new PagoResponseDTO();
 
             dto.setIdPago(pago.getIdPago());
+            dto.setNombreServicio(pago.getDeuda().getServicio().getNombreServicio());
             dto.setCodigoPago(pago.getCodigoPago());
             dto.setMontoPagado(pago.getMontoPagado());
             dto.setMetodoPago(pago.getMetodoPago());
