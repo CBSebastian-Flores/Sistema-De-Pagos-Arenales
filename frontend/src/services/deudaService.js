@@ -5,6 +5,11 @@ export const obtenerReporteGeneral = async () => {
   return response.data
 }
 
+export const obtenerUltimosPagos = async () => {
+  const response = await api.get("/api/pagos/ultimos")
+  return response.data
+}
+
 export const registrarPagoDeuda = async (formData) => {
   const response = await api.post("/api/deudas/cobrar", formData, {
     headers: { "Content-Type": "multipart/form-data" },

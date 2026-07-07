@@ -3,6 +3,7 @@ import api from "../services/axiosConfig";
 import { obtenerServiciosActivos } from "../services/servicioService";
 import { obtenerReporteGeneral } from "../services/deudaService";
 import StatCard from "./StatCard";
+import TablaAuditoria from "./TablaAuditoria";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
@@ -14,21 +15,6 @@ function SkeletonCard() {
       <div className="h-3 w-24 bg-[#1e3a5f] rounded" />
       <div className="h-7 w-32 bg-[#1e3a5f] rounded" />
       <div className="h-2.5 w-20 bg-[#1e3a5f]/60 rounded" />
-    </div>
-  );
-}
-
-function SkeletonTable() {
-  return (
-    <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl p-5 space-y-4 animate-pulse">
-      <div className="h-4 w-40 bg-[#1e3a5f] rounded" />
-      {[...Array(5)].map((_, i) => (
-        <div key={i} className="flex gap-4">
-          <div className="h-3 flex-1 bg-[#1e3a5f] rounded" />
-          <div className="h-3 w-24 bg-[#1e3a5f] rounded" />
-          <div className="h-3 w-20 bg-[#1e3a5f] rounded" />
-        </div>
-      ))}
     </div>
   );
 }
@@ -51,17 +37,23 @@ export default function DashboardAnalitico() {
   const [deudasPagadas, setDeudasPagadas] = useState(0);
   const [deudasVencidas, setDeudasVencidas] = useState(0);
   const [ultimosEgresos, setUltimosEgresos] = useState([]);
+  const [ultimosPagos, setUltimosPagos] = useState([]);
+  const [errorPagos, setErrorPagos] = useState(false);
 
   useEffect(() => {
     const cargarDashboard = async () => {
       try {
-        const [resIngresos, resEgresos, resEgresosUlt, deudas, servicios] =
+        const [resIngresos, resEgresos, resEgresosUlt, deudas, servicios, resPagos] =
           await Promise.all([
             api.get("/api/pagos/total"),
             api.get("/api/egresos/total"),
             api.get("/api/egresos/ultimos"),
             obtenerReporteGeneral(),
             obtenerServiciosActivos(),
+            api.get("/api/pagos/ultimos").catch(() => {
+              setErrorPagos(true);
+              return { data: [] };
+            }),
           ]);
 
         setTotalIngresos(
@@ -71,6 +63,7 @@ export default function DashboardAnalitico() {
           resEgresos?.data?.total != null ? Number(resEgresos.data.total) : 0,
         );
         setUltimosEgresos(Array.isArray(resEgresosUlt?.data) ? resEgresosUlt.data : []);
+        setUltimosPagos(Array.isArray(resPagos?.data) ? resPagos.data : []);
         setServiciosActivos(Array.isArray(servicios) ? servicios.length : 0);
 
         if (Array.isArray(deudas)) {
@@ -113,6 +106,25 @@ export default function DashboardAnalitico() {
     { name: "Vencidas", value: deudasVencidas },
   ].filter((d) => d.value > 0);
 
+  const movimientos = [
+    ...(Array.isArray(ultimosPagos) ? ultimosPagos.map((p) => ({
+      id: p.idPago || p.idDeuda,
+      tipo: "ingreso",
+      codigo: p.codigoPago || `PAG-${p.idPago}`,
+      descripcion: p.nombreServicio || "Pago registrado",
+      monto: p.montoPagado || 0,
+      fecha: p.fechaPago,
+    })) : []),
+    ...ultimosEgresos.map((eg) => ({
+      id: eg.idEgreso,
+      tipo: "egreso",
+      codigo: eg.codigoEgreso || `EGR-${eg.idEgreso}`,
+      descripcion: eg.categoriaEgreso || eg.descripcion || "Egreso registrado",
+      monto: eg.monto || 0,
+      fecha: eg.fechaGasto,
+    })),
+  ].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
   const formatearFecha = (fechaStr) => {
     if (!fechaStr) return "-";
     try {
@@ -143,7 +155,7 @@ export default function DashboardAnalitico() {
             <SkeletonChart />
             <SkeletonChart />
           </div>
-          <SkeletonTable />
+          <TablaAuditoria movimientos={[]} cargando={true} />
         </div>
       ) : (
         <>
@@ -205,53 +217,7 @@ export default function DashboardAnalitico() {
             </div>
           </div>
 
-          <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl overflow-hidden">
-            <div className="px-5 py-4 border-b border-[#1e3a5f]">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                Últimos Egresos Registrados
-              </h3>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-[#1e3a5f] bg-[#0f1b2d]">
-                    {["Beneficiario", "Concepto", "Monto", "Método", "Fecha"].map((col) => (
-                      <th key={col} className="text-center px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">
-                        {col}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#1e3a5f]/40">
-                  {ultimosEgresos.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="text-center py-12 text-gray-400 text-xs">
-                        No hay egresos registrados aún
-                      </td>
-                    </tr>
-                  ) : (
-                    ultimosEgresos.map((eg) => (
-                      <tr key={eg.idEgreso} className="text-center transition-colors hover:bg-[#1a2d4a]/40">
-                        <td className="px-4 py-3 text-white font-medium">{eg.beneficiario}</td>
-                        <td className="px-4 py-3 text-gray-300">{eg.categoriaEgreso}</td>
-                        <td className="px-4 py-3 text-red-400 font-mono font-semibold">
-                          -S/. {Number(eg.monto).toFixed(2)}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className="text-xs text-gray-400 bg-[#0f1b2d] px-2 py-0.5 rounded border border-[#1e3a5f]/40">
-                            {eg.metodoRetiro}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-gray-400 text-xs font-mono">
-                          {formatearFecha(eg.fechaGasto)}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <TablaAuditoria movimientos={movimientos} cargando={cargando} />
         </>
       )}
     </div>
