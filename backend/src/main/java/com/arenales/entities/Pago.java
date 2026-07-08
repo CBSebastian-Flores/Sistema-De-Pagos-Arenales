@@ -25,6 +25,9 @@ public class Pago {
     @Column(name = "id_pago")
     private Integer idPago;
 
+    @Column(name = "codigo_pago", nullable = false, unique = true, length = 50)
+    private String codigoPago;
+
     @Column(name = "fecha_pago", nullable = false, insertable = false, updatable = false)
     private LocalDateTime fechaPago;
 
@@ -45,6 +48,6 @@ public class Pago {
     private Deuda deuda;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_usuario_tesorero", nullable = false, foreignKey = @ForeignKey(name = "FK_Pago_Tesorero"))
-    private Usuario usuarioTesorero;
+    @JoinColumn(name = "id_usuario_registro", nullable = false, foreignKey = @ForeignKey(name = "FK_Pago_UsuarioRegistro"))
+    private Usuario usuarioRegistro;
 }
