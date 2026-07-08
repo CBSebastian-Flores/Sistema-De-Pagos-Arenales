@@ -15,5 +15,4 @@ public interface DeudaRepository extends JpaRepository<Deuda, Integer> {
 
     @Query("SELECT d FROM Deuda d JOIN FETCH d.usuarioSocio JOIN FETCH d.servicio")
     List<Deuda> findAllWithSocioAndServicio();
-    
 }

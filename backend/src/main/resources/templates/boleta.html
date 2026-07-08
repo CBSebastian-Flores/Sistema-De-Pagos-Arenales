@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Boleta de Pago</title>
+    <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; margin: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { margin: 0; color: #1a365d; font-size: 24px; }
+        .header p { margin: 5px 0; color: #718096; }
+        .details-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .details-table td { padding: 8px; border: 1px solid #e2e8f0; }
+        .details-table th { background-color: #f7fafc; padding: 8px; border: 1px solid #e2e8f0; text-align: left; }
+        .total-section { text-align: right; margin-top: 30px; font-size: 18px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>CONDOMINIO CENTRO ARENALES</h1>
+        <p>RUC: 20123456789 | Av. Arenales, Lima</p>
+        <h2>BOLETA ELECTRÓNICA DE PAGO</h2>
+    </div>
+
+    <table class="details-table">
+        <tr>
+            <th colspan="2">Datos del Comprobante</th>
+            <th colspan="2">Datos del Socio / Propietario</th>
+        </tr>
+        <tr>
+            <td><strong>Código de Pago:</strong></td>
+            <td th:text="${codigo_pago}">PAG-00001</td>
+            <td><strong>Socio:</strong></td>
+            <td th:text="${socio_nombre}">Juan Pérez</td>
+        </tr>
+        <tr>
+            <td><strong>Fecha de Pago:</strong></td>
+            <td th:text="${fecha_pago}">2026-07-07</td>
+            <td><strong>Nro. Puesto:</strong></td>
+            <td th:text="${nro_puesto}">101</td>
+        </tr>
+        <tr>
+            <td><strong>Método Pago:</strong></td>
+            <td th:text="${metodo_pago}">Transferencia</td>
+            <td><strong>DNI:</strong></td>
+            <td th:text="${socio_dni}">12345678</td>
+        </tr>
+    </table>
+
+    <table class="details-table">
+        <thead>
+            <tr>
+                <th>Concepto / Servicio</th>
+                <th style="text-align: right;">Monto Pagado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td th:text="${concepto}">Cuota de Mantenimiento Ordinario</td>
+                <td style="text-align: right;" th:text="'S/. ' + ${monto_pagado}">S/. 50.00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="total-section">
+        Total Pagado: <span th:text="'S/. ' + ${monto_pagado}">S/. 50.00</span>
+    </div>
+
+</body>
+</html>

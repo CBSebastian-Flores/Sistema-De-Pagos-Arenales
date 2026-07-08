@@ -1,5 +1,5 @@
 -- ============================================
--- SCRIPT DE CREACIÓN - CC_Arenales
+-- SCRIPT DE CREACIÓN - CC_Arenales (Corregido para SQL Server)
 -- ============================================
 
 -- Crear base de datos
@@ -14,7 +14,7 @@ USE CC_Arenales;
 GO
 
 -- ============================================
--- LIMPIEZA DE TABLAS (Orden por Foreign Keys)
+-- LIMPIEZA DE TABLAS (Orden correcto por Foreign Keys)
 -- ============================================
 IF OBJECT_ID('Pago', 'U') IS NOT NULL DROP TABLE Pago;
 IF OBJECT_ID('Historial_Servicio', 'U') IS NOT NULL DROP TABLE Historial_Servicio;
@@ -42,13 +42,12 @@ CREATE TABLE Usuario (
     correo VARCHAR(150) NULL UNIQUE,
     contrasena VARCHAR(255) NOT NULL,
     fecha_nacimiento DATE NOT NULL,
-    genero VARCHAR(20) NOT NULL
-    CHECK (genero IN ('Masculino', 'Femenino', 'Otro')),
+    genero VARCHAR(20) NOT NULL CHECK (genero IN ('Masculino', 'Femenino', 'Otro')),
     nro_puesto INT NOT NULL UNIQUE,
     telefono VARCHAR(9) NOT NULL UNIQUE,
     estado BIT NOT NULL DEFAULT 1,
     intentos_fallidos INT NOT NULL DEFAULT 0,
-	bloqueado_hasta DATETIME NULL,
+    bloqueado_hasta DATETIME NULL,
     id_rol INT NOT NULL,
 
     -- Llave foránea
@@ -60,12 +59,24 @@ CREATE TABLE Servicio (
     id_servicio INT PRIMARY KEY IDENTITY(1,1),
     nombre_servicio VARCHAR(100) NOT NULL,
     descripcion VARCHAR(255) NULL,
-	categoria VARCHAR(20) NOT NULL DEFAULT 'ORDINARIO' CHECK (categoria IN ('ORDINARIO', 'EXTRAORDINARIO')),
-	modalidad_cobro VARCHAR(15) NOT NULL DEFAULT 'FIJO'	CHECK (modalidad_cobro IN ('FIJO', 'VARIABLE')),
-	precio_base DECIMAL (10,2) NOT NULL DEFAULT 0.00,
-    tarifa_mora DECIMAL(10,2) NOT NULL DEFAULT 10.00,
-    estado BIT NOT NULL DEFAULT 1,
+    categoria VARCHAR(20) NOT NULL DEFAULT 'ORDINARIO' CHECK (categoria IN ('ORDINARIO', 'EXTRAORDINARIO')),
+    modalidad_cobro VARCHAR(15) NOT NULL DEFAULT 'FIJO' CHECK (modalidad_cobro IN ('FIJO', 'VARIABLE')),
+    precio_base DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    tarifa_mora DECIMAL(10,2) NULL,
+    dia_corte TINYINT CHECK (dia_corte BETWEEN 1 AND 31),
+    dias_vencimiento TINYINT CHECK (dias_vencimiento BETWEEN 1 AND 31),
+    estado BIT NOT NULL DEFAULT 1
 );
+GO
+
+-- INDEXACIÓN DE CAMPOS LOGÍSTICOS DE LA TABLA SERVICIO --
+CREATE NONCLUSTERED INDEX IX_Servicio_ModalidadCobro ON Servicio(modalidad_cobro);
+GO
+CREATE NONCLUSTERED INDEX IX_Servicio_DiaCorte ON Servicio(dia_corte);
+GO
+CREATE NONCLUSTERED INDEX IX_Servicio_DiasVencimiento ON Servicio(dias_vencimiento);
+GO
+CREATE NONCLUSTERED INDEX IX_Servicio_InyeccionMasiva ON Servicio(modalidad_cobro, dia_corte, dias_vencimiento);
 GO
 
 CREATE TABLE Deuda (
@@ -75,50 +86,51 @@ CREATE TABLE Deuda (
     fecha_emision DATE NOT NULL,
     fecha_vencimiento DATE NOT NULL,
     estado_deuda VARCHAR(20) NOT NULL CHECK (estado_deuda IN ('Pendiente', 'Pagado', 'Vencido')),
-
     id_servicio INT NOT NULL,
     id_usuario INT NOT NULL,
-
-	id_usuario_creador INT NOT NULL,
-	fecha_registro_sistema DATETIME NOT NULL DEFAULT GETDATE(),
+    id_usuario_creador INT NULL,
+    fecha_registro_sistema DATETIME NOT NULL DEFAULT GETDATE(),
 
     -- Llaves foráneas
     CONSTRAINT FK_Deuda_Servicio FOREIGN KEY (id_servicio) REFERENCES Servicio(id_servicio),
     CONSTRAINT FK_Deuda_Usuario FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario),
-	CONSTRAINT FK_Deuda_UsuarioCreador FOREIGN KEY (id_usuario_creador) REFERENCES Usuario(id_usuario)
+    CONSTRAINT FK_Deuda_UsuarioCreador FOREIGN KEY (id_usuario_creador) REFERENCES Usuario(id_usuario)
 );
 GO
 
 CREATE TABLE Pago (
     id_pago INT PRIMARY KEY IDENTITY(1,1),
+    codigo_pago VARCHAR(50) NOT NULL UNIQUE,
     fecha_pago DATETIME NOT NULL DEFAULT GETDATE(),
     monto_pagado DECIMAL(10,2) NOT NULL,
-    metodo_pago VARCHAR(50) NOT NULL
-    CHECK (metodo_pago IN ('Efectivo', 'Transferencia', 'Yape', 'Plin')),
+    metodo_pago VARCHAR(50) NOT NULL CHECK (metodo_pago IN ('Efectivo', 'Transferencia', 'Yape', 'Plin')),
     nro_operacion VARCHAR(100) NULL,
     voucher_url VARCHAR(255) NULL,
     id_deuda INT NOT NULL,
-    id_usuario_tesorero INT NOT NULL,
+    id_usuario_registro INT NOT NULL,
 
     -- Llave foránea
     CONSTRAINT FK_Pago_Deuda FOREIGN KEY (id_deuda) REFERENCES Deuda(id_deuda),
-    CONSTRAINT FK_Pago_Tesorero FOREIGN KEY (id_usuario_tesorero) REFERENCES Usuario(id_usuario)
+    CONSTRAINT FK_Pago_UsuarioRegistro FOREIGN KEY (id_usuario_registro) REFERENCES Usuario(id_usuario)
 );
 GO
 
 CREATE TABLE Egreso (
     id_egreso INT PRIMARY KEY IDENTITY(1,1),
+    codigo_egreso VARCHAR(50) NOT NULL UNIQUE,
     descripcion VARCHAR(255) NOT NULL,
     monto DECIMAL(10,2) NOT NULL,
-    fecha_gasto DATE NOT NULL,
+    fecha_gasto DATETIME NOT NULL,
     comprobante_url VARCHAR(255) NULL,
     categoria_egreso VARCHAR(100) NOT NULL,
     metodo_retiro VARCHAR(50) NOT NULL CHECK (metodo_retiro IN ('Efectivo', 'Transferencia', 'Yape', 'Plin')),
     beneficiario VARCHAR(150) NOT NULL,
-    id_usuario INT NOT NULL,
+    id_usuario_registro INT NOT NULL,
+    id_servicio INT NOT NULL,
 
-    -- Llave foránea
-    CONSTRAINT FK_Egreso_Usuario FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario)
+    -- Llaves foráneas
+    CONSTRAINT FK_Egreso_Usuario FOREIGN KEY (id_usuario_registro) REFERENCES Usuario(id_usuario),
+    CONSTRAINT FK_Egreso_Servicio FOREIGN KEY (id_servicio) REFERENCES Servicio(id_servicio)
 );
 GO
 
@@ -126,13 +138,12 @@ CREATE TABLE Historial_Usuario (
     id_historial_usuario INT IDENTITY(1,1) PRIMARY KEY,
     id_usuario INT NOT NULL,
     datos_anteriores NVARCHAR(MAX) NULL,
-    tipo_accion VARCHAR(50) NOT NULL
-    CHECK (tipo_accion IN ('REGISTRAR','ACTUALIZAR','INHABILITAR','HABILITAR','PASSWORD_RESET')),
+    tipo_accion VARCHAR(50) NOT NULL CHECK (tipo_accion IN ('REGISTRAR','ACTUALIZAR','INHABILITAR','HABILITAR','PASSWORD_RESET')),
     motivo NVARCHAR(255) NULL,
     id_usuario_creador INT NOT NULL,
-    fecha_registro DATETIME NOT NULL DEFAULT GETDATE()
+    fecha_registro DATETIME NOT NULL DEFAULT GETDATE(),
 
-	-- Llave foránea
+    -- Llaves foráneas
     CONSTRAINT FK_HistorialUsuario_Usuario FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario),
     CONSTRAINT FK_HistorialUsuario_UsuarioCreador FOREIGN KEY (id_usuario_creador) REFERENCES Usuario(id_usuario)
 );
@@ -142,8 +153,7 @@ CREATE TABLE Historial_Servicio (
     id_historial_servicio INT IDENTITY(1,1) PRIMARY KEY,
     id_servicio INT NOT NULL,
     datos_anteriores NVARCHAR(MAX) NULL,
-    tipo_accion VARCHAR(50) NOT NULL
-    CHECK (tipo_accion IN ('REGISTRAR','ACTUALIZAR','INHABILITAR','HABILITAR')),
+    tipo_accion VARCHAR(50) NOT NULL CHECK (tipo_accion IN ('REGISTRAR','ACTUALIZAR','INHABILITAR','HABILITAR')),
     motivo NVARCHAR(255) NULL,
     id_usuario_creador INT NOT NULL,
     fecha_registro DATETIME NOT NULL DEFAULT GETDATE(),

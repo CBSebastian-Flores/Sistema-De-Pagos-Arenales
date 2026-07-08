@@ -4,11 +4,6 @@ import { toast } from "react-toastify";
 
 // Helpers para automatizar fechas por defecto
 const obtenerFechaHoy = () => new Date().toISOString().split("T")[0];
-const obtenerFechaUnMesDespues = () => {
-  const d = new Date();
-  d.setMonth(d.getMonth() + 1);
-  return d.toISOString().split("T")[0];
-};
 
 export default function ConfiguracionObligacion() {
   const [servicios, setServicios] = useState([]);
@@ -22,9 +17,6 @@ export default function ConfiguracionObligacion() {
 
   // Estados de fecha inicializados dinámicamente
   const [fechaEmision, setFechaEmision] = useState(obtenerFechaHoy());
-  const [fechaVencimiento, setFechaVencimiento] = useState(
-    obtenerFechaUnMesDespues(),
-  );
 
   const [errores, setErrores] = useState({});
   const [generando, setGenerando] = useState(false);
@@ -113,8 +105,6 @@ export default function ConfiguracionObligacion() {
     }
     if (!fechaEmision)
       nuevosErrores.fechaEmision = "Selecciona la fecha de emisión";
-    if (!fechaVencimiento)
-      nuevosErrores.fechaVencimiento = "Selecciona la fecha de vencimiento";
     return nuevosErrores;
   };
 
@@ -130,8 +120,7 @@ export default function ConfiguracionObligacion() {
       const payload = {
         idServicio: Number(idServicio),
         montoCuotaSocio: cuotaPorSocio,
-        fechaEmision,
-        fechaVencimiento,
+        fechaEmision
       };
 
       // 🚀 Endpoint real corregido
@@ -145,7 +134,6 @@ export default function ConfiguracionObligacion() {
       setServicioSeleccionado(null);
       setFacturaTotal("");
       setFechaEmision(obtenerFechaHoy());
-      setFechaVencimiento(obtenerFechaUnMesDespues());
     } catch (error) {
       toast.error(
         error.response?.data?.error || "Error al generar la obligación",
@@ -284,8 +272,7 @@ export default function ConfiguracionObligacion() {
                   />
                   <p className="text-xs text-amber-500/90 mt-1">
                     * Esta penalidad se sumará automáticamente al saldo si la
-                    deuda no se cancela hasta el{" "}
-                    {fechaVencimiento.split("-").reverse().join("/")}.
+                    deuda no se cancela hasta el dia 15
                   </p>
                 </div>
               )}
@@ -310,27 +297,6 @@ export default function ConfiguracionObligacion() {
             />
             {errores.fechaEmision && (
               <p className="text-red-400 text-xs">{errores.fechaEmision}</p>
-            )}
-          </div>
-
-          {/* Fecha de vencimiento */}
-          <div className="flex flex-col gap-2">
-            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Fecha de Vencimiento
-            </label>
-            <input
-              type="date"
-              value={fechaVencimiento}
-              onChange={(e) => {
-                setFechaVencimiento(e.target.value);
-                setErrores((prev) => ({ ...prev, fechaVencimiento: null }));
-              }}
-              style={{ colorScheme: "dark" }}
-              className={`bg-[#0f1b2d] border rounded-lg px-3 py-3 text-sm text-white outline-none transition-colors
-                ${errores.fechaVencimiento ? "border-red-500" : "border-[#1e3a5f] focus:border-blue-500"}`}
-            />
-            {errores.fechaVencimiento && (
-              <p className="text-red-400 text-xs">{errores.fechaVencimiento}</p>
             )}
           </div>
 

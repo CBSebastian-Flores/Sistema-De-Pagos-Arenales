@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,7 +44,7 @@ public class DeudaController {
     }
 
     @GetMapping("/pendiente")
-    @PreAuthorize("hasAnyAuthority('Socio', 'Administrador')")
+    @PreAuthorize("hasAnyAuthority('Socio', 'Administrador', 'Tesorero')")
     public ResponseEntity<List<DeudaResponseDTO>> obtenerDeudasPendientesSocio() {
         Usuario socioLogueado = securityUtils.getUsuarioAutenticado();
         Integer idSocio = socioLogueado.getIdUsuario();
@@ -53,15 +54,15 @@ public class DeudaController {
     }
 
     @GetMapping("/general")
-    @PreAuthorize("hasAnyAuthority('ROLE_TESORERO', 'ROLE_ADMINISTRADOR', 'Tesorero', 'Administrador')")
+    @PreAuthorize("hasAnyAuthority('Tesorero', 'Administrador')")
     public ResponseEntity<List<DeudaDetalleTesoreriaDTO>> obtenerReporteGeneralDeudas() {
         List<DeudaDetalleTesoreriaDTO> reporte = deudaService.obtenerReporteGeneralDeudas();
         return ResponseEntity.ok(reporte);
     }
 
     @PostMapping("/cobrar")
-    @PreAuthorize("hasAnyAuthority('ROLE_TESORERO', 'ROLE_ADMINISTRADOR', 'Tesorero', 'Administrador')")
-    public ResponseEntity<?> registrarPagoDeuda(@Valid @RequestBody PagoRequestDTO dto) {
+    @PreAuthorize("hasAnyAuthority('Tesorero', 'Administrador')")
+    public ResponseEntity<?> registrarPagoDeuda(@Valid @ModelAttribute PagoRequestDTO dto) {
         try {
             deudaService.registrarPagoDeuda(dto);
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(

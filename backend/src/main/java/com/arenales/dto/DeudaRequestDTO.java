@@ -20,7 +20,4 @@ public class DeudaRequestDTO {
 
     @NotNull(message = "La fecha de emisión es obligatoria.")
     private LocalDate fechaEmision;
-
-    @NotNull(message = "La fecha de vencimiento es obligatoria.")
-    private LocalDate fechaVencimiento;
 }

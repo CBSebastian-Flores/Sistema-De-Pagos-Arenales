@@ -5,6 +5,10 @@ import AccesoDenegado from "./AccesoDenegado"
 import MantenimientoUsuarios from "./MantenimientoUsuarios"
 import MantenimientoServicios from "./MantenimientoServicios"
 import ConfiguracionObligacion from "./ConfiguracionObligacion"
+import MisPagosPendientes from "./MisPagosPendientes"
+import HistorialPagos from "./HistorialPagos"
+import TablaTesoreria from "./TablaTesoreria"
+import RegistrarEgresos from "./RegistrarEgresos"
 
 function Placeholder({ titulo }) {
   return (
@@ -19,6 +23,8 @@ const paginasRestringidas = {
   "Mantenimiento de Usuarios": ["Administrador"],
   "Mantenimiento de Servicios": ["Administrador", "Tesorero"],
   "Generación de Pagos": ["Administrador", "Tesorero"],
+  "Vista de Pagos": ["Administrador", "Tesorero"],
+  "Registrar Egresos": ["Administrador", "Tesorero"],
 }
 
 export default function Layout({ onSubmit, onCerrarSesion }) {
@@ -40,6 +46,14 @@ export default function Layout({ onSubmit, onCerrarSesion }) {
         return <MantenimientoServicios />
       case "Generación de Pagos":
         return <ConfiguracionObligacion />
+      case "Vista de Pagos":
+        return <TablaTesoreria />
+      case "Mis Pagos Pendientes":
+        return <MisPagosPendientes />
+      case "Mi Historial de Pagos":
+        return <HistorialPagos />
+      case "Registrar Egresos":
+        return <RegistrarEgresos />
       default:
         return <Placeholder titulo={paginaActiva} />
     }

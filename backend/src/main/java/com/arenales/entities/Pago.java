@@ -2,6 +2,7 @@ package com.arenales.entities;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,7 +22,7 @@ import lombok.Data;
 public class Pago {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_pago")
     private Integer idPago;
 
@@ -45,9 +46,11 @@ public class Pago {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_deuda", nullable = false, foreignKey = @ForeignKey(name = "FK_Pago_Deuda"))
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Deuda deuda;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario_registro", nullable = false, foreignKey = @ForeignKey(name = "FK_Pago_UsuarioRegistro"))
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Usuario usuarioRegistro;
 }
