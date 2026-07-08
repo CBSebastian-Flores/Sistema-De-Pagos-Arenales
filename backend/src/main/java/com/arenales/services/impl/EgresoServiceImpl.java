@@ -85,7 +85,7 @@ public class EgresoServiceImpl implements EgresoService {
     @Transactional(readOnly = true)
     public List<EgresoResponseDTO> obtenerUltimosEgresos() {
         // PageRequest IMPLEMENTA la interfaz Pageable, por lo que este casteo es automático si los imports son correctos
-        List<Egreso> listaEntidades = egresoRepository.obtenerUltimosEgresos(PageRequest.of(0, 10));
+        List<Egreso> listaEntidades = egresoRepository.obtenerUltimosEgresos(PageRequest.of(0, 5));
 
         return listaEntidades.stream().map(e -> new EgresoResponseDTO(
                 e.getIdEgreso(),
