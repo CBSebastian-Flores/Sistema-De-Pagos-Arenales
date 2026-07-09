@@ -20,12 +20,13 @@ import lombok.Data;
 @Table(name = "Pago")
 @Data
 public class Pago {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_pago")
     private Integer idPago;
 
-    @Column(name = "codigo_pago", nullable = false, unique = true, length = 20)
+    @Column(name = "codigo_pago", nullable = false, unique = true, length = 50)
     private String codigoPago;
 
     @Column(name = "fecha_pago", nullable = false, insertable = false, updatable = false)
@@ -42,7 +43,6 @@ public class Pago {
 
     @Column(name = "voucher_url", length = 255)
     private String voucherUrl;
-
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_deuda", nullable = false, foreignKey = @ForeignKey(name = "FK_Pago_Deuda"))
