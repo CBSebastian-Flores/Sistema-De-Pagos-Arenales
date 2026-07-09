@@ -1,6 +1,7 @@
 package com.arenales.services;
 
 import java.util.List;
+import java.util.Map;
 
 import com.arenales.dto.DeudaDetalleTesoreriaDTO;
 import com.arenales.dto.DeudaRequestDTO;
@@ -13,5 +14,5 @@ public interface DeudaService {
     List<DeudaResponseDTO> obtenerDeudasNoPagadas(Integer idUsuario);
     List<DeudaDetalleTesoreriaDTO> obtenerReporteGeneralDeudas();
 
-    void registrarPagoDeuda(PagoRequestDTO dto);
+    Map<String, String> registrarPagoDeuda(PagoRequestDTO dto);
 }

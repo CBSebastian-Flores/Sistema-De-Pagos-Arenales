@@ -63,22 +63,10 @@ public class DeudaController {
     @PostMapping("/cobrar")
     @PreAuthorize("hasAnyAuthority('Tesorero', 'Administrador')")
     public ResponseEntity<?> registrarPagoDeuda(@Valid @ModelAttribute PagoRequestDTO dto) {
-        try {
-            deudaService.registrarPagoDeuda(dto);
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                    "success", true,
-                    "mensaje", "El pago ha sido registrado con éxito y la deuda se encuentra CANCELADA."
-            ));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "success", false,
-                    "error", e.getMessage()
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                    "success", false,
-                    "error", "Ocurrió un error inesperado al procesar el cobro en el sistema."
-            ));
-        }
+        Map<String, String> respuestaDelServicio = deudaService.registrarPagoDeuda(dto);
+
+        respuestaDelServicio.put("success", "true");
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(respuestaDelServicio);
     }
 }

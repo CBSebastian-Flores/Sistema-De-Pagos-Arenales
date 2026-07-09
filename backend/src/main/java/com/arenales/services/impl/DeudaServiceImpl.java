@@ -203,12 +203,13 @@ public class DeudaServiceImpl implements DeudaService {
 
     @Override
     @Transactional
-    public void registrarPagoDeuda(PagoRequestDTO dto) {
+    public Map<String, String> registrarPagoDeuda(PagoRequestDTO dto) {
         log.info("[PAGO] Solicitud entrante para registrar el pago de la deuda ID: {}", dto.getIdDeuda());
 
         Deuda deuda = deudaRepository.findById(dto.getIdDeuda())
                 .orElseThrow(() -> new RuntimeException("Deuda no encontrada con ID: " + dto.getIdDeuda()));
 
+        // VALIDACIONES
         if ("Pagado".equalsIgnoreCase(deuda.getEstadoDeuda())) {
             throw new RuntimeException("Esta deuda ya se encuentra cancelada.");
         }
@@ -227,6 +228,7 @@ public class DeudaServiceImpl implements DeudaService {
 
         String correlativoPAG = "PAG-" + System.currentTimeMillis() + "-" + java.util.UUID.randomUUID().toString().substring(0, 4).toUpperCase();
 
+        // REGISTRANDO EL PAGO EN LA BASE DE DATOS
         Pago nuevoPago = new Pago();
         nuevoPago.setCodigoPago(correlativoPAG);
         nuevoPago.setMontoPagado(dto.getMontoPagado());
@@ -259,34 +261,39 @@ public class DeudaServiceImpl implements DeudaService {
 
         log.info("[PAGO] Registro en base de datos completado con éxito. Correlativo generado: {}", correlativoPAG);
 
-        // POST-PAGO: Disparar el proceso asíncrono
+        // LOS DATOS ENVIADOS AL GENERADOR DE COMPROBANTES
+        Map<String, String> respuesta = new java.util.HashMap<>();
+
+        // Disparar el proceso asíncrono y definir el mensaje
         try {
             Usuario socio = deuda.getUsuarioSocio();
             String correoSocio = socio.getCorreo();
 
             if (correoSocio == null || correoSocio.trim().isEmpty()) {
-                log.warn("[POST-PAGO] El socio {} no tiene un correo registrado. Se omitirá el envío del comprobante.", socio.getNombres());
-                return;
+                log.warn("[POST-PAGO] El socio {} no tiene un correo registrado.", socio.getNombres());
+                respuesta.put("mensaje", "Pago procesado con éxito, pero el socio no tiene un correo electrónico registrado.");
+            } else {
+                log.info("[POST-PAGO] Empaquetando datos y delegando al hilo asíncrono...");
+                Map<String, Object> data = new java.util.HashMap<>();
+                data.put("codigo_pago", correlativoPAG);
+                data.put("socio_nombre", (socio.getNombres() + " " + socio.getApellidos()).trim());
+                data.put("nro_puesto", socio.getNroPuesto() != null ? String.valueOf(socio.getNroPuesto()) : "---");
+                data.put("socio_dni", socio.getDni() != null ? socio.getDni() : "---");
+                data.put("fecha_pago", java.time.LocalDate.now().toString());
+                data.put("metodo_pago", dto.getMetodoPago());
+                data.put("concepto", deuda.getServicio().getNombreServicio());
+                data.put("nro_operacion", dto.getNroOperacion() != null ? dto.getNroOperacion() : "---");
+                data.put("monto_pagado", String.format("%.2f", dto.getMontoPagado()));
+
+                emailService.enviarBoletaPorCorreo(correoSocio, socio.getNombres(), correlativoPAG, data);
+
+                respuesta.put("mensaje", "Pago procesado con éxito. La boleta digital ha sido enviada al correo del socio.");
             }
-
-            log.info("[POST-PAGO] Empaquetando datos y delegando al hilo asíncrono...");
-            Map<String, Object> data = new java.util.HashMap<>();
-            data.put("codigo_pago", correlativoPAG);
-            data.put("socio_nombre", (socio.getNombres() + " " + socio.getApellidos()).trim());
-            data.put("nro_puesto", socio.getNroPuesto() != null ? String.valueOf(socio.getNroPuesto()) : "---");
-            data.put("socio_dni", socio.getDni() != null ? socio.getDni() : "---");
-            data.put("fecha_pago", java.time.LocalDate.now().toString());
-            data.put("metodo_pago", dto.getMetodoPago());
-            data.put("concepto", deuda.getServicio().getNombreServicio());
-            data.put("nro_operacion", dto.getNroOperacion() != null ? dto.getNroOperacion() : "---");
-            data.put("monto_pagado", String.format("%.2f", dto.getMontoPagado()));
-
-
-            // Se envía el Map al hilo secundario. La respuesta HTTP al frontend retornará inmediatamente.
-            emailService.enviarBoletaPorCorreo(correoSocio, socio.getNombres(), correlativoPAG, data);
-
         } catch (Exception e) {
             log.error("[POST-PAGO EXCEPCIÓN] Fallo al intentar delegar el proceso de correo: ", e);
+            respuesta.put("mensaje", "Pago procesado con éxito, pero ocurrió un error interno al intentar enviar el correo.");
         }
+
+        return respuesta;
     }
 }

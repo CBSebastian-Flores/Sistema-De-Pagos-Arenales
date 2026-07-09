@@ -46,7 +46,21 @@ export default function TablaTesoreria() {
   };
 
   useEffect(() => {
-    cargarDeudas();
+    let activo = true;
+
+    const inicializarCarga = async () => {
+      // Dejamos que el componente respire un milisegundo antes de cambiar el estado
+      if (activo) {
+        await cargarDeudas();
+      }
+    };
+
+    inicializarCarga();
+
+    // Función de limpieza para evitar fugas de memoria si el usuario cambia de página rápido
+    return () => {
+      activo = false;
+    };
   }, []);
 
   const deudasFiltradas = deudas.filter((d) => {
@@ -282,10 +296,11 @@ export default function TablaTesoreria() {
       <ModalPago
         deuda={deudaSeleccionada}
         isOpen={!!deudaSeleccionada}
-        onClose={() => setDeudaSeleccionada(null)}
-        onPagoExitoso={() => {
+        onClose={() => {
           setDeudaSeleccionada(null);
-          cargarDeudas();
+        }}
+        onPagoExitoso={() => {
+          cargarDeudas(); // Refresca los datos en segundo plano sin cerrar la ventana
         }}
       />
     </div>
