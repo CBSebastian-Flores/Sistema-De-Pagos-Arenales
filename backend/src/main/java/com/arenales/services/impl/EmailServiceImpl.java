@@ -1,5 +1,6 @@
 package com.arenales.services.impl;
 
+import com.arenales.services.ComprobanteService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,8 @@ import com.arenales.services.EmailService;
 
 import jakarta.mail.internet.MimeMessage;
 
+import java.util.Map;
+
 @Service
 public class EmailServiceImpl implements EmailService {
 
@@ -21,6 +24,9 @@ public class EmailServiceImpl implements EmailService {
 
     @Autowired
     private JavaMailSender mailSender;
+
+    @Autowired
+    private ComprobanteService comprobanteService;
 
     @Override
     @Async
@@ -39,34 +45,34 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     @Async
-    public void enviarBoletaPorCorreo(String destinatario, String nombreSocio, String codigoPago, byte[] pdfBytes) {
-        log.info("[CORREO] Iniciando el envío asíncrono de boleta para el pago: {}", codigoPago);
+    public void enviarBoletaPorCorreo(String destinatario, String nombreSocio, String codigoPago, Map<String, Object> datosBoleta) {
+        log.info("[CORREO ASYNC] Iniciando hilo en segundo plano para procesar PDF y correo de: {}", codigoPago);
         try {
+            // 1. Generar el PDF fuera del hilo transaccional principal
+            log.info("[CORREO ASYNC] Generando el binario PDF...");
+            byte[] pdfBytes = comprobanteService.generarBoletaPdf("boleta", datosBoleta);
+
+            // 2. Preparar el correo
             MimeMessage message = mailSender.createMimeMessage();
-            
-            // el parámetro true habilita la carga de archivos adjuntos 
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            
+
             helper.setTo(destinatario);
             helper.setSubject("Comprobante de Pago Electrónico - " + codigoPago);
 
             String cuerpoHtml = "<h3>Estimado(a) " + nombreSocio + ",</h3>"
                     + "<p>Agradecemos el pago realizado. Adjunto a este correo encontrará su boleta electrónica correspondiente al código de transacción <b>" + codigoPago + "</b>.</p>"
                     + "<br><p>Saludos cordiales,<br><b>Administración - Condominio Centro Arenales</b></p>";
-            
             helper.setText(cuerpoHtml, true);
 
-            // convertimos el flujo de bytes a un recurso acoplable sin tocar el disco duro
             ByteArrayResource pdfAdjunto = new ByteArrayResource(pdfBytes);
-            String nombreArchivo = "Boleta_" + codigoPago + ".pdf";
-            helper.addAttachment(nombreArchivo, pdfAdjunto);
+            helper.addAttachment("Boleta_" + codigoPago + ".pdf", pdfAdjunto);
 
+            // 3. Enviar
             mailSender.send(message);
-            log.info("[CORREO] ¡Éxito! Boleta enviada correctamente al correo: {}", destinatario);
-            
+            log.info("[CORREO ASYNC] ¡Éxito! Boleta enviada correctamente al correo: {}", destinatario);
+
         } catch (Exception ex) {
-            // Captura el error en consola/logs de Spring sin interrumpir o alterar la transacción de pago
-            log.error("[CORREO ERROR] No se pudo despachar la boleta para el pago " + codigoPago + ". Motivo: ", ex);
+            log.error("[CORREO ERROR] Fallo crítico al generar/enviar la boleta para el pago {}. Motivo: ", codigoPago, ex);
         }
     }
 }

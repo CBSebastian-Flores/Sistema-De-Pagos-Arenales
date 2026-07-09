@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.arenales.services.StorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +52,7 @@ public class DeudaServiceImpl implements DeudaService {
     private SecurityUtils securityUtils;
 
     @Autowired
-    private ComprobanteService comprobanteService; // <-- Nuevo
+    private StorageService cloudinaryService;
 
     @Autowired
     private EmailService emailService;             // <-- Nuevo
@@ -224,8 +225,7 @@ public class DeudaServiceImpl implements DeudaService {
             throw new RuntimeException("No se encontró una sesión de usuario válida para auditar el pago.");
         }
 
-        long totalPagosExistentes = pagoRepository.contarTotalPagos();
-        String correlativoPAG = String.format("PAG-%03d", totalPagosExistentes + 1);
+        String correlativoPAG = "PAG-" + System.currentTimeMillis() + "-" + java.util.UUID.randomUUID().toString().substring(0, 4).toUpperCase();
 
         Pago nuevoPago = new Pago();
         nuevoPago.setCodigoPago(correlativoPAG);
@@ -235,16 +235,31 @@ public class DeudaServiceImpl implements DeudaService {
         nuevoPago.setDeuda(deuda);
         nuevoPago.setUsuarioRegistro(tesorero);
 
-        if ("TRANSFERENCIA".equalsIgnoreCase(dto.getMetodoPago()) && dto.getComprobante() != null && !dto.getComprobante().isEmpty()) {
+        if ("TRANSFERENCIA".equalsIgnoreCase(dto.getMetodoPago())) {
+            if (dto.getNroOperacion() == null || dto.getNroOperacion().trim().isEmpty()) {
+                throw new RuntimeException("Validación: El número de operación es obligatorio para transferencias.");
+            }
+            if (dto.getComprobante() == null || dto.getComprobante().isEmpty()) {
+                throw new RuntimeException("Validación: El archivo del voucher es obligatorio para transferencias.");
+            }
+
+            log.info("[PAGO] Subiendo voucher de transferencia a Cloudinary...");
+            try {
+                String urlComprobante = cloudinaryService.subirArchivo(dto.getComprobante());
+                nuevoPago.setVoucherUrl(urlComprobante);
+            } catch (Exception e) {
+                throw new RuntimeException("Error al subir el comprobante a Cloudinary: " + e.getMessage());
+            }
         }
 
         pagoRepository.save(nuevoPago);
 
         deuda.setEstadoDeuda("Pagado");
         deudaRepository.save(deuda);
-        
+
         log.info("[PAGO] Registro en base de datos completado con éxito. Correlativo generado: {}", correlativoPAG);
 
+        // POST-PAGO: Disparar el proceso asíncrono
         try {
             Usuario socio = deuda.getUsuarioSocio();
             String correoSocio = socio.getCorreo();
@@ -254,30 +269,24 @@ public class DeudaServiceImpl implements DeudaService {
                 return;
             }
 
-            log.info("[POST-PAGO] Compilando datos para el mapa de variables de la plantilla Thymeleaf...");
-            Map<String, Object> data = new HashMap<>();
+            log.info("[POST-PAGO] Empaquetando datos y delegando al hilo asíncrono...");
+            Map<String, Object> data = new java.util.HashMap<>();
             data.put("codigo_pago", correlativoPAG);
             data.put("socio_nombre", (socio.getNombres() + " " + socio.getApellidos()).trim());
             data.put("nro_puesto", socio.getNroPuesto() != null ? String.valueOf(socio.getNroPuesto()) : "---");
             data.put("socio_dni", socio.getDni() != null ? socio.getDni() : "---");
-            data.put("fecha_pago", LocalDate.now().toString());
+            data.put("fecha_pago", java.time.LocalDate.now().toString());
             data.put("metodo_pago", dto.getMetodoPago());
             data.put("concepto", deuda.getServicio().getNombreServicio());
-            data.put("monto_pagado", dto.getMontoPagado().toString());
+            data.put("nro_operacion", dto.getNroOperacion() != null ? dto.getNroOperacion() : "---");
+            data.put("monto_pagado", String.format("%.2f", dto.getMontoPagado()));
 
-            log.info("[POST-PAGO] Generando el archivo binario PDF en la memoria RAM...");
-            byte[] pdfBytes = comprobanteService.generarBoletaPdf("boleta", data);
 
-            log.info("[POST-PAGO] Disparando hilo asíncrono para el envío del correo electrónico.");
-            emailService.enviarBoletaPorCorreo(
-                correoSocio, 
-                socio.getNombres(), 
-                correlativoPAG, 
-                pdfBytes
-            );
+            // Se envía el Map al hilo secundario. La respuesta HTTP al frontend retornará inmediatamente.
+            emailService.enviarBoletaPorCorreo(correoSocio, socio.getNombres(), correlativoPAG, data);
 
         } catch (Exception e) {
-            log.error("[POST-PAGO EXCEPCIÓN] El pago se procesó en BD pero falló el flujo de comprobación/correo: ", e);
+            log.error("[POST-PAGO EXCEPCIÓN] Fallo al intentar delegar el proceso de correo: ", e);
         }
     }
 }
