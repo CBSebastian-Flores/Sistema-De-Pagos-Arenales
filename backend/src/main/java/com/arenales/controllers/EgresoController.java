@@ -1,20 +1,26 @@
 package com.arenales.controllers;
 
-import com.arenales.dto.EgresoRequestDTO;
-import com.arenales.dto.EgresoResponseDTO;
-import com.arenales.entities.Egreso;
-import com.arenales.services.EgresoService;
-import jakarta.validation.Valid;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
+import com.arenales.dto.EgresoRequestDTO;
+import com.arenales.dto.EgresoResponseDTO;
+import com.arenales.entities.Egreso;
+import com.arenales.services.EgresoService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/egresos")
@@ -51,8 +57,7 @@ public class EgresoController {
         BigDecimal total = egresoService.obtenerTotalEgresos();
         return ResponseEntity.ok(Map.of("total", total));
     }
-
-    // 🟢 Endpoint para la lista de "Últimos Egresos"
+    
     @GetMapping("/ultimos")
     @PreAuthorize("hasAnyAuthority('Tesorero', 'Administrador')")
     public ResponseEntity<List<EgresoResponseDTO>> obtenerUltimosEgresos() {
