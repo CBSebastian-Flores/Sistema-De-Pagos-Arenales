@@ -2,6 +2,7 @@ package com.arenales.services.impl;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.arenales.config.SecurityUtils;
 import com.arenales.dto.DeudaDetalleTesoreriaDTO;
+import com.arenales.dto.DeudaIndividualRequestDTO;
 import com.arenales.dto.DeudaRequestDTO;
 import com.arenales.dto.DeudaResponseDTO; 
 import com.arenales.dto.PagoRequestDTO;
@@ -296,4 +298,28 @@ public class DeudaServiceImpl implements DeudaService {
 
         return respuesta;
     }
+
+    @Override
+    @Transactional
+    public void registrarDeudaIndividual(DeudaIndividualRequestDTO dto, Usuario creador) {
+        Usuario socio = usuarioRepository.findByNroPuesto(dto.getNroPuesto())
+            .orElseThrow(() -> new RuntimeException("El número de puesto " + dto.getNroPuesto() + " no está registrado en el padrón."));
+
+        Servicio servicio = servicioRepository.findById(dto.getIdServicio())
+            .orElseThrow(() -> new RuntimeException("El servicio especificado no existe."));
+
+        Deuda nuevaDeuda = new Deuda();
+        nuevaDeuda.setMontoBase(dto.getMontoBase());
+        nuevaDeuda.setMora(BigDecimal.ZERO);
+        nuevaDeuda.setFechaEmision(LocalDate.now());
+        nuevaDeuda.setFechaVencimiento(dto.getFechaVencimiento());
+        nuevaDeuda.setEstadoDeuda("Pendiente");
+        nuevaDeuda.setServicio(servicio);
+        nuevaDeuda.setUsuarioSocio(socio);
+        nuevaDeuda.setUsuarioCreador(creador);
+
+        deudaRepository.save(nuevaDeuda);
+    }
+
+
 }
