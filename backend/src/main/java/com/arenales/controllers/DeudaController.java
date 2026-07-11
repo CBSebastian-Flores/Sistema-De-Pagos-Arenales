@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.arenales.config.SecurityUtils;
 import com.arenales.dto.DeudaDetalleTesoreriaDTO;
+import com.arenales.dto.DeudaIndividualRequestDTO;
 import com.arenales.dto.DeudaRequestDTO;
 import com.arenales.dto.DeudaResponseDTO;
 import com.arenales.dto.PagoRequestDTO;
@@ -68,5 +69,16 @@ public class DeudaController {
         respuestaDelServicio.put("success", "true");
 
         return ResponseEntity.status(HttpStatus.CREATED).body(respuestaDelServicio);
+    }
+
+    @PostMapping("/individual")
+    @PreAuthorize("hasAnyAuthority('Tesorero', 'Administrador')")
+    public ResponseEntity<?> registrarDeudaIndividual(@Valid @RequestBody DeudaIndividualRequestDTO dto) {
+        deudaService.registrarDeudaIndividual(dto);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                "success", true,
+                "mensaje", "Deuda individual inyectada correctamente para el puesto " + dto.getNroPuesto()
+        ));
     }
 }
