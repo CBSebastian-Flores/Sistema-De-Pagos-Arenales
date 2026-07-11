@@ -18,5 +18,5 @@ public interface DeudaService {
 
     Map<String, String> registrarPagoDeuda(PagoRequestDTO dto);
 
-    void registrarDeudaIndividual(DeudaIndividualRequestDTO dto, Usuario creador);
+    void registrarDeudaIndividual(DeudaIndividualRequestDTO dto);
 }

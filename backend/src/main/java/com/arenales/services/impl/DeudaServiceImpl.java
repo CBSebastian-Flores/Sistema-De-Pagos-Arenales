@@ -301,12 +301,17 @@ public class DeudaServiceImpl implements DeudaService {
 
     @Override
     @Transactional
-    public void registrarDeudaIndividual(DeudaIndividualRequestDTO dto, Usuario creador) {
+    public void registrarDeudaIndividual(DeudaIndividualRequestDTO dto) {
         Usuario socio = usuarioRepository.findByNroPuesto(dto.getNroPuesto())
-            .orElseThrow(() -> new RuntimeException("El número de puesto " + dto.getNroPuesto() + " no está registrado en el padrón."));
+                .orElseThrow(() -> new RuntimeException("El número de puesto " + dto.getNroPuesto() + " no está registrado en el padrón."));
 
         Servicio servicio = servicioRepository.findById(dto.getIdServicio())
-            .orElseThrow(() -> new RuntimeException("El servicio especificado no existe."));
+                .orElseThrow(() -> new RuntimeException("El servicio especificado no existe."));
+
+        Usuario creador = securityUtils.getUsuarioAutenticado();
+        if (creador == null) {
+            throw new RuntimeException("No se encontró una sesión de usuario válida para auditar la emisión.");
+        }
 
         Deuda nuevaDeuda = new Deuda();
         nuevaDeuda.setMontoBase(dto.getMontoBase());

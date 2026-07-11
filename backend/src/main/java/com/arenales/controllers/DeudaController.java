@@ -74,27 +74,11 @@ public class DeudaController {
     @PostMapping("/individual")
     @PreAuthorize("hasAnyAuthority('Tesorero', 'Administrador')")
     public ResponseEntity<?> registrarDeudaIndividual(@Valid @RequestBody DeudaIndividualRequestDTO dto) {
-        try {
-            Usuario creador = securityUtils.getUsuarioAutenticado();
+        deudaService.registrarDeudaIndividual(dto);
 
-            deudaService.registrarDeudaIndividual(dto, creador);
-            
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                 "success", true,
                 "mensaje", "Deuda individual inyectada correctamente para el puesto " + dto.getNroPuesto()
-            ));
-            
-        } catch (RuntimeException e) {
-
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                "success", false,
-                "error", e.getMessage()
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                "success", false,
-                "error", "Ocurrió un error inesperado al procesar la inyección de la deuda."
-            ));
-        }
+        ));
     }
 }
