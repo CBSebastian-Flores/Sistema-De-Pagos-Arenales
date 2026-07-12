@@ -9,6 +9,7 @@ import MisPagosPendientes from "./MisPagosPendientes"
 import HistorialPagos from "./HistorialPagos"
 import TablaTesoreria from "./TablaTesoreria"
 import RegistrarEgresos from "./RegistrarEgresos"
+import DashboardAnalitico from "./DashboardAnalitico"
 
 function Placeholder({ titulo }) {
   return (
@@ -25,6 +26,7 @@ const paginasRestringidas = {
   "Generación de Pagos": ["Administrador", "Tesorero"],
   "Vista de Pagos": ["Administrador", "Tesorero"],
   "Registrar Egresos": ["Administrador", "Tesorero"],
+  "Dashboard Analítico": ["Administrador", "Tesorero"],
 }
 
 export default function Layout({ onSubmit, onCerrarSesion }) {
@@ -54,6 +56,8 @@ export default function Layout({ onSubmit, onCerrarSesion }) {
         return <HistorialPagos />
       case "Registrar Egresos":
         return <RegistrarEgresos />
+      case "Dashboard Analítico":
+        return <DashboardAnalitico />
       default:
         return <Placeholder titulo={paginaActiva} />
     }

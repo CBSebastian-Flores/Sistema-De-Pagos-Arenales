@@ -52,7 +52,7 @@ public class SecurityConfig {
 
                         // 3. ROLES Y USUARIOS: Exclusivo del Administrador (El Tesorero no toca esto)
                         .requestMatchers("/api/roles/**").hasAuthority("Administrador")
-                        .requestMatchers("/api/usuarios/listar").hasAuthority("Administrador")
+                        .requestMatchers("/api/usuarios/listar").hasAnyAuthority("Tesorero", "Administrador")
                         .requestMatchers("/api/usuarios/restablecer-forzado").hasAuthority("Administrador")
                         .requestMatchers(HttpMethod.PUT, "/api/usuarios/**").hasAuthority("Administrador")
                         .requestMatchers(HttpMethod.PATCH, "/api/usuarios/**").hasAuthority("Administrador")
