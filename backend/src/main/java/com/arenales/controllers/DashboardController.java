@@ -18,7 +18,7 @@ public class DashboardController {
     private DashboardService dashboardService;
 
     @GetMapping("/summary")
-    @PreAuthorize("hasAnyAuthority('Tesorero', 'Directiva')")
+    @PreAuthorize("hasAnyAuthority('Tesorero', 'Administrador')")
     public ResponseEntity<DashboardResponseDTO> obtenerDashboardSummary() {
         DashboardResponseDTO consolidado = dashboardService.obtenerConsolidadoFinanciero();
         return ResponseEntity.ok(consolidado);
