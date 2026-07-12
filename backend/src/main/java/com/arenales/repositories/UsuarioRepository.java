@@ -15,6 +15,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     // busca por correo
     Optional<Usuario> findByCorreo(String correo);
     Optional<Usuario> findByDni(String dni);
+    Optional<Usuario> findByNroPuesto(Integer nroPuesto);
     // Listar los usuarios activos
     List<Usuario> findByEstadoTrue();
 }

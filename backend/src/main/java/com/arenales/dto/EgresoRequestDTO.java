@@ -26,6 +26,7 @@ public class EgresoRequestDTO {
     @NotBlank(message = "El beneficiario es obligatorio")
     private String beneficiario;
 
+    private Integer idServicio;
     // Preparado para cuando conectes la imagen desde el frontend
     private MultipartFile comprobante;
 }

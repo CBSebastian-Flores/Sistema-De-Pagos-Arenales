@@ -7,6 +7,9 @@ export default function ModalPago({ deuda, isOpen, onClose, onPagoExitoso }) {
   const [numeroOperacion, setNumeroOperacion] = useState("");
   const [comprobante, setComprobante] = useState(null);
   const [enviando, setEnviando] = useState(false);
+  const [pagoExitoso, setPagoExitoso] = useState(false);
+  const [mensajeConfirmacion, setMensajeConfirmacion] = useState("");
+  const [boletaUrl, setBoletaUrl] = useState(null);
   const fileInputRef = useRef(null);
 
   if (!isOpen || !deuda) return null;
@@ -14,9 +17,18 @@ export default function ModalPago({ deuda, isOpen, onClose, onPagoExitoso }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (metodoPago === "TRANSFERENCIA" && !numeroOperacion.trim()) {
-      toast.error("Ingresa el número de operación de la transferencia");
-      return;
+    if (enviando) return;
+
+    if (metodoPago === "TRANSFERENCIA") {
+      if (!numeroOperacion.trim()) {
+        toast.error("Ingresa el número de operación de la transferencia");
+        return;
+      }
+
+      if (!comprobante) {
+        toast.error("Debe adjuntar el archivo del voucher de la transferencia");
+        return;
+      }
     }
 
     setEnviando(true);
@@ -34,13 +46,14 @@ export default function ModalPago({ deuda, isOpen, onClose, onPagoExitoso }) {
         }
       }
 
-      await registrarPagoDeuda(formData);
+      const response = await registrarPagoDeuda(formData);
 
-      toast.success(
-        `Pago registrado correctamente — ${deuda.nombreCompletoSocio}`,
+      setMensajeConfirmacion(
+        response?.mensaje ||
+          "Pago procesado con éxito. La boleta digital ha sido enviada al correo del socio"
       );
-      onPagoExitoso();
-      handleCerrar();
+      setBoletaUrl(response?.boletaUrl || null);
+      setPagoExitoso(true);
     } catch (error) {
       toast.error(error.response?.data?.error || "Error al registrar el pago");
     } finally {
@@ -48,23 +61,96 @@ export default function ModalPago({ deuda, isOpen, onClose, onPagoExitoso }) {
     }
   };
 
+  const handleDescargarBoleta = () => {
+    if (boletaUrl) {
+      const link = document.createElement("a");
+      link.href = boletaUrl;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.click();
+    }
+  };
+
   const handleCerrar = () => {
     setMetodoPago("EFECTIVO");
     setNumeroOperacion("");
     setComprobante(null);
+    setPagoExitoso(false);
+    setMensajeConfirmacion("");
+    setBoletaUrl(null);
     onClose();
   };
+
+  const handleCerrarConfirmacion = () => {
+    onPagoExitoso();
+    handleCerrar();
+  };
+
+  if (pagoExitoso) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="w-full max-w-lg mx-auto bg-[#111e30] border border-[#1e3a5f] rounded-2xl shadow-2xl">
+          <div className="px-6 py-10 text-center space-y-6">
+            <div className="mx-auto w-16 h-16 bg-emerald-500/10 border-2 border-emerald-500 rounded-full flex items-center justify-center">
+              <svg
+                className="w-8 h-8 text-emerald-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+
+            <p className="text-white text-base leading-relaxed">
+              {mensajeConfirmacion}
+            </p>
+
+            <div className="flex justify-center gap-3 pt-2">
+              {boletaUrl && (
+                <button
+                  type="button"
+                  onClick={handleDescargarBoleta}
+                  className="px-5 py-2.5 rounded-lg text-sm font-semibold bg-blue-600 text-white transition-colors hover:bg-blue-500"
+                >
+                  Descargar Boleta
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleCerrarConfirmacion}
+                className="px-5 py-2.5 rounded-lg text-sm font-semibold bg-emerald-600 text-white transition-colors hover:bg-emerald-500"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="w-full max-w-lg mx-auto bg-[#111e30] border border-[#1e3a5f] rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
-        <form onSubmit={handleSubmit}>
+        <form 
+          onSubmit={handleSubmit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+              e.preventDefault();
+            }
+          }}
+        >
           <div className="px-6 py-4 border-b border-[#1e3a5f]">
             <h3 className="text-white font-bold text-lg">Registrar Pago</h3>
           </div>
 
           <div className="px-6 py-5 space-y-5">
-            {/* 🚀 Datos actualizados de la deuda */}
             <div className="bg-[#0f1b2d] border border-[#1e3a5f] rounded-xl p-4 space-y-2.5">
               <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
                 Datos de la deuda
@@ -133,7 +219,12 @@ export default function ModalPago({ deuda, isOpen, onClose, onPagoExitoso }) {
                   <input
                     type="text"
                     value={numeroOperacion}
-                    onChange={(e) => setNumeroOperacion(e.target.value)}
+                    onChange={(e) => {
+                      const valor = e.target.value.replace(/\D/g, ""); 
+                      if (valor.length <= 12) {
+                        setNumeroOperacion(valor);
+                      }
+                    }}
                     placeholder="Ej: 00012345"
                     className="w-full bg-[#0f1b2d] border border-[#1e3a5f] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-blue-500 transition-colors"
                   />
@@ -141,7 +232,7 @@ export default function ModalPago({ deuda, isOpen, onClose, onPagoExitoso }) {
 
                 <div>
                   <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                    Comprobante (opcional)
+                    Comprobante (Obligatorio: Imagen o PDF)
                   </label>
                   <div
                     onClick={() => fileInputRef.current?.click()}
