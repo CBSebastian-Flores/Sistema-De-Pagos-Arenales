@@ -11,4 +11,6 @@ public interface EgresoService {
     Egreso registrarEgreso(EgresoRequestDTO dto);
     BigDecimal obtenerTotalEgresos();
     List<EgresoResponseDTO> obtenerUltimosEgresos();
+
 }
+

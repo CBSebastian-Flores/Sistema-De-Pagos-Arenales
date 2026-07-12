@@ -15,6 +15,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.arenales.repositories.ServicioRepository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -84,7 +89,6 @@ public class EgresoServiceImpl implements EgresoService {
     @Override
     @Transactional(readOnly = true)
     public List<EgresoResponseDTO> obtenerUltimosEgresos() {
-        // PageRequest IMPLEMENTA la interfaz Pageable, por lo que este casteo es automático si los imports son correctos
         List<Egreso> listaEntidades = egresoRepository.obtenerUltimosEgresos(PageRequest.of(0, 5));
 
         return listaEntidades.stream().map(e -> new EgresoResponseDTO(
