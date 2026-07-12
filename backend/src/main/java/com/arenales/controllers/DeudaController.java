@@ -57,7 +57,6 @@ public class DeudaController {
 
     @PostMapping("/cobrar")
     @PreAuthorize("hasAnyAuthority('Tesorero', 'Administrador')")
-    // 🚀 CAMBIO VITAL: De @RequestBody a @ModelAttribute para aceptar FormData
     public ResponseEntity<?> registrarPagoDeuda(@Valid @ModelAttribute PagoRequestDTO dto) {
         try {
             deudaService.registrarPagoDeuda(dto);
