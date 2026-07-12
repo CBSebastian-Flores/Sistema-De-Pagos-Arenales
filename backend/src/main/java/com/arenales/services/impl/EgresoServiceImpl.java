@@ -7,15 +7,21 @@ import com.arenales.entities.Egreso;
 import com.arenales.entities.Servicio;
 import com.arenales.entities.Usuario;
 import com.arenales.repositories.EgresoRepository;
+import com.arenales.repositories.ServicioRepository;
 import com.arenales.services.EgresoService;
 import com.arenales.services.StorageService;
+import com.arenales.specifications.EgresoSpecification;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.arenales.repositories.ServicioRepository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +34,30 @@ public class EgresoServiceImpl implements EgresoService {
     @Autowired private ServicioRepository servicioRepository;
     @Autowired private SecurityUtils securityUtils;
     @Autowired private StorageService storageService;
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<EgresoResponseDTO> listarEgresosPaginados(String criterio, String categoria, LocalDate desde, LocalDate hasta, Pageable pageable) {
+        
+        Specification<Egreso> spec = Specification
+                .where(EgresoSpecification.porBeneficiario(criterio))
+                .and(EgresoSpecification.porCategoria(categoria))
+                .and(EgresoSpecification.porRangoFechas(desde, hasta));
+
+        Page<Egreso> paginaEntidades = egresoRepository.findAll(spec, pageable);
+
+        return paginaEntidades.map(e -> new EgresoResponseDTO(
+                e.getIdEgreso(),
+                e.getCodigoEgreso(),
+                e.getDescripcion(),
+                e.getMonto(),
+                e.getFechaGasto(),
+                e.getCategoriaEgreso(),
+                e.getMetodoRetiro(),
+                e.getBeneficiario(),
+                e.getUsuarioRegistro() != null ? e.getUsuarioRegistro().getNombres() : "Sistema"
+        ));
+    }
 
     @Override
     @Transactional
@@ -48,7 +78,6 @@ public class EgresoServiceImpl implements EgresoService {
             throw new RuntimeException("El archivo del comprobante/voucher no puede estar vacío.");
         }
 
-        // Subida a la nube delegada al servicio de Storage (Cloudinary)
         String urlComprobante;
         try {
             urlComprobante = storageService.subirArchivo(dto.getComprobante());
@@ -58,9 +87,8 @@ public class EgresoServiceImpl implements EgresoService {
 
         Egreso nuevoEgreso = new Egreso();
         nuevoEgreso.setServicio(servicio);
-        nuevoEgreso.setComprobanteUrl(urlComprobante); // Persistencia de la URL segura
+        nuevoEgreso.setComprobanteUrl(urlComprobante);
 
-        // Generación de código seguro contra concurrencia
         String codigoSeguro = "EGR-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
         nuevoEgreso.setCodigoEgreso(codigoSeguro);
 
@@ -84,7 +112,6 @@ public class EgresoServiceImpl implements EgresoService {
     @Override
     @Transactional(readOnly = true)
     public List<EgresoResponseDTO> obtenerUltimosEgresos() {
-        // PageRequest IMPLEMENTA la interfaz Pageable, por lo que este casteo es automático si los imports son correctos
         List<Egreso> listaEntidades = egresoRepository.obtenerUltimosEgresos(PageRequest.of(0, 5));
 
         return listaEntidades.stream().map(e -> new EgresoResponseDTO(
