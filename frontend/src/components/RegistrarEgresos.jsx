@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react"
 import api from "../services/axiosConfig"
 import { toast } from "react-toastify"
+import { obtenerServiciosActivos } from "../services/servicioService"
 
 const CATEGORIAS = [
   "Servicios Públicos",
@@ -14,6 +15,7 @@ const CATEGORIAS = [
 const METODOS_RETIRO = ["Efectivo", "Transferencia", "Yape", "Plin"]
 
 const INITIAL_FORM = {
+  servicio: "",
   categoriaEgreso: "",
   beneficiario: "",
   monto: "",
@@ -32,6 +34,10 @@ export default function RegistrarEgresos() {
   const [totalIngresos, setTotalIngresos] = useState(0)
   const [totalEgresos, setTotalEgresos] = useState(0)
   const [cargandoCaja, setCargandoCaja] = useState(true)
+
+  // Estados para el selector dinámico de servicios
+  const [servicios, setServicios] = useState([])
+  const [cargandoServicios, setCargandoServicios] = useState(true)
 
   const balanceNeto = totalIngresos - totalEgresos
 
@@ -61,14 +67,31 @@ export default function RegistrarEgresos() {
 
   useEffect(() => {
     const ejecutarCargaInicial = async () => {
-      await actualizarDatosCaja()
+      await Promise.all([
+        actualizarDatosCaja(),
+        obtenerServiciosActivos()
+          .then(setServicios)
+          .catch(() => toast.error("No se pudieron cargar los servicios"))
+          .finally(() => setCargandoServicios(false)),
+      ])
     }
     ejecutarCargaInicial()
   }, [actualizarDatosCaja])
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setForm((prev) => ({ ...prev, [name]: value }))
+
+    if (name === "servicio") {
+      const servicioSel = servicios.find((s) => String(s.idServicio) === value)
+      setForm((prev) => ({
+        ...prev,
+        servicio: value,
+        categoriaEgreso: servicioSel?.categoria || prev.categoriaEgreso,
+      }))
+    } else {
+      setForm((prev) => ({ ...prev, [name]: value }))
+    }
+
     if (errores[name]) {
       setErrores((prev) => ({ ...prev, [name]: null }))
     }
@@ -77,14 +100,19 @@ export default function RegistrarEgresos() {
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       setComprobante(e.target.files[0])
+      if (errores.comprobante) {
+        setErrores((prev) => ({ ...prev, comprobante: null }))
+      }
     }
   }
 
   const validar = () => {
     const nuevos = {}
+    if (!form.servicio) nuevos.servicio = "Selecciona un servicio obligatorio"
     if (!form.categoriaEgreso.trim()) nuevos.categoriaEgreso = "Selecciona una categoría"
     if (!form.metodoRetiro) nuevos.metodoRetiro = "Selecciona un método"
     if (!form.beneficiario.trim()) nuevos.beneficiario = "El beneficiario es obligatorio"
+    if (!comprobante) nuevos.comprobante = "El archivo del comprobante/voucher es obligatorio"
     
     if (!form.monto) {
       nuevos.monto = "El monto es obligatorio"
@@ -101,13 +129,16 @@ export default function RegistrarEgresos() {
     return nuevos
   }
 
+  // Validación rápida para deshabilitar botón del formulario
   const esValido =
+    form.servicio &&
     form.categoriaEgreso.trim() &&
     form.metodoRetiro &&
     form.beneficiario.trim().length >= 3 &&
     form.monto &&
     parseFloat(form.monto) > 0 &&
-    form.descripcion.trim().length >= 10
+    form.descripcion.trim().length >= 10 &&
+    comprobante !== null;
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -121,15 +152,13 @@ export default function RegistrarEgresos() {
 
     try {
       const formData = new FormData()
+      formData.append("idServicio", form.servicio)
       formData.append("categoriaEgreso", form.categoriaEgreso.trim())
       formData.append("beneficiario", form.beneficiario.trim())
       formData.append("monto", parseFloat(form.monto))
       formData.append("descripcion", form.descripcion.trim())
       formData.append("metodoRetiro", form.metodoRetiro)
-      
-      if (comprobante) {
-        formData.append("comprobante", comprobante)
-      }
+      formData.append("comprobante", comprobante) // Obligatorio para Cloudinary
 
       await api.post("/api/egresos/registrar", formData)
 
@@ -139,7 +168,7 @@ export default function RegistrarEgresos() {
       setComprobante(null)
       setErrores({})
 
-      // 🚀 Refresca la UI al instante con datos reales del servidor
+      // Refresca la UI al instante con datos reales del servidor
       await actualizarDatosCaja()
       
     } catch (error) {
@@ -174,7 +203,7 @@ export default function RegistrarEgresos() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* COLUMNA IZQUIERDA: BALANCE E HISTORIAL (UI de image_4f29a4.png) */}
+        {/* COLUMNA IZQUIERDA: BALANCE E HISTORIAL */}
         <div className="lg:col-span-1 space-y-4">
           <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl p-5 space-y-4">
             <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Balance de Caja</h3>
@@ -230,10 +259,34 @@ export default function RegistrarEgresos() {
           </div>
         </div>
 
-        {/* COLUMNA DERECHA: EL FORMULARIO (UI de image_4f29a4.png) */}
+        {/* COLUMNA DERECHA: EL FORMULARIO */}
         <div className="lg:col-span-2">
           <form onSubmit={handleSubmit} noValidate className="bg-[#111e30] border border-[#1e3a5f] rounded-2xl p-6 space-y-5">
             <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Nuevo Egreso</h3>
+
+            <div>
+              <label htmlFor="servicio" className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                Servicio <span className="text-gray-600 font-normal">(auto-asigna la categoría)</span>
+              </label>
+              <select
+                id="servicio"
+                name="servicio"
+                value={form.servicio}
+                onChange={handleChange}
+                className={inputClasses("servicio")}
+              >
+                <option value="" disabled hidden>
+                  {cargandoServicios ? "Cargando servicios..." : "Seleccionar servicio..."}
+                </option>
+                {servicios.map((s) => (
+                  <option key={s.idServicio} value={s.idServicio} className="bg-[#0f1b2d]">
+                    {s.nombreServicio} — {s.categoria}
+                  </option>
+                ))}
+              </select>
+              {errores.servicio && <p className="text-red-400 text-xs mt-1">{errores.servicio}</p>}
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="categoriaEgreso" className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Categoría</label>
@@ -266,13 +319,14 @@ export default function RegistrarEgresos() {
             </div>
 
             <div>
-              <label htmlFor="comprobante" className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Comprobante / Voucher (Opcional)</label>
+              <label htmlFor="comprobante" className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Comprobante / Voucher</label>
               <input id="comprobante" name="comprobante" type="file" accept="image/*,application/pdf" onChange={handleFileChange} className="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#1e3a5f] file:text-white hover:file:bg-blue-500 file:cursor-pointer" />
+              {errores.comprobante && <p className="text-red-400 text-xs mt-1">{errores.comprobante}</p>}
             </div>
 
             <div>
               <label htmlFor="descripcion" className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Descripción</label>
-              <textarea id="descripcion" name="descripcion" rows={4} value={form.descripcion} onChange={handleChange} placeholder="Detalla el motivo del egreso..." className={`${inputClasses("descripcion")} resize-none`} />
+              <textarea id="descripcion" name="descripcion" rows={4} value={form.descripcion} onChange={handleChange} placeholder="Detalla el egreso, Pago de recibo de agua - Enero 2026..." className={`${inputClasses("descripcion")} resize-none`} />
               {errores.descripcion && <p className="text-red-400 text-xs mt-1">{errores.descripcion}</p>}
               <div className="mt-1 text-xs text-gray-500 text-right">{form.descripcion.trim().length}/10 caracteres mínimos</div>
             </div>

@@ -100,7 +100,7 @@ GO
 
 CREATE TABLE Pago (
     id_pago INT PRIMARY KEY IDENTITY(1,1),
-    codigo_pago VARCHAR(20) NOT NULL UNIQUE,
+    codigo_pago VARCHAR(50) NOT NULL UNIQUE,
     fecha_pago DATETIME NOT NULL DEFAULT GETDATE(),
     monto_pagado DECIMAL(10,2) NOT NULL,
     metodo_pago VARCHAR(50) NOT NULL CHECK (metodo_pago IN ('Efectivo', 'Transferencia', 'Yape', 'Plin')),
@@ -117,7 +117,7 @@ GO
 
 CREATE TABLE Egreso (
     id_egreso INT PRIMARY KEY IDENTITY(1,1),
-    codigo_egreso VARCHAR(20) NOT NULL UNIQUE,
+    codigo_egreso VARCHAR(50) NOT NULL UNIQUE,
     descripcion VARCHAR(255) NOT NULL,
     monto DECIMAL(10,2) NOT NULL,
     fecha_gasto DATETIME NOT NULL,
@@ -126,7 +126,7 @@ CREATE TABLE Egreso (
     metodo_retiro VARCHAR(50) NOT NULL CHECK (metodo_retiro IN ('Efectivo', 'Transferencia', 'Yape', 'Plin')),
     beneficiario VARCHAR(150) NOT NULL,
     id_usuario_registro INT NOT NULL,
-    id_servicio INT NULL,
+    id_servicio INT NOT NULL,
 
     -- Llaves foráneas
     CONSTRAINT FK_Egreso_Usuario FOREIGN KEY (id_usuario_registro) REFERENCES Usuario(id_usuario),

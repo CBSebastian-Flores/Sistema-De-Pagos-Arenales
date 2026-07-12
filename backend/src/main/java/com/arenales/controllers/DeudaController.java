@@ -7,10 +7,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.arenales.config.SecurityUtils;
 import com.arenales.dto.DeudaDetalleTesoreriaDTO;
+import com.arenales.dto.DeudaIndividualRequestDTO;
 import com.arenales.dto.DeudaRequestDTO;
 import com.arenales.dto.DeudaResponseDTO;
 import com.arenales.dto.PagoRequestDTO;
@@ -58,22 +64,21 @@ public class DeudaController {
     @PostMapping("/cobrar")
     @PreAuthorize("hasAnyAuthority('Tesorero', 'Administrador')")
     public ResponseEntity<?> registrarPagoDeuda(@Valid @ModelAttribute PagoRequestDTO dto) {
-        try {
-            deudaService.registrarPagoDeuda(dto);
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                    "success", true,
-                    "mensaje", "El pago ha sido registrado con éxito y la deuda se encuentra CANCELADA."
-            ));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "success", false,
-                    "error", e.getMessage()
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                    "success", false,
-                    "error", "Ocurrió un error inesperado al procesar el cobro en el sistema."
-            ));
-        }
+        Map<String, String> respuestaDelServicio = deudaService.registrarPagoDeuda(dto);
+
+        respuestaDelServicio.put("success", "true");
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(respuestaDelServicio);
+    }
+
+    @PostMapping("/individual")
+    @PreAuthorize("hasAnyAuthority('Tesorero', 'Administrador')")
+    public ResponseEntity<?> registrarDeudaIndividual(@Valid @RequestBody DeudaIndividualRequestDTO dto) {
+        deudaService.registrarDeudaIndividual(dto);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                "success", true,
+                "mensaje", "Deuda individual inyectada correctamente para el puesto " + dto.getNroPuesto()
+        ));
     }
 }
