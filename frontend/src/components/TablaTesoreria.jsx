@@ -33,19 +33,34 @@ export default function TablaTesoreria() {
     },
   ];
 
+  const cargarDeudas = async () => {
+    setCargando(true);
+    try {
+      const data = await obtenerReporteGeneral();
+      setDeudas(data);
+    } catch (error) {
+      toast.error("No se pudieron cargar las deudas ", error);
+    } finally {
+      setCargando(false);
+    }
+  };
+
   useEffect(() => {
-    const cargarDeudas = async () => {
-      setCargando(true);
-      try {
-        const data = await obtenerReporteGeneral();
-        setDeudas(data);
-      } catch (error) {
-        toast.error("No se pudieron cargar las deudas ", error);
-      } finally {
-        setCargando(false);
+    let activo = true;
+
+    const inicializarCarga = async () => {
+      // Dejamos que el componente respire un milisegundo antes de cambiar el estado
+      if (activo) {
+        await cargarDeudas();
       }
     };
-    cargarDeudas();
+
+    inicializarCarga();
+
+    // Función de limpieza para evitar fugas de memoria si el usuario cambia de página rápido
+    return () => {
+      activo = false;
+    };
   }, []);
 
   const deudasFiltradas = deudas.filter((d) => {
@@ -281,9 +296,11 @@ export default function TablaTesoreria() {
       <ModalPago
         deuda={deudaSeleccionada}
         isOpen={!!deudaSeleccionada}
-        onClose={() => setDeudaSeleccionada(null)}
-        onPagoExitoso={() => {
+        onClose={() => {
           setDeudaSeleccionada(null);
+        }}
+        onPagoExitoso={() => {
+          cargarDeudas(); // Refresca los datos en segundo plano sin cerrar la ventana
         }}
       />
     </div>

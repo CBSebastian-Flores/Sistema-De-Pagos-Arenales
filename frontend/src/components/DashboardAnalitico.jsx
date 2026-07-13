@@ -1,20 +1,19 @@
 import { useState, useEffect } from "react";
 import api from "../services/axiosConfig";
-import { obtenerServiciosActivos } from "../services/servicioService";
-import { obtenerReporteGeneral } from "../services/deudaService";
+import { toast } from "react-toastify";
 import StatCard from "./StatCard";
-import TablaAuditoria from "./TablaAuditoria";
+import TablaAuditoria from "./TablaAuditoria"; // 👈 Mantenemos la importación del nuevo componente
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell,
+  PieChart, Pie
 } from "recharts";
 
+// ── SUBTAREA SDPA-149: LOADING SKELETONS ──
 function SkeletonCard() {
   return (
     <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl p-5 space-y-3 animate-pulse">
       <div className="h-3 w-24 bg-[#1e3a5f] rounded" />
       <div className="h-7 w-32 bg-[#1e3a5f] rounded" />
-      <div className="h-2.5 w-20 bg-[#1e3a5f]/60 rounded" />
     </div>
   );
 }
@@ -28,51 +27,30 @@ function SkeletonChart() {
   );
 }
 
+const iconos = {
+  ingresos: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+  egresos: "M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z",
+  balance: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z",
+  alerta: "M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+  check: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
+  warning: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z",
+};
+
+const DONUT_COLORS = ["#34d399", "#fbbf24", "#f87171"];
+
 export default function DashboardAnalitico() {
   const [cargando, setCargando] = useState(true);
-  const [totalIngresos, setTotalIngresos] = useState(0);
-  const [totalEgresos, setTotalEgresos] = useState(0);
-  const [serviciosActivos, setServiciosActivos] = useState(0);
-  const [deudasPendientes, setDeudasPendientes] = useState(0);
-  const [deudasPagadas, setDeudasPagadas] = useState(0);
-  const [deudasVencidas, setDeudasVencidas] = useState(0);
-  const [ultimosEgresos, setUltimosEgresos] = useState([]);
-  const [ultimosPagos, setUltimosPagos] = useState([]);
-  const [errorPagos, setErrorPagos] = useState(false);
+  const [datos, setDatos] = useState(null);
 
   useEffect(() => {
     const cargarDashboard = async () => {
       try {
-        const [resIngresos, resEgresos, resEgresosUlt, deudas, servicios, resPagos] =
-          await Promise.all([
-            api.get("/api/pagos/total"),
-            api.get("/api/egresos/total"),
-            api.get("/api/egresos/ultimos"),
-            obtenerReporteGeneral(),
-            obtenerServiciosActivos(),
-            api.get("/api/pagos/ultimos").catch(() => {
-              setErrorPagos(true);
-              return { data: [] };
-            }),
-          ]);
-
-        setTotalIngresos(
-          resIngresos?.data?.total != null ? Number(resIngresos.data.total) : 0,
-        );
-        setTotalEgresos(
-          resEgresos?.data?.total != null ? Number(resEgresos.data.total) : 0,
-        );
-        setUltimosEgresos(Array.isArray(resEgresosUlt?.data) ? resEgresosUlt.data : []);
-        setUltimosPagos(Array.isArray(resPagos?.data) ? resPagos.data : []);
-        setServiciosActivos(Array.isArray(servicios) ? servicios.length : 0);
-
-        if (Array.isArray(deudas)) {
-          setDeudasPendientes(deudas.filter((d) => d.estadoDeuda?.toUpperCase() === "PENDIENTE").length);
-          setDeudasPagadas(deudas.filter((d) => d.estadoDeuda?.toUpperCase() === "PAGADO").length);
-          setDeudasVencidas(deudas.filter((d) => d.estadoDeuda?.toUpperCase() === "VENCIDO").length);
-        }
+        // 🚀 Una sola petición unificada
+        const res = await api.get("/api/dashboard/summary");
+        setDatos(res.data);
       } catch (error) {
         console.error("Error cargando dashboard:", error);
+        toast.error("No se pudo cargar el consolidado financiero.");
       } finally {
         setCargando(false);
       }
@@ -80,20 +58,13 @@ export default function DashboardAnalitico() {
     cargarDashboard();
   }, []);
 
-  const balanceNeto = totalIngresos - totalEgresos;
+  const totalIngresos = datos?.sumaHistoricaIngresos || 0;
+  const totalEgresos = datos?.sumaHistoricaEgresos || 0;
+  const balanceNeto = datos?.balanceNeto || 0;
 
-  const iconos = {
-    ingresos: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
-    egresos: "M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z",
-    balance: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z",
-    alerta: "M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
-    check: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
-    warning: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z",
-    servicios: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10",
-    usuarios: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z",
-  };
-
-  const DONUT_COLORS = ["#34d399", "#fbbf24", "#f87171"];
+  const deudasPendientes = datos?.deudasPorEstado?.["Pendiente"] || 0;
+  const deudasPagadas = datos?.deudasPorEstado?.["Pagado"] || 0;
+  const deudasVencidas = datos?.deudasPorEstado?.["Vencido"] || 0;
 
   const dataBar = [
     { name: "Ingresos", monto: totalIngresos },
@@ -106,41 +77,21 @@ export default function DashboardAnalitico() {
     { name: "Vencidas", value: deudasVencidas },
   ].filter((d) => d.value > 0);
 
-  const movimientos = [
-    ...(Array.isArray(ultimosPagos) ? ultimosPagos.map((p) => ({
-      id: p.idPago || p.idDeuda,
-      tipo: "ingreso",
-      codigo: p.codigoPago || `PAG-${p.idPago}`,
-      descripcion: p.nombreServicio || "Pago registrado",
-      monto: p.montoPagado || 0,
-      fecha: p.fechaPago,
-    })) : []),
-    ...ultimosEgresos.map((eg) => ({
-      id: eg.idEgreso,
-      tipo: "egreso",
-      codigo: eg.codigoEgreso || `EGR-${eg.idEgreso}`,
-      descripcion: eg.categoriaEgreso || eg.descripcion || "Egreso registrado",
-      monto: eg.monto || 0,
-      fecha: eg.fechaGasto,
-    })),
-  ].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-
-  const formatearFecha = (fechaStr) => {
-    if (!fechaStr) return "-";
-    try {
-      return new Date(fechaStr).toLocaleDateString("es-PE", {
-        day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit",
-      });
-    } catch { return fechaStr; }
-  };
+  // 🚀 ADAPTACIÓN LIMPIA: Mapeamos el DTO consolidado al formato estructurado que espera la tabla
+  const movimientosUnificados = (datos?.ultimosMovimientos || []).map((m, index) => ({
+    id: index,
+    tipo: m.tipo?.toLowerCase(), // "ingreso" o "egreso"
+    codigo: m.tipo === "INGRESO" ? `PAG-${index}` : `EGR-${index}`,
+    descripcion: m.descripcion || "Transacción registrada",
+    monto: m.monto || 0,
+    fecha: m.fecha,
+  }));
 
   return (
     <div className="p-6 min-h-full">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-white">Dashboard Analítico</h1>
-        <p className="text-gray-400 text-sm mt-1">
-          Resumen general del sistema de pagos
-        </p>
+        <p className="text-gray-400 text-sm mt-1">Resumen financiero consolidado</p>
       </div>
 
       {cargando ? (
@@ -166,24 +117,22 @@ export default function DashboardAnalitico() {
             <StatCard titulo="Deudas Pendientes" valor={deudasPendientes} icono={iconos.alerta} color={{ texto: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" }} />
             <StatCard titulo="Deudas Pagadas" valor={deudasPagadas} icono={iconos.check} />
             <StatCard titulo="Deudas Vencidas" valor={deudasVencidas} icono={iconos.warning} color={{ texto: "text-red-400", bg: "bg-red-500/10 border-red-500/20" }} />
-            <StatCard titulo="Servicios Activos" valor={serviciosActivos} icono={iconos.servicios} color={{ texto: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" }} />
-            <StatCard titulo="Socios Activos" valor="—" icono={iconos.usuarios} color={{ texto: "text-gray-400", bg: "bg-gray-500/10 border-gray-500/20" }} />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl p-5">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
-                Ingresos vs Egresos
-              </h3>
-              <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={dataBar}>
+            <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl p-5 shadow-sm">
+              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Balance General Bruto</h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={dataBar} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5f" opacity={0.3} vertical={false} />
                   <XAxis dataKey="name" tick={{ fill: "#9ca3af", fontSize: 12 }} axisLine={{ stroke: "#1e3a5f" }} tickLine={false} />
                   <YAxis tick={{ fill: "#9ca3af", fontSize: 12 }} axisLine={{ stroke: "#1e3a5f" }} tickLine={false} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: "#0f1b2d", border: "1px solid #1e3a5f", borderRadius: 8, color: "#fff" }}
-                    formatter={(value) => [`S/. ${value.toFixed(2)}`, "Monto"]}
+                    contentStyle={{ backgroundColor: "#0f1b2d", border: "1px solid #1e3a5f", borderRadius: 8 }}
+                    itemStyle={{ color: "#fff" }}
+                    formatter={(value) => [`S/. ${value.toFixed(2)}`, "Total"]}
                   />
-                  <Bar dataKey="monto" radius={[6, 6, 0, 0]} maxBarSize={80}>
+                  <Bar dataKey="monto" radius={[4, 4, 0, 0]} maxBarSize={50} animationDuration={500}>
                     <Cell fill="#34d399" />
                     <Cell fill="#f87171" />
                   </Bar>
@@ -191,33 +140,50 @@ export default function DashboardAnalitico() {
               </ResponsiveContainer>
             </div>
 
-            <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl p-5">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
-                Distribución de Deudas
-              </h3>
+            <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl p-5 shadow-sm flex flex-col justify-between">
+              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Estado de Deudas</h3>
               {dataDonut.length === 0 ? (
-                <p className="text-center py-16 text-gray-500 text-xs">Sin datos de deudas</p>
+                <p className="text-center py-16 text-gray-500 text-xs">Sin deudas en el sistema</p>
               ) : (
-                <ResponsiveContainer width="100%" height={240}>
-                  <PieChart>
-                    <Pie data={dataDonut} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={4} dataKey="value">
-                      {dataDonut.map((_, i) => (
-                        <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{ backgroundColor: "#0f1b2d", border: "1px solid #1e3a5f", borderRadius: 8, color: "#fff" }}
-                    />
-                    <Legend
-                      formatter={(value) => <span style={{ color: "#9ca3af", fontSize: 12 }}>{value}</span>}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+                <div className="flex flex-col items-center justify-center flex-1">
+                  <ResponsiveContainer width="100%" height={210}>
+                    <PieChart>
+                      <Pie 
+                        data={dataDonut} 
+                        cx="50%" 
+                        cy="50%" 
+                        innerRadius={60} 
+                        outerRadius={85} 
+                        paddingAngle={5} 
+                        dataKey="value"
+                        animationDuration={500}
+                      >
+                        {dataDonut.map((_, i) => (
+                          <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} style={{ outline: 'none' }} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: "#0f1b2d", border: "1px solid #1e3a5f", borderRadius: 8 }}
+                        itemStyle={{ color: "#fff" }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  
+                  <div className="flex gap-6 mt-3 justify-center">
+                    {dataDonut.map((d, i) => (
+                      <div key={d.name} className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: DONUT_COLORS[i % DONUT_COLORS.length] }} />
+                        <span className="text-xs text-gray-400 font-medium">{d.name}: <span className="text-white font-semibold font-mono">{d.value}</span></span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
           </div>
 
-          <TablaAuditoria movimientos={movimientos} cargando={cargando} />
+          {/* 💡 INYECTAMOS LA TABLA DE AUDITORÍA CON LA DATA MAREADA Y LIMPIA DESDE EL BACKEND */}
+          <TablaAuditoria movimientos={movimientosUnificados} cargando={cargando} />
         </>
       )}
     </div>
