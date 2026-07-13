@@ -15,4 +15,7 @@ public interface DeudaRepository extends JpaRepository<Deuda, Integer> {
 
     @Query("SELECT d FROM Deuda d JOIN FETCH d.usuarioSocio JOIN FETCH d.servicio")
     List<Deuda> findAllWithSocioAndServicio();
+
+    @Query("SELECT d.estadoDeuda, COUNT(d) FROM Deuda d GROUP BY d.estadoDeuda")
+    List<Object[]> obtenerConteoDeudasPorEstado();
 }

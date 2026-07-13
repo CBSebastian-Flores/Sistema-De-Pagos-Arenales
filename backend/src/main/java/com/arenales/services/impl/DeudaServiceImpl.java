@@ -4,14 +4,20 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.arenales.services.StorageService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.arenales.config.SecurityUtils;
 import com.arenales.dto.DeudaDetalleTesoreriaDTO;
+import com.arenales.dto.DeudaIndividualRequestDTO;
 import com.arenales.dto.DeudaRequestDTO;
 import com.arenales.dto.DeudaResponseDTO; 
 import com.arenales.dto.PagoRequestDTO;
@@ -23,10 +29,14 @@ import com.arenales.repositories.DeudaRepository;
 import com.arenales.repositories.PagoRepository;
 import com.arenales.repositories.ServicioRepository;
 import com.arenales.repositories.UsuarioRepository;
+import com.arenales.services.ComprobanteService;
 import com.arenales.services.DeudaService;
+import com.arenales.services.EmailService; // <-- Inyección del creador de PDF
 
 @Service
 public class DeudaServiceImpl implements DeudaService {
+
+    private static final Logger log = LoggerFactory.getLogger(DeudaServiceImpl.class);
 
     @Autowired
     private DeudaRepository deudaRepository;
@@ -43,10 +53,15 @@ public class DeudaServiceImpl implements DeudaService {
     @Autowired
     private SecurityUtils securityUtils;
 
+    @Autowired
+    private StorageService cloudinaryService;
+
+    @Autowired
+    private EmailService emailService;             // <-- Nuevo
+
     @Override
     @Transactional
     public void publicarDeudaMasiva(DeudaRequestDTO dto) {
-
         Servicio servicio = servicioRepository.findById(dto.getIdServicio())
                 .orElseThrow(() -> new RuntimeException("Servicio no encontrado con ID: " + dto.getIdServicio()));
                 
@@ -154,21 +169,17 @@ public class DeudaServiceImpl implements DeudaService {
             String estadoActual = deuda.getEstadoDeuda();
             BigDecimal moraCalculada = deuda.getMora() != null ? deuda.getMora() : BigDecimal.ZERO;
 
-            // Lógica de Jira: Si está pendiente pero la fecha ya pasó, calcular en caliente
             if ("Pendiente".equalsIgnoreCase(estadoActual) && hoy.isAfter(deuda.getFechaVencimiento())) {
                 estadoActual = "Vencido";
 
                 if (moraCalculada.compareTo(BigDecimal.ZERO) == 0) {
-                    // 🚀 CORRECCIÓN 1: Se elimina el 10.00 hardcodeado. Se jala directo de la BD.
                     moraCalculada = servicio.getTarifaMora() != null ? servicio.getTarifaMora() : BigDecimal.ZERO;
                 }
             }
 
-            // 🚀 CORRECCIÓN 2: Blindaje contra NullPointerException en montos
             BigDecimal montoBaseSeguro = deuda.getMontoBase() != null ? deuda.getMontoBase() : BigDecimal.ZERO;
             BigDecimal montoTotalPagar = montoBaseSeguro.add(moraCalculada);
 
-            // Validar nulos en nombres para evitar espacios vacíos raros (ej: "null null")
             String nombreSeguro = socio.getNombres() != null ? socio.getNombres() : "";
             String apellidoSeguro = socio.getApellidos() != null ? socio.getApellidos() : "";
             String nombreCompletoSocio = (nombreSeguro + " " + apellidoSeguro).trim();
@@ -194,10 +205,13 @@ public class DeudaServiceImpl implements DeudaService {
 
     @Override
     @Transactional
-    public void registrarPagoDeuda(PagoRequestDTO dto) {
+    public Map<String, String> registrarPagoDeuda(PagoRequestDTO dto) {
+        log.info("[PAGO] Solicitud entrante para registrar el pago de la deuda ID: {}", dto.getIdDeuda());
+
         Deuda deuda = deudaRepository.findById(dto.getIdDeuda())
                 .orElseThrow(() -> new RuntimeException("Deuda no encontrada con ID: " + dto.getIdDeuda()));
 
+        // VALIDACIONES
         if ("Pagado".equalsIgnoreCase(deuda.getEstadoDeuda())) {
             throw new RuntimeException("Esta deuda ya se encuentra cancelada.");
         }
@@ -214,11 +228,10 @@ public class DeudaServiceImpl implements DeudaService {
             throw new RuntimeException("No se encontró una sesión de usuario válida para auditar el pago.");
         }
 
-        long totalPagosExistentes = pagoRepository.contarTotalPagos();
-        String correlativoPAG = String.format("PAG-%03d", totalPagosExistentes + 1);
+        String correlativoPAG = "PAG-" + System.currentTimeMillis() + "-" + java.util.UUID.randomUUID().toString().substring(0, 4).toUpperCase();
 
+        // REGISTRANDO EL PAGO EN LA BASE DE DATOS
         Pago nuevoPago = new Pago();
-        // nuevoPago.setFechaPago(LocalDateTime.now()); // No es necesario setearlo si en SQL le pusiste DEFAULT GETDATE()
         nuevoPago.setCodigoPago(correlativoPAG);
         nuevoPago.setMontoPagado(dto.getMontoPagado());
         nuevoPago.setMetodoPago(dto.getMetodoPago());
@@ -226,17 +239,91 @@ public class DeudaServiceImpl implements DeudaService {
         nuevoPago.setDeuda(deuda);
         nuevoPago.setUsuarioRegistro(tesorero);
 
-        if ("TRANSFERENCIA".equalsIgnoreCase(dto.getMetodoPago()) && dto.getComprobante() != null && !dto.getComprobante().isEmpty()) {
+        if ("TRANSFERENCIA".equalsIgnoreCase(dto.getMetodoPago())) {
+            if (dto.getNroOperacion() == null || dto.getNroOperacion().trim().isEmpty()) {
+                throw new RuntimeException("Validación: El número de operación es obligatorio para transferencias.");
+            }
+            if (dto.getComprobante() == null || dto.getComprobante().isEmpty()) {
+                throw new RuntimeException("Validación: El archivo del voucher es obligatorio para transferencias.");
+            }
 
-            // Aquí se sube la imagen a un servidor (AWS, Cloudinary o tu VPS local)
-            // String urlGenerada = storageService.subirArchivo(dto.getComprobante());
-            // nuevoPago.setVoucherUrl(urlGenerada);
-
+            log.info("[PAGO] Subiendo voucher de transferencia a Cloudinary...");
+            try {
+                String urlComprobante = cloudinaryService.subirArchivo(dto.getComprobante());
+                nuevoPago.setVoucherUrl(urlComprobante);
+            } catch (Exception e) {
+                throw new RuntimeException("Error al subir el comprobante a Cloudinary: " + e.getMessage());
+            }
         }
 
         pagoRepository.save(nuevoPago);
 
         deuda.setEstadoDeuda("Pagado");
         deudaRepository.save(deuda);
+
+        log.info("[PAGO] Registro en base de datos completado con éxito. Correlativo generado: {}", correlativoPAG);
+
+        // LOS DATOS ENVIADOS AL GENERADOR DE COMPROBANTES
+        Map<String, String> respuesta = new java.util.HashMap<>();
+
+        // Disparar el proceso asíncrono y definir el mensaje
+        try {
+            Usuario socio = deuda.getUsuarioSocio();
+            String correoSocio = socio.getCorreo();
+
+            if (correoSocio == null || correoSocio.trim().isEmpty()) {
+                log.warn("[POST-PAGO] El socio {} no tiene un correo registrado.", socio.getNombres());
+                respuesta.put("mensaje", "Pago procesado con éxito, pero el socio no tiene un correo electrónico registrado.");
+            } else {
+                log.info("[POST-PAGO] Empaquetando datos y delegando al hilo asíncrono...");
+                Map<String, Object> data = new java.util.HashMap<>();
+                data.put("codigo_pago", correlativoPAG);
+                data.put("socio_nombre", (socio.getNombres() + " " + socio.getApellidos()).trim());
+                data.put("nro_puesto", socio.getNroPuesto() != null ? String.valueOf(socio.getNroPuesto()) : "---");
+                data.put("socio_dni", socio.getDni() != null ? socio.getDni() : "---");
+                data.put("fecha_pago", java.time.LocalDate.now().toString());
+                data.put("metodo_pago", dto.getMetodoPago());
+                data.put("concepto", deuda.getServicio().getNombreServicio());
+                data.put("nro_operacion", dto.getNroOperacion() != null ? dto.getNroOperacion() : "---");
+                data.put("monto_pagado", String.format("%.2f", dto.getMontoPagado()));
+
+                emailService.enviarBoletaPorCorreo(correoSocio, socio.getNombres(), correlativoPAG, data);
+
+                respuesta.put("mensaje", "Pago procesado con éxito. La boleta digital ha sido enviada al correo del socio.");
+            }
+        } catch (Exception e) {
+            log.error("[POST-PAGO EXCEPCIÓN] Fallo al intentar delegar el proceso de correo: ", e);
+            respuesta.put("mensaje", "Pago procesado con éxito, pero ocurrió un error interno al intentar enviar el correo.");
+        }
+
+        return respuesta;
     }
+
+    @Override
+    @Transactional
+    public void registrarDeudaIndividual(DeudaIndividualRequestDTO dto) {
+        Usuario socio = usuarioRepository.findByNroPuesto(dto.getNroPuesto())
+                .orElseThrow(() -> new RuntimeException("El número de puesto " + dto.getNroPuesto() + " no está registrado en el padrón."));
+
+        Servicio servicio = servicioRepository.findById(dto.getIdServicio())
+                .orElseThrow(() -> new RuntimeException("El servicio especificado no existe."));
+
+        Usuario creador = securityUtils.getUsuarioAutenticado();
+        if (creador == null) {
+            throw new RuntimeException("No se encontró una sesión de usuario válida para auditar la emisión.");
+        }
+
+        Deuda nuevaDeuda = new Deuda();
+        nuevaDeuda.setMontoBase(dto.getMontoBase());
+        nuevaDeuda.setMora(BigDecimal.ZERO);
+        nuevaDeuda.setFechaEmision(LocalDate.now());
+        nuevaDeuda.setFechaVencimiento(dto.getFechaVencimiento());
+        nuevaDeuda.setEstadoDeuda("Pendiente");
+        nuevaDeuda.setServicio(servicio);
+        nuevaDeuda.setUsuarioSocio(socio);
+        nuevaDeuda.setUsuarioCreador(creador);
+
+        deudaRepository.save(nuevaDeuda);
+    }
+
 }

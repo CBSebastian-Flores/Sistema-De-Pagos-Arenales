@@ -16,3 +16,15 @@ export const registrarPagoDeuda = async (formData) => {
   })
   return response.data
 }
+
+export const obtenerHistorialPagos = async () => {
+  const response = await api.get("/api/pagos/historial");
+  return response.data;
+};
+
+export const descargarBoleta = async (idDeuda) => {
+  const response = await api.get(`/api/deudas/${idDeuda}/boleta`, {
+    responseType: "blob",
+  })
+  return response.data
+}

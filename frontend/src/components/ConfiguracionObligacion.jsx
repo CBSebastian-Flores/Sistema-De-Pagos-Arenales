@@ -63,11 +63,17 @@ export default function ConfiguracionObligacion() {
 
   // Cuota por socio: en vivo según modalidad
   const cuotaPorSocio = (() => {
-    if (!servicioSeleccionado) return null;
-    if (esFijo) return Number(servicioSeleccionado.precioBase);
+    if (!servicioSeleccionado || !socios) return null;
+
+    // Si es FIJO, el "precioBase" representa el costo total ordinario (Ej: 3500 de seguridad)
+    if (esFijo) {
+      return Number(servicioSeleccionado.precioBase) / socios;
+    }
+
+    // Si es VARIABLE, se divide la factura ingresada manualmente
     if (esVariable) {
       const total = Number(facturaTotal);
-      if (!total || !socios) return 0;
+      if (!total) return 0;
       return total / socios;
     }
     return null;
@@ -86,7 +92,13 @@ export default function ConfiguracionObligacion() {
 
     const servicio = servicios.find((s) => String(s.idServicio) === id);
     setServicioSeleccionado(servicio || null);
-    setFacturaTotal("");
+
+    // 💡 Si es FIJO, autocompletamos la factura total con el precio base del catálogo
+    if (servicio && servicio.modalidadCobro === "FIJO") {
+      setFacturaTotal(String(servicio.precioBase));
+    } else {
+      setFacturaTotal("");
+    }
   };
 
   const handleFacturaTotalChange = (e) => {
@@ -120,10 +132,9 @@ export default function ConfiguracionObligacion() {
       const payload = {
         idServicio: Number(idServicio),
         montoCuotaSocio: cuotaPorSocio,
-        fechaEmision
+        fechaEmision,
       };
 
-      // 🚀 Endpoint real corregido
       await api.post("/api/deudas/publicar-masivo", payload);
       toast.success(
         `Obligación generada para ${socios} socio${socios !== 1 ? "s" : ""}`,
@@ -147,9 +158,12 @@ export default function ConfiguracionObligacion() {
     <div className="p-6 min-h-full flex justify-center">
       <div className="w-full max-w-2xl">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white">Configuración de Nueva Obligación</h1>
+          <h1 className="text-2xl font-bold text-white">
+            Configuración de Nueva Obligación
+          </h1>
           <p className="text-gray-400 text-sm mt-1">
-            Selecciona el servicio y el sistema calculará la cuota por socio automáticamente
+            Selecciona el servicio y el sistema calculará la cuota por socio
+            automáticamente
           </p>
         </div>
 
@@ -209,32 +223,31 @@ export default function ConfiguracionObligacion() {
           {/* Bloque de montos: factura + cuota */}
           {servicioSeleccionado && (
             <div className="flex flex-col gap-5 pt-7 border-t border-[#1e3a5f]/60">
-              {/* Factura Total — solo visible si es VARIABLE */}
-              {esVariable && (
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Factura Total (S/.)
-                  </label>
-                  <input
-                    type="number"
-                    value={facturaTotal}
-                    onChange={handleFacturaTotalChange}
-                    placeholder="Ej: 1500.00"
-                    className={`bg-[#0f1b2d] border rounded-lg px-3 py-3 text-sm text-white placeholder-gray-600 outline-none transition-colors
-                      ${errores.facturaTotal ? "border-red-500" : "border-[#1e3a5f] focus:border-blue-500"}`}
-                  />
-                  {errores.facturaTotal && (
-                    <p className="text-red-400 text-xs">
-                      {errores.facturaTotal}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* Cuota por Socio */}
+              {/* Factura Total — visible para ambos, pero bloqueada si es FIJO */}
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Cuota por Socio (S/.)
+                  {esFijo
+                    ? "Costo Fijo Total del Servicio (S/.)"
+                    : "Factura Total (S/.)"}
+                </label>
+                <input
+                  type="number"
+                  value={facturaTotal ? Number(facturaTotal).toFixed(2) : ""}
+                  onChange={handleFacturaTotalChange}
+                  readOnly={esFijo}
+                  placeholder="Ej: 1500.00"
+                  className={`bg-[#0f1b2d] border rounded-lg px-3 py-3 text-sm text-white placeholder-gray-600 outline-none transition-colors
+                    ${esFijo ? "opacity-70 cursor-not-allowed border-[#1e3a5f]" : errores.facturaTotal ? "border-red-500" : "border-[#1e3a5f] focus:border-blue-500"}`}
+                />
+                {errores.facturaTotal && esVariable && (
+                  <p className="text-red-400 text-xs">{errores.facturaTotal}</p>
+                )}
+              </div>
+
+              {/* Cuota por Socio — Informativo Automatizado */}
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Cuota calculada por Socio (S/.)
                 </label>
                 <input
                   type="text"
@@ -246,14 +259,13 @@ export default function ConfiguracionObligacion() {
                   }
                   className="bg-[#0f1b2d] border border-[#1e3a5f] rounded-lg px-3 py-3 text-base text-emerald-400 font-mono font-semibold opacity-90 cursor-not-allowed"
                 />
-                {esVariable && (
-                  <p className="text-xs text-gray-500">
-                    {cargandoSocios
-                      ? "Calculando socios activos..."
-                      : `Calculado entre ${socios} socio${socios !== 1 ? "s" : ""} activo${socios !== 1 ? "s" : ""}`}
-                  </p>
-                )}
+                <p className="text-xs text-gray-500">
+                  {cargandoSocios
+                    ? "Calculando socios activos..."
+                    : `Costo distribuido equitativamente entre los ${socios} socios activos.`}
+                </p>
               </div>
+
               {/* Indicador visual de la Tarifa de Mora */}
               {servicioSeleccionado && (
                 <div className="flex flex-col gap-2 pt-7 border-t border-[#1e3a5f]/60">
@@ -304,7 +316,7 @@ export default function ConfiguracionObligacion() {
           <button
             onClick={handleGenerar}
             disabled={generando || !servicioSeleccionado}
-            className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3.5 mt-2 rounded-lg transition-colors text-sm"
+            className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3.5 mt-2 rounded-lg transition-colors text-sm cursor-pointer"
           >
             {generando ? "Generando obligación..." : "Generar Obligación"}
           </button>

@@ -229,6 +229,7 @@ export default function DashboardAnalitico() {
                 </div>
               )}
             </div>
+
           </div>
 
           {/* Inyección modular de tu tabla externa limpia */}

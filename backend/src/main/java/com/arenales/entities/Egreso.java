@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "Egreso")
@@ -42,4 +43,9 @@ public class Egreso {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario_registro", nullable = false, foreignKey = @ForeignKey(name = "FK_Egreso_Usuario"))
     private Usuario usuarioRegistro;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_servicio")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Servicio servicio;
 }
