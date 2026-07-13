@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import api from "../services/axiosConfig";
 import { toast } from "react-toastify";
 import StatCard from "./StatCard";
-import TablaAuditoria from "./TablaAuditoria"; // 👈 Mantenemos la importación del nuevo componente
+import TablaAuditoria from "./TablaAuditoria";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell,
   PieChart, Pie
@@ -18,11 +18,16 @@ function SkeletonCard() {
   );
 }
 
-function SkeletonChart() {
+function SkeletonTable() {
   return (
-    <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl p-5 animate-pulse">
-      <div className="h-4 w-40 bg-[#1e3a5f] rounded mb-6" />
-      <div className="h-48 bg-[#1e3a5f]/40 rounded" />
+    <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl p-5 space-y-4 animate-pulse">
+      <div className="h-4 w-40 bg-[#1e3a5f] rounded" />
+      {[...Array(4)].map((_, i) => (
+        <div key={i} className="flex gap-4">
+          <div className="h-3 flex-1 bg-[#1e3a5f] rounded" />
+          <div className="h-3 w-24 bg-[#1e3a5f] rounded" />
+        </div>
+      ))}
     </div>
   );
 }
@@ -45,7 +50,6 @@ export default function DashboardAnalitico() {
   useEffect(() => {
     const cargarDashboard = async () => {
       try {
-        // 🚀 Una sola petición unificada
         const res = await api.get("/api/dashboard/summary");
         setDatos(res.data);
       } catch (error) {
@@ -77,15 +81,21 @@ export default function DashboardAnalitico() {
     { name: "Vencidas", value: deudasVencidas },
   ].filter((d) => d.value > 0);
 
-  // 🚀 ADAPTACIÓN LIMPIA: Mapeamos el DTO consolidado al formato estructurado que espera la tabla
-  const movimientosUnificados = (datos?.ultimosMovimientos || []).map((m, index) => ({
-    id: index,
-    tipo: m.tipo?.toLowerCase(), // "ingreso" o "egreso"
-    codigo: m.tipo === "INGRESO" ? `PAG-${index}` : `EGR-${index}`,
-    descripcion: m.descripcion || "Transacción registrada",
-    monto: m.monto || 0,
-    fecha: m.fecha,
-  }));
+  const movimientosUnificados = (datos?.ultimosMovimientos || []).map((m) => {
+    // Si la fecha es un DateString puro (ej: "2026-07-08"), le añadimos la hora local T00:00:00
+    // Si ya viene con hora (DateTime de SQL), lo dejamos pasar completo para no romperlo
+    const fechaOriginal = m.fecha;
+    const fechaLimpia = fechaOriginal && !fechaOriginal.includes("T") 
+      ? `${fechaOriginal}T00:00:00` 
+      : fechaOriginal;
+
+    return {
+      tipo: m.tipo,               // "INGRESO" o "EGRESO"
+      fecha: fechaLimpia,         // Soluciona el desfase horario
+      monto: m.monto || 0,        // monto_pagado o monto de la BD
+      descripcion: m.descripcion  // 'Pago recibido de socio' o descripción del egreso
+    };
+  });
 
   return (
     <div className="p-6 min-h-full">
@@ -96,21 +106,15 @@ export default function DashboardAnalitico() {
 
       {cargando ? (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[...Array(4)].map((_, i) => <SkeletonCard key={i + 4} />)}
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <SkeletonChart />
-            <SkeletonChart />
-          </div>
-          <TablaAuditoria movimientos={[]} cargando={true} />
+          <SkeletonTable />
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {/* Grilla limpia de 3 columnas (6 tarjetas en total), eliminando los datos vacíos */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             <StatCard titulo="Total Ingresos" valor={totalIngresos} icono={iconos.ingresos} formato="S/." />
             <StatCard titulo="Total Egresos" valor={totalEgresos} icono={iconos.egresos} formato="S/." color={{ texto: "text-red-400", bg: "bg-red-500/10 border-red-500/20" }} />
             <StatCard titulo="Balance Neto" valor={balanceNeto} icono={iconos.balance} formato="S/." />
@@ -119,20 +123,24 @@ export default function DashboardAnalitico() {
             <StatCard titulo="Deudas Vencidas" valor={deudasVencidas} icono={iconos.warning} color={{ texto: "text-red-400", bg: "bg-red-500/10 border-red-500/20" }} />
           </div>
 
+          {/* ── SECCIÓN DE GRÁFICOS RECHARTS PULIDOS ── */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl p-5 shadow-sm">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Balance General Bruto</h3>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={dataBar} margin={{ top: 20, right: 20, left: -10, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5f" opacity={0.3} vertical={false} />
-                  <XAxis dataKey="name" tick={{ fill: "#9ca3af", fontSize: 12 }} axisLine={{ stroke: "#1e3a5f" }} tickLine={false} />
-                  <YAxis tick={{ fill: "#9ca3af", fontSize: 12 }} axisLine={{ stroke: "#1e3a5f" }} tickLine={false} />
+            
+            {/* 1. Gráfico de Barras */}
+            <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl p-4 flex flex-col justify-between">
+              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Balance Bruto</h3>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={dataBar} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5f" opacity={0.2} vertical={false} />
+                  <XAxis dataKey="name" tick={{ fill: "#9ca3af", fontSize: 11 }} axisLine={{ stroke: "#1e3a5f" }} tickLine={false} />
+                  <YAxis tick={{ fill: "#9ca3af", fontSize: 11 }} axisLine={{ stroke: "#1e3a5f" }} tickLine={false} />
                   <Tooltip
                     contentStyle={{ backgroundColor: "#0f1b2d", border: "1px solid #1e3a5f", borderRadius: 8 }}
+                    labelStyle={{ color: "#fff", fontWeight: "bold"}}
                     itemStyle={{ color: "#fff" }}
                     formatter={(value) => [`S/. ${value.toFixed(2)}`, "Total"]}
                   />
-                  <Bar dataKey="monto" radius={[4, 4, 0, 0]} maxBarSize={50} animationDuration={500}>
+                  <Bar dataKey="monto" radius={[4, 4, 0, 0]} maxBarSize={150} animationDuration={400}>
                     <Cell fill="#34d399" />
                     <Cell fill="#f87171" />
                   </Bar>
@@ -140,6 +148,7 @@ export default function DashboardAnalitico() {
               </ResponsiveContainer>
             </div>
 
+            {/* Gráfico de Dona Centrado y Proporcionado */}
             <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl p-5 shadow-sm flex flex-col justify-between">
               <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Estado de Deudas</h3>
               {dataDonut.length === 0 ? (
@@ -156,19 +165,17 @@ export default function DashboardAnalitico() {
                         outerRadius={85} 
                         paddingAngle={5} 
                         dataKey="value"
-                        animationDuration={500}
+                        animationDuration={800}
                       >
                         {dataDonut.map((_, i) => (
                           <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} style={{ outline: 'none' }} />
                         ))}
                       </Pie>
-                      <Tooltip 
-                        contentStyle={{ backgroundColor: "#0f1b2d", border: "1px solid #1e3a5f", borderRadius: 8 }}
-                        itemStyle={{ color: "#fff" }}
-                      />
+                      <Tooltip contentStyle={{ backgroundColor: "#0f1b2d", border: "1px solid #1e3a5f", borderRadius: 8, color: "#fff" }} />
                     </PieChart>
                   </ResponsiveContainer>
                   
+                  {/* Leyenda limpia abajo */}
                   <div className="flex gap-6 mt-3 justify-center">
                     {dataDonut.map((d, i) => (
                       <div key={d.name} className="flex items-center gap-2">
@@ -180,9 +187,10 @@ export default function DashboardAnalitico() {
                 </div>
               )}
             </div>
+
           </div>
 
-          {/* 💡 INYECTAMOS LA TABLA DE AUDITORÍA CON LA DATA MAREADA Y LIMPIA DESDE EL BACKEND */}
+          {/* ── TABLA DE ÚLTIMOS MOVIMIENTOS ── */}
           <TablaAuditoria movimientos={movimientosUnificados} cargando={cargando} />
         </>
       )}
