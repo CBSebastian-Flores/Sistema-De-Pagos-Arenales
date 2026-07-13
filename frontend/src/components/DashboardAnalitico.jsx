@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import api from "../services/axiosConfig";
 import { toast } from "react-toastify";
 import StatCard from "./StatCard";
+import TablaAuditoria from "./TablaAuditoria";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell,
   PieChart, Pie
@@ -69,8 +70,6 @@ export default function DashboardAnalitico() {
   const deudasPagadas = datos?.deudasPorEstado?.["Pagado"] || 0;
   const deudasVencidas = datos?.deudasPorEstado?.["Vencido"] || 0;
 
-  const ultimosMovimientos = datos?.ultimosMovimientos || [];
-
   const dataBar = [
     { name: "Ingresos", monto: totalIngresos },
     { name: "Egresos", monto: totalEgresos },
@@ -82,14 +81,21 @@ export default function DashboardAnalitico() {
     { name: "Vencidas", value: deudasVencidas },
   ].filter((d) => d.value > 0);
 
-  const formatearFecha = (fechaStr) => {
-    if (!fechaStr) return "-";
-    try {
-      return new Date(fechaStr + "T00:00:00").toLocaleDateString("es-PE", {
-        day: "2-digit", month: "2-digit", year: "numeric"
-      });
-    } catch { return fechaStr; }
-  };
+  const movimientosUnificados = (datos?.ultimosMovimientos || []).map((m) => {
+    // Si la fecha es un DateString puro (ej: "2026-07-08"), le añadimos la hora local T00:00:00
+    // Si ya viene con hora (DateTime de SQL), lo dejamos pasar completo para no romperlo
+    const fechaOriginal = m.fecha;
+    const fechaLimpia = fechaOriginal && !fechaOriginal.includes("T") 
+      ? `${fechaOriginal}T00:00:00` 
+      : fechaOriginal;
+
+    return {
+      tipo: m.tipo,               // "INGRESO" o "EGRESO"
+      fecha: fechaLimpia,         // Soluciona el desfase horario
+      monto: m.monto || 0,        // monto_pagado o monto de la BD
+      descripcion: m.descripcion  // 'Pago recibido de socio' o descripción del egreso
+    };
+  });
 
   return (
     <div className="p-6 min-h-full">
@@ -184,49 +190,8 @@ export default function DashboardAnalitico() {
 
           </div>
 
-          {/* ── TABLA DE ACTIVIDAD RECIENTE ── */}
-          <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl overflow-hidden">
-            <div className="px-5 py-4 border-b border-[#1e3a5f]">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Actividad Reciente (Últimos Movimientos)</h3>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-[#1e3a5f] bg-[#0f1b2d]">
-                    {["Tipo", "Descripción", "Monto", "Fecha"].map((col) => (
-                      <th key={col} className="text-center px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">{col}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#1e3a5f]/40">
-                  {ultimosMovimientos.length === 0 ? (
-                    <tr>
-                      <td colSpan={4} className="text-center py-12 text-gray-400 text-xs">No hay movimientos registrados aún</td>
-                    </tr>
-                  ) : (
-                    ultimosMovimientos.map((mov, idx) => (
-                      <tr key={idx} className="text-center transition-colors hover:bg-[#1a2d4a]/40">
-                        <td className="px-4 py-3">
-                          <span className={`text-xs font-bold px-2 py-0.5 rounded border ${
-                            mov.tipo === "INGRESO"
-                              ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
-                              : "bg-red-500/15 text-red-400 border-red-500/30"
-                          }`}>
-                            {mov.tipo}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-gray-300">{mov.descripcion}</td>
-                        <td className={`px-4 py-3 font-mono font-semibold ${mov.tipo === "INGRESO" ? "text-emerald-400" : "text-red-400"}`}>
-                          {mov.tipo === "INGRESO" ? "+" : "-"}S/. {Number(mov.monto).toFixed(2)}
-                        </td>
-                        <td className="px-4 py-3 text-gray-400 text-xs font-mono">{formatearFecha(mov.fecha)}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          {/* ── TABLA DE ÚLTIMOS MOVIMIENTOS ── */}
+          <TablaAuditoria movimientos={movimientosUnificados} cargando={cargando} />
         </>
       )}
     </div>
