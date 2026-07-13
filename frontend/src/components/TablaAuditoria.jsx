@@ -87,8 +87,7 @@ export default function TablaAuditoria({ movimientos, cargando }) {
                         {mov.tipo}
                       </span>
                     </td>
-                    {/* 3. Descripción */}
-                    <td className="px-4 py-3 text-gray-300 text-xs max-w-[300px] truncate mx-auto">
+                    <td className="px-4 py-3 text-gray-300 text-xs max-w-50 truncate">
                       {mov.descripcion}
                     </td>
                     {/* 4. Monto */}

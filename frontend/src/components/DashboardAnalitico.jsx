@@ -1,12 +1,31 @@
-import { useState, useEffect } from "react";
+import { useEffect, useReducer } from "react";
 import api from "../services/axiosConfig";
-import { toast } from "react-toastify";
 import StatCard from "./StatCard";
 import TablaAuditoria from "./TablaAuditoria";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell,
   PieChart, Pie
 } from "recharts";
+
+// ── LÓGICA DE ESTADOS DE LA RAMA SDPA-153 ──
+const ESTADO_INICIAL = Object.freeze({
+  cargando: true,
+  data: null,
+  error: null,
+});
+
+function reducer(state, action) {
+  switch (action.type) {
+    case "CARGAR":
+      return { ...state, cargando: true, error: null };
+    case "EXITO":
+      return { cargando: false, data: action.payload, error: null };
+    case "ERROR":
+      return { cargando: false, data: null, error: action.payload };
+    default:
+      return state;
+  }
+}
 
 // ── SUBTAREA SDPA-149: LOADING SKELETONS ──
 function SkeletonCard() {
@@ -21,11 +40,12 @@ function SkeletonCard() {
 function SkeletonTable() {
   return (
     <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl p-5 space-y-4 animate-pulse">
-      <div className="h-4 w-40 bg-[#1e3a5f] rounded" />
-      {[...Array(4)].map((_, i) => (
-        <div key={i} className="flex gap-4">
-          <div className="h-3 flex-1 bg-[#1e3a5f] rounded" />
+      <div className="h-4 w-40 bg-[#1e3a5f] rounded mb-4" />
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="flex gap-4 py-2.5 border-b border-[#1e3a5f]/20 last:border-0">
+          <div className="h-3 w-16 bg-[#1e3a5f] rounded" />
           <div className="h-3 w-24 bg-[#1e3a5f] rounded" />
+          <div className="h-3 w-32 bg-[#1e3a5f] rounded" />
         </div>
       ))}
     </div>
@@ -44,35 +64,44 @@ const iconos = {
 const DONUT_COLORS = ["#34d399", "#fbbf24", "#f87171"];
 
 export default function DashboardAnalitico() {
-  const [cargando, setCargando] = useState(true);
-  const [datos, setDatos] = useState(null);
+  // 💡 Usamos el estado global unificado de la rama SDPA-153
+  const [{ cargando, data, error }, dispatch] = useReducer(reducer, ESTADO_INICIAL);
 
   useEffect(() => {
+    let cancelado = false;
+
     const cargarDashboard = async () => {
+      dispatch({ type: "CARGAR" });
       try {
+        // Consumimos tu endpoint consolidado real del backend
         const res = await api.get("/api/dashboard/summary");
-        setDatos(res.data);
-      } catch (error) {
-        console.error("Error cargando dashboard:", error);
-        toast.error("No se pudo cargar el consolidado financiero.");
-      } finally {
-        setCargando(false);
+        if (!cancelado) {
+          dispatch({ type: "EXITO", payload: res.data });
+        }
+      } catch (err) {
+        console.error("Error cargando dashboard:", err);
+        if (!cancelado) {
+          dispatch({ type: "ERROR", payload: err });
+        }
       }
     };
+
     cargarDashboard();
+    return () => { cancelado = true; }; // Protección contra race conditions
   }, []);
 
-  const totalIngresos = datos?.sumaHistoricaIngresos || 0;
-  const totalEgresos = datos?.sumaHistoricaEgresos || 0;
-  const balanceNeto = datos?.balanceNeto || 0;
+  // ── EXTRACCIÓN DE TU DATA UNIFICADA REAL ──
+  const totalIngresos = data?.sumaHistoricaIngresos || 0;
+  const totalEgresosMapeado = data?.sumaHistoricaEgresos || 0;
+  const balanceNeto = data?.balanceNeto || 0;
 
-  const deudasPendientes = datos?.deudasPorEstado?.["Pendiente"] || 0;
-  const deudasPagadas = datos?.deudasPorEstado?.["Pagado"] || 0;
-  const deudasVencidas = datos?.deudasPorEstado?.["Vencido"] || 0;
+  const deudasPendientes = data?.deudasPorEstado?.["Pendiente"] || 0;
+  const deudasPagadas = data?.deudasPorEstado?.["Pagado"] || 0;
+  const deudasVencidas = data?.deudasPorEstado?.["Vencido"] || 0;
 
   const dataBar = [
     { name: "Ingresos", monto: totalIngresos },
-    { name: "Egresos", monto: totalEgresos },
+    { name: "Egresos", monto: totalEgresosMapeado },
   ];
 
   const dataDonut = [
@@ -81,21 +110,38 @@ export default function DashboardAnalitico() {
     { name: "Vencidas", value: deudasVencidas },
   ].filter((d) => d.value > 0);
 
-  const movimientosUnificados = (datos?.ultimosMovimientos || []).map((m) => {
-    // Si la fecha es un DateString puro (ej: "2026-07-08"), le añadimos la hora local T00:00:00
-    // Si ya viene con hora (DateTime de SQL), lo dejamos pasar completo para no romperlo
+  // ── TU MAPEADO SEGURO PARA LA TABLA MODULAR ──
+  const movimientosUnificados = (data?.ultimosMovimientos || []).map((m) => {
     const fechaOriginal = m.fecha;
     const fechaLimpia = fechaOriginal && !fechaOriginal.includes("T") 
       ? `${fechaOriginal}T00:00:00` 
       : fechaOriginal;
 
     return {
-      tipo: m.tipo,               // "INGRESO" o "EGRESO"
-      fecha: fechaLimpia,         // Soluciona el desfase horario
-      monto: m.monto || 0,        // monto_pagado o monto de la BD
-      descripcion: m.descripcion  // 'Pago recibido de socio' o descripción del egreso
+      tipo: m.tipo,
+      fecha: fechaLimpia,
+      monto: m.monto || 0,
+      descripcion: m.descripcion
     };
   });
+
+  // Pantalla de Error con botón de Reintentar de la rama SDPA-153
+  if (error) {
+    return (
+      <div className="p-6 min-h-full flex items-center justify-center">
+        <div className="text-center bg-[#111e30] border border-red-500/30 p-6 rounded-xl max-w-sm">
+          <p className="text-red-400 text-sm mb-3 font-semibold">Error al conectar con el servidor</p>
+          <p className="text-gray-400 text-xs mb-4">No se pudo recuperar el consolidado financiero.</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-lg hover:bg-red-500/20 transition-colors font-medium"
+          >
+            Reintentar Conexión
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 min-h-full">
@@ -113,20 +159,18 @@ export default function DashboardAnalitico() {
         </div>
       ) : (
         <>
-          {/* Grilla limpia de 3 columnas (6 tarjetas en total), eliminando los datos vacíos */}
+          {/* Grilla de 6 tarjetas fijas */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             <StatCard titulo="Total Ingresos" valor={totalIngresos} icono={iconos.ingresos} formato="S/." />
-            <StatCard titulo="Total Egresos" valor={totalEgresos} icono={iconos.egresos} formato="S/." color={{ texto: "text-red-400", bg: "bg-red-500/10 border-red-500/20" }} />
+            <StatCard titulo="Total Egresos" valor={totalEgresosMapeado} icono={iconos.egresos} formato="S/." color={{ texto: "text-red-400", bg: "bg-red-500/10 border-red-500/20" }} />
             <StatCard titulo="Balance Neto" valor={balanceNeto} icono={iconos.balance} formato="S/." />
             <StatCard titulo="Deudas Pendientes" valor={deudasPendientes} icono={iconos.alerta} color={{ texto: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" }} />
             <StatCard titulo="Deudas Pagadas" valor={deudasPagadas} icono={iconos.check} />
             <StatCard titulo="Deudas Vencidas" valor={deudasVencidas} icono={iconos.warning} color={{ texto: "text-red-400", bg: "bg-red-500/10 border-red-500/20" }} />
           </div>
 
-          {/* ── SECCIÓN DE GRÁFICOS RECHARTS PULIDOS ── */}
+          {/* Gráficos grandes con Tooltip Blanco arreglado */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            
-            {/* 1. Gráfico de Barras */}
             <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl p-4 flex flex-col justify-between">
               <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Balance Bruto</h3>
               <ResponsiveContainer width="100%" height={260}>
@@ -148,7 +192,6 @@ export default function DashboardAnalitico() {
               </ResponsiveContainer>
             </div>
 
-            {/* Gráfico de Dona Centrado y Proporcionado */}
             <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl p-5 shadow-sm flex flex-col justify-between">
               <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Estado de Deudas</h3>
               {dataDonut.length === 0 ? (
@@ -171,11 +214,10 @@ export default function DashboardAnalitico() {
                           <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} style={{ outline: 'none' }} />
                         ))}
                       </Pie>
-                      <Tooltip contentStyle={{ backgroundColor: "#0f1b2d", border: "1px solid #1e3a5f", borderRadius: 8, color: "#fff" }} />
+                      <Tooltip contentStyle={{ backgroundColor: "#0f1b2d", border: "1px solid #1e3a5f", borderRadius: 8 }} itemStyle={{ color: "#fff" }} />
                     </PieChart>
                   </ResponsiveContainer>
                   
-                  {/* Leyenda limpia abajo */}
                   <div className="flex gap-6 mt-3 justify-center">
                     {dataDonut.map((d, i) => (
                       <div key={d.name} className="flex items-center gap-2">
@@ -190,7 +232,7 @@ export default function DashboardAnalitico() {
 
           </div>
 
-          {/* ── TABLA DE ÚLTIMOS MOVIMIENTOS ── */}
+          {/* Inyección modular de tu tabla externa limpia */}
           <TablaAuditoria movimientos={movimientosUnificados} cargando={cargando} />
         </>
       )}
