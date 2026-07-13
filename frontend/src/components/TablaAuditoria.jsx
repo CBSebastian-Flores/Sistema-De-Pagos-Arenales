@@ -69,7 +69,7 @@ export default function TablaAuditoria({ movimientos, cargando }) {
                         {mov.codigo}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-gray-300 text-xs max-w-[200px] truncate">
+                    <td className="px-4 py-3 text-gray-300 text-xs max-w-50 truncate">
                       {mov.descripcion}
                     </td>
                     <td className={`px-4 py-3 font-mono text-sm font-semibold ${esIngreso ? "text-emerald-400" : "text-red-400"}`}>
