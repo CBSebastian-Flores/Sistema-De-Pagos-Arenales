@@ -38,11 +38,12 @@ public class EgresoServiceImpl implements EgresoService {
     @Override
     @Transactional(readOnly = true)
     public Page<EgresoResponseDTO> listarEgresosPaginados(String criterio, String categoria, LocalDate desde, LocalDate hasta, Pageable pageable) {
-        
-        Specification<Egreso> spec = Specification
-                .where(EgresoSpecification.porBeneficiario(criterio))
-                .and(EgresoSpecification.porCategoria(categoria))
-                .and(EgresoSpecification.porRangoFechas(desde, hasta));
+
+        Specification<Egreso> spec = Specification.allOf(
+                EgresoSpecification.porBeneficiario(criterio),
+                EgresoSpecification.porCategoria(categoria),
+                EgresoSpecification.porRangoFechas(desde, hasta)
+        );
 
         Page<Egreso> paginaEntidades = egresoRepository.findAll(spec, pageable);
 
@@ -55,6 +56,7 @@ public class EgresoServiceImpl implements EgresoService {
                 e.getCategoriaEgreso(),
                 e.getMetodoRetiro(),
                 e.getBeneficiario(),
+                e.getComprobanteUrl(),
                 e.getUsuarioRegistro() != null ? e.getUsuarioRegistro().getNombres() : "Sistema"
         ));
     }
@@ -123,6 +125,7 @@ public class EgresoServiceImpl implements EgresoService {
                 e.getCategoriaEgreso(),
                 e.getMetodoRetiro(),
                 e.getBeneficiario(),
+                e.getComprobanteUrl(),
                 e.getUsuarioRegistro() != null ? e.getUsuarioRegistro().getNombres() : "Sistema"
         )).collect(Collectors.toList());
     }

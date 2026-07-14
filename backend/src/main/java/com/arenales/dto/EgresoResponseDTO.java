@@ -18,5 +18,6 @@ public class EgresoResponseDTO {
     private String categoriaEgreso;
     private String metodoRetiro;
     private String beneficiario;
+    private String comprobanteUrl;
     private String usernameRegistro; // Enviamos solo el nombre del usuario si se requiere, evita la entidad pesada
 }
