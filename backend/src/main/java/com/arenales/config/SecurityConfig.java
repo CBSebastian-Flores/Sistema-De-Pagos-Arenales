@@ -61,7 +61,7 @@ public class SecurityConfig {
                         // 4. SERVICIOS, DEUDAS, PAGOS Y EGRESOS: Control total compartido (Admin y Tesorero)
                         .requestMatchers("/api/servicios/**").hasAnyAuthority("Tesorero", "Administrador")
                         .requestMatchers("/api/deudas/**").hasAnyAuthority("Tesorero", "Administrador", "Socio")
-                        .requestMatchers("/api/pagos/**").hasAnyAuthority("Tesorero", "Administrador")
+                        .requestMatchers("/api/pagos/**").hasAnyAuthority("Socio", "Tesorero", "Administrador")
                         .requestMatchers("/api/egresos/**").hasAnyAuthority("Tesorero", "Administrador")
 
                         .anyRequest().authenticated());
