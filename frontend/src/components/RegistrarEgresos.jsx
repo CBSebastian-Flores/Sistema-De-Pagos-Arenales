@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react"
 import api from "../services/axiosConfig"
 import { toast } from "react-toastify"
 import { obtenerServiciosActivos } from "../services/servicioService"
+import GrillaEgresos from "./GrillaEgresos"
 
 const CATEGORIAS = [
   "Servicios Públicos",
@@ -338,6 +339,19 @@ export default function RegistrarEgresos() {
             </div>
           </form>
         </div>
+      </div>
+
+      {/* GRILLA AVANZADA DE EGRESOS */}
+      <div className="mt-8">
+        <div className="mb-4">
+          <h2 className="text-lg font-bold text-white">
+            Control de Egresos Contables
+          </h2>
+          <p className="text-gray-400 text-sm mt-1">
+            Historial completo con filtros, búsqueda y comprobantes
+          </p>
+        </div>
+        <GrillaEgresos />
       </div>
     </div>
   )
