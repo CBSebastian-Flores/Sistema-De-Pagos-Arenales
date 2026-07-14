@@ -52,7 +52,7 @@ public class SecurityConfig {
 
                         // 3. ROLES Y USUARIOS: Exclusivo del Administrador (El Tesorero no toca esto)
                         .requestMatchers("/api/roles/**").hasAuthority("Administrador")
-                        .requestMatchers("/api/usuarios/listar").hasAuthority("Administrador")
+                        .requestMatchers("/api/usuarios/listar").hasAnyAuthority("Tesorero", "Administrador")
                         .requestMatchers("/api/usuarios/restablecer-forzado").hasAuthority("Administrador")
                         .requestMatchers(HttpMethod.PUT, "/api/usuarios/**").hasAuthority("Administrador")
                         .requestMatchers(HttpMethod.PATCH, "/api/usuarios/**").hasAuthority("Administrador")
@@ -61,7 +61,7 @@ public class SecurityConfig {
                         // 4. SERVICIOS, DEUDAS, PAGOS Y EGRESOS: Control total compartido (Admin y Tesorero)
                         .requestMatchers("/api/servicios/**").hasAnyAuthority("Tesorero", "Administrador")
                         .requestMatchers("/api/deudas/**").hasAnyAuthority("Tesorero", "Administrador", "Socio")
-                        .requestMatchers("/api/pagos/**").hasAnyAuthority("Tesorero", "Administrador")
+                        .requestMatchers("/api/pagos/**").hasAnyAuthority("Socio", "Tesorero", "Administrador")
                         .requestMatchers("/api/egresos/**").hasAnyAuthority("Tesorero", "Administrador")
 
                         .anyRequest().authenticated());
