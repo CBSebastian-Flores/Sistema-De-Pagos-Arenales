@@ -1,10 +1,16 @@
 package com.arenales.controllers;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.arenales.dto.EgresoRequestDTO;
@@ -27,6 +34,19 @@ import jakarta.validation.Valid;
 public class EgresoController {
     @Autowired private EgresoService egresoService;
 
+    @GetMapping
+    @PreAuthorize("hasAnyAuthority('Tesorero', 'Administrador')")
+    public ResponseEntity<Page<EgresoResponseDTO>> listarEgresosPaginados(
+            @RequestParam(required = false) String criterio,
+            @RequestParam(required = false) String categoria,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            @PageableDefault(page = 0, size = 10, sort = "fechaGasto", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Page<EgresoResponseDTO> resultado = egresoService.listarEgresosPaginados(criterio, categoria, desde, hasta, pageable);
+        return ResponseEntity.ok(resultado);
+    }
+
     @PostMapping(value = "/registrar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyAuthority('Tesorero', 'Administrador')")
     public ResponseEntity<?> registrarEgreso(@Valid @ModelAttribute EgresoRequestDTO dto) {
@@ -38,8 +58,8 @@ public class EgresoController {
                     "mensaje", "Egreso registrado en caja exitosamente",
                     "codigoEgreso", nuevoEgreso.getCodigoEgreso()
             ));
-            } catch (RuntimeException e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
                     "success", false,
                     "error", e.getMessage()
             ));
