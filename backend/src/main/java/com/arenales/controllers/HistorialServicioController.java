@@ -10,7 +10,6 @@ import com.arenales.services.HistorialServicioService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
-
 @RestController
 @RequestMapping("/api/historial-servicio")
 public class HistorialServicioController {
