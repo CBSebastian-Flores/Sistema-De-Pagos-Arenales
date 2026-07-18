@@ -27,7 +27,7 @@ public class DeudaTaskScheduler {
     @Scheduled(cron = "*/10 * * * * ?")
     @Transactional
     public void generarDeudasMensualesEnLote() {
-        System.out.println("⏳ [AUTOMATIZACIÓN] Iniciando motor de inyección de deudas en lote...");
+        System.out.println("[AUTOMATIZACIÓN] Iniciando motor de inyección de deudas en lote...");
 
         List<Servicio> serviciosAutomáticos = servicioRepository.findAll().stream()
                 .filter(s -> Boolean.TRUE.equals(s.getEstado()) && "FIJO".equalsIgnoreCase(s.getModalidadCobro()))
@@ -39,7 +39,7 @@ public class DeudaTaskScheduler {
                 .toList();
 
         if (serviciosAutomáticos.isEmpty() || sociosActivos.isEmpty()) {
-            System.out.println("⚠️ [AUTOMATIZACIÓN] Proceso omitido: No hay servicios automáticos activos o socios registrados.");
+            System.out.println("[AUTOMATIZACIÓN] Proceso omitido: No hay servicios automáticos activos o socios registrados.");
             return;
         }
 
@@ -71,7 +71,7 @@ public class DeudaTaskScheduler {
 
         if (!loteNuevasDeudas.isEmpty()) {
             deudaRepository.saveAll(loteNuevasDeudas);
-            System.out.println("✅ [AUTOMATIZACIÓN] Éxito absoluto: Se han inyectado " + loteNuevasDeudas.size() + " deudas en lote.");
+            System.out.println("[AUTOMATIZACIÓN] Éxito: Se han inyectado " + loteNuevasDeudas.size() + " deudas en lote.");
         }
     }
 }
