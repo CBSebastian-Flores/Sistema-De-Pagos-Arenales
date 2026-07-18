@@ -1,22 +1,23 @@
-import { useState } from "react"
-import Sidebar from "./Sidebar"
-import RegisterForm from "./RegisterForm"
-import AccesoDenegado from "./AccesoDenegado"
-import MantenimientoUsuarios from "./MantenimientoUsuarios"
-import MantenimientoServicios from "./MantenimientoServicios"
-import ConfiguracionObligacion from "./ConfiguracionObligacion"
-import MisPagosPendientes from "./MisPagosPendientes"
-import HistorialPagos from "./HistorialPagos"
-import TablaTesoreria from "./TablaTesoreria"
-import RegistrarEgresos from "./RegistrarEgresos"
-import DashboardAnalitico from "./DashboardAnalitico"
+import { useState } from "react";
+import Sidebar from "./Sidebar";
+import RegisterForm from "./RegisterForm";
+import AccesoDenegado from "./AccesoDenegado";
+import MantenimientoUsuarios from "./MantenimientoUsuarios";
+import MantenimientoServicios from "./MantenimientoServicios";
+import ConfiguracionObligacion from "./ConfiguracionObligacion";
+import MisPagosPendientes from "./MisPagosPendientes";
+import HistorialPagos from "./HistorialPagos";
+import TablaTesoreria from "./TablaTesoreria";
+import RegistrarEgresos from "./RegistrarEgresos";
+import VistaEgresos from "./VistaEgresos";
+import DashboardAnalitico from "./DashboardAnalitico";
 
 function Placeholder({ titulo }) {
   return (
     <div className="flex items-center justify-center h-full">
       <h2 className="text-3xl font-bold text-white opacity-30">{titulo}</h2>
     </div>
-  )
+  );
 }
 
 const paginasRestringidas = {
@@ -26,49 +27,54 @@ const paginasRestringidas = {
   "Generación de Pagos": ["Administrador", "Tesorero"],
   "Vista de Pagos": ["Administrador", "Tesorero"],
   "Registrar Egresos": ["Administrador", "Tesorero"],
+  "Vista de Egresos": ["Administrador", "Tesorero"],
   "Dashboard Analítico": ["Administrador", "Tesorero"],
-}
+};
 
 export default function Layout({ onSubmit, onCerrarSesion }) {
-  const [paginaActiva, setPaginaActiva] = useState("Mis Pagos Pendientes")
-  const rolActual = sessionStorage.getItem("rol")
+  const [paginaActiva, setPaginaActiva] = useState("Mis Pagos Pendientes");
+  const rolActual = sessionStorage.getItem("rol");
 
   const renderPagina = () => {
-    const rolesPermitidos = paginasRestringidas[paginaActiva]
+    const rolesPermitidos = paginasRestringidas[paginaActiva];
     if (rolesPermitidos && !rolesPermitidos.includes(rolActual)) {
-      return <AccesoDenegado />
+      return <AccesoDenegado />;
     }
 
     switch (paginaActiva) {
       case "Registro de Usuario":
-        return <RegisterForm onSubmit={onSubmit} />
+        return <RegisterForm onSubmit={onSubmit} />;
       case "Mantenimiento de Usuarios":
-        return <MantenimientoUsuarios />
+        return <MantenimientoUsuarios />;
       case "Mantenimiento de Servicios":
-        return <MantenimientoServicios />
+        return <MantenimientoServicios />;
       case "Generación de Pagos":
-        return <ConfiguracionObligacion />
+        return <ConfiguracionObligacion />;
       case "Vista de Pagos":
-        return <TablaTesoreria />
+        return <TablaTesoreria />;
       case "Mis Pagos Pendientes":
-        return <MisPagosPendientes />
+        return <MisPagosPendientes />;
       case "Mi Historial de Pagos":
-        return <HistorialPagos />
+        return <HistorialPagos />;
       case "Registrar Egresos":
-        return <RegistrarEgresos />
+        return <RegistrarEgresos />;
+      case "Vista de Egresos":
+        return <VistaEgresos />;
       case "Dashboard Analítico":
-        return <DashboardAnalitico />
+        return <DashboardAnalitico />;
       default:
-        return <Placeholder titulo={paginaActiva} />
+        return <Placeholder titulo={paginaActiva} />;
     }
-  }
+  };
 
   return (
     <div className="flex min-h-screen bg-[#0f1b2d]">
-      <Sidebar paginaActiva={paginaActiva} onCerrarSesion={onCerrarSesion} setPaginaActiva={setPaginaActiva} />
-      <main className="flex-1 overflow-y-auto">
-        {renderPagina()}
-      </main>
+      <Sidebar
+        paginaActiva={paginaActiva}
+        onCerrarSesion={onCerrarSesion}
+        setPaginaActiva={setPaginaActiva}
+      />
+      <main className="flex-1 overflow-y-auto">{renderPagina()}</main>
     </div>
-  )
+  );
 }
