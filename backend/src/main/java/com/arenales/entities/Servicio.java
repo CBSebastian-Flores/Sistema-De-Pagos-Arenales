@@ -8,18 +8,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "Servicio")
+@Data
 public class Servicio {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_servicio")
@@ -31,18 +26,25 @@ public class Servicio {
     @Column(name = "descripcion", length = 255)
     private String descripcion;
 
-    @Column(name = "categoria", nullable = false, length = 20)
+    @Column(name = "categoria", nullable = false, length = 20, insertable = false)
     private String categoria;
 
-    @Column(name = "modalidad_cobro", nullable = false, length = 15)
+    // Aquí estaba el error 1: El campo debe llamarse exactamente modalidadCobro en camelCase
+    @Column(name = "modalidad_cobro", nullable = false, length = 15, insertable = false)
     private String modalidadCobro;
 
-    @Column(name = "precio_base", nullable = false)
+    @Column(name = "precio_base", nullable = false, precision = 10, scale = 2, insertable = false)
     private BigDecimal precioBase;
 
-    @Column(name = "tarifa_mora", nullable = false)
+    @Column(name = "tarifa_mora", precision = 10, scale = 2, insertable = false)
     private BigDecimal tarifaMora;
 
-    @Column(name = "estado", nullable = false)
+    @Column(name = "dia_corte")
+    private Integer diaCorte;
+
+    @Column(name = "dias_vencimiento")
+    private Integer diasVencimiento;
+
+    @Column(name = "estado", nullable = false, insertable = false)
     private Boolean estado;
 }
