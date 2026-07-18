@@ -313,11 +313,14 @@ public class DeudaServiceImpl implements DeudaService {
             throw new RuntimeException("No se encontró una sesión de usuario válida para auditar la emisión.");
         }
 
+        int diaFijoCorte = 15;
+        LocalDate vencimientoAutomatico = calcularFechaVencimientoAutomatica(diaFijoCorte);
+
         Deuda nuevaDeuda = new Deuda();
         nuevaDeuda.setMontoBase(dto.getMontoBase());
         nuevaDeuda.setMora(BigDecimal.ZERO);
         nuevaDeuda.setFechaEmision(LocalDate.now());
-        nuevaDeuda.setFechaVencimiento(dto.getFechaVencimiento());
+        nuevaDeuda.setFechaVencimiento(vencimientoAutomatico);
         nuevaDeuda.setEstadoDeuda("Pendiente");
         nuevaDeuda.setServicio(servicio);
         nuevaDeuda.setUsuarioSocio(socio);
