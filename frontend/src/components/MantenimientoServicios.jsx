@@ -154,7 +154,10 @@ function ModalServicio({ servicio, onClose, onGuardado }) {
     modalidadCobro: servicio?.modalidadCobro || "FIJO",
     precioBase:
       servicio?.precioBase !== undefined ? String(servicio.precioBase) : "",
-    tarifaMora: servicio?.tarifaMora != null ? String(servicio.tarifaMora) : "", // 🚀 Agregado
+    tarifaMora: servicio?.tarifaMora != null ? String(servicio.tarifaMora) : "",
+    automatizacion: servicio?.automatizacion ?? false,
+    diaCorte: servicio?.diaCorte != null ? String(servicio.diaCorte) : "",
+    diasGracia: servicio?.diasGracia != null ? String(servicio.diasGracia) : "",
   });
 
   const [errores, setErrores] = useState({});
@@ -167,6 +170,15 @@ function ModalServicio({ servicio, onClose, onGuardado }) {
           ...f,
           modalidadCobro: valor,
           precioBase: "0.00",
+        };
+      }
+      if (nombre === "automatizacion") {
+        const activado = valor;
+        return {
+          ...f,
+          automatizacion: activado,
+          diaCorte: activado ? f.diaCorte : "",
+          diasGracia: activado ? f.diasGracia : "",
         };
       }
       return {
@@ -186,6 +198,18 @@ function ModalServicio({ servicio, onClose, onGuardado }) {
     } else if (isNaN(Number(form.precioBase)) || Number(form.precioBase) < 0) {
       nuevosErrores.precioBase = "El precio base no puede ser menor a 0";
     }
+    if (form.automatizacion) {
+      if (!form.diaCorte || isNaN(Number(form.diaCorte))) {
+        nuevosErrores.diaCorte = "El día de corte es obligatorio";
+      } else if (Number(form.diaCorte) < 1 || Number(form.diaCorte) > 31) {
+        nuevosErrores.diaCorte = "Debe ser entre 1 y 31";
+      }
+      if (!form.diasGracia || isNaN(Number(form.diasGracia))) {
+        nuevosErrores.diasGracia = "Los días de gracia son obligatorios";
+      } else if (Number(form.diasGracia) < 0) {
+        nuevosErrores.diasGracia = "No puede ser menor a 0";
+      }
+    }
     return nuevosErrores;
   };
 
@@ -202,7 +226,10 @@ function ModalServicio({ servicio, onClose, onGuardado }) {
       categoria: form.categoria,
       modalidadCobro: form.modalidadCobro,
       precioBase: Number(form.precioBase),
-      tarifaMora: form.tarifaMora ? Number(form.tarifaMora) : null, // 🚀 Agregado
+      tarifaMora: form.tarifaMora ? Number(form.tarifaMora) : null,
+      automatizacion: form.automatizacion,
+      diaCorte: form.automatizacion ? Number(form.diaCorte) : null,
+      diasGracia: form.automatizacion ? Number(form.diasGracia) : null,
     };
 
     setCargando(true);
@@ -317,6 +344,48 @@ function ModalServicio({ servicio, onClose, onGuardado }) {
             En servicios variables, este monto es solo referencial. La cuota
             real se calculará a partir de la factura recibida.
           </p>
+        )}
+
+        <div className="border-t border-[#1e3a5f] pt-4">
+          <label className="flex items-center gap-3 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={form.automatizacion}
+              onChange={(e) => handleChange("automatizacion", e.target.checked)}
+              className="w-4 h-4 rounded border-[#1e3a5f] bg-[#0f1b2d] text-blue-600 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer"
+            />
+            <div>
+              <span className="text-sm font-medium text-white">
+                Automatización
+              </span>
+              <p className="text-xs text-gray-500">
+                Generar deudas automáticamente según configuración
+              </p>
+            </div>
+          </label>
+        </div>
+
+        {form.automatizacion && (
+          <div className="grid grid-cols-2 gap-4">
+            <CampoForm
+              label="Día de Corte"
+              nombre="diaCorte"
+              valor={form.diaCorte}
+              onChange={handleChange}
+              error={errores.diaCorte}
+              type="number"
+              placeholder="1 - 31"
+            />
+            <CampoForm
+              label="Días de Gracia"
+              nombre="diasGracia"
+              valor={form.diasGracia}
+              onChange={handleChange}
+              error={errores.diasGracia}
+              type="number"
+              placeholder="Ej: 5"
+            />
+          </div>
         )}
       </div>
 
@@ -531,6 +600,7 @@ export default function MantenimientoServicios() {
                   "Modalidad",
                   "Precio Base",
                   "Tarifa Mora",
+                  "Automatización",
                   "Estado",
                   "Acciones",
                 ].map((col) => (
@@ -546,7 +616,7 @@ export default function MantenimientoServicios() {
             <tbody>
               {cargando ? (
                 <tr>
-                  <td colSpan={9} className="text-center py-16 text-gray-500">
+                  <td colSpan={10} className="text-center py-16 text-gray-500">
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
                       <span className="text-xs">Cargando servicios...</span>
@@ -556,7 +626,7 @@ export default function MantenimientoServicios() {
               ) : serviciosFiltrados.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={9}
+                    colSpan={10}
                     className="text-center py-16 text-gray-500 text-xs"
                   >
                     No se encontraron servicios
@@ -591,6 +661,16 @@ export default function MantenimientoServicios() {
                       {s.tarifaMora != null
                         ? `S/. ${Number(s.tarifaMora).toFixed(2)}`
                         : "—"}
+                    </td>
+                    <td className="px-4 py-3">
+                      {s.automatizacion ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                          Corte día {s.diaCorte} · {s.diasGracia}g
+                        </span>
+                      ) : (
+                        <span className="text-gray-600 text-xs">—</span>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <BadgeEstado
