@@ -13,6 +13,7 @@ const menuItems = [
     items: [
       { nombre: "Vista de Pagos", roles: ["ADMINISTRADOR", "TESORERO"] },
       { nombre: "Registrar Egresos", roles: ["ADMINISTRADOR", "TESORERO"] },
+      { nombre: "Vista de Egresos", roles: ["ADMINISTRADOR", "TESORERO"] },
     ],
   },
   {

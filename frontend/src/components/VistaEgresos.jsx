@@ -18,7 +18,9 @@ const OPCIONES_PAGINA = [5, 10, 20, 50];
 const formatearFecha = (fechaStr) => {
   if (!fechaStr) return "—";
   try {
-    return new Date(fechaStr).toLocaleDateString("es-PE", {
+    // 💡 Reemplazo de 'T' para neutralizar desajustes de zona horaria entre navegadores
+    const fechaLimpia = fechaStr.replace("T", " ");
+    return new Date(fechaLimpia).toLocaleDateString("es-PE", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -30,7 +32,7 @@ const formatearFecha = (fechaStr) => {
   }
 };
 
-export default function GrillaEgresos() {
+export default function VistaEgresos() {
   const [egresos, setEgresos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [paginaActual, setPaginaActual] = useState(0);
@@ -83,10 +85,13 @@ export default function GrillaEgresos() {
     };
   }, [busquedaDebounced, categoria, desde, hasta, paginaActual, tamanoPagina]);
 
-  const handleCambioFiltro = useCallback((setter) => (e) => {
-    setter(e.target.value);
-    setPaginaActual(0);
-  }, []);
+  const handleCambioFiltro = useCallback(
+    (setter) => (e) => {
+      setter(e.target.value);
+      setPaginaActual(0);
+    },
+    [],
+  );
 
   const handleResetFiltros = () => {
     setBusqueda("");
@@ -99,9 +104,19 @@ export default function GrillaEgresos() {
   const tieneFiltros = busqueda || categoria || desde || hasta;
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* ── Filtros ── */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+    <div className="p-6 flex flex-col gap-5">
+      {/* Encabezado de la Sección */}
+      <div>
+        <h2 className="text-2xl font-bold text-white">
+          Control de Egresos Contables
+        </h2>
+        <p className="text-gray-400 text-sm mt-1">
+          Historial completo con filtros, búsqueda y auditoría de comprobantes
+        </p>
+      </div>
+
+      {/* ── Filtros Avanzados ── */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         <div className="relative w-full sm:w-72">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -120,16 +135,18 @@ export default function GrillaEgresos() {
           <input
             type="text"
             value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
+            onChange={(e) => {
+              setBusqueda(e.target.value);
+              setPaginaActual(0);
+            }}
             placeholder="Buscar por beneficiario..."
             className="w-full bg-[#0f1b2d] border border-[#1e3a5f] rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder-gray-600 outline-none focus:border-blue-500 transition-colors"
           />
         </div>
-
         <select
           value={categoria}
           onChange={handleCambioFiltro(setCategoria)}
-          className="bg-[#0f1b2d] border border-[#1e3a5f] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-blue-500 transition-colors"
+          className="bg-[#0f1b2d] border border-[#1e3a5f] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-blue-500 transition-colors cursor-pointer"
         >
           <option value="">Todas las categorías</option>
           {CATEGORIAS.map((c) => (
@@ -138,35 +155,45 @@ export default function GrillaEgresos() {
             </option>
           ))}
         </select>
+        {/* 💡 Fecha Desde (Identificador Integrado) */}
+        <div className="flex items-center gap-2 bg-[#0f1b2d] border border-[#1e3a5f] rounded-lg px-3 py-2 focus-within:border-blue-500 transition-colors">
+          <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider select-none">
+            Desde:
+          </span>
+          <input
+            type="date"
+            value={desde}
+            onChange={handleCambioFiltro(setDesde)}
+            style={{ colorScheme: "dark" }}
+            className="bg-transparent text-sm text-white outline-none w-full cursor-pointer"
+          />
+        </div>
 
-        <input
-          type="date"
-          value={desde}
-          onChange={handleCambioFiltro(setDesde)}
-          style={{ colorScheme: "dark" }}
-          className="bg-[#0f1b2d] border border-[#1e3a5f] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-blue-500 transition-colors"
-        />
-
-        <input
-          type="date"
-          value={hasta}
-          onChange={handleCambioFiltro(setHasta)}
-          style={{ colorScheme: "dark" }}
-          className="bg-[#0f1b2d] border border-[#1e3a5f] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-blue-500 transition-colors"
-        />
-
+        {/* 💡 Fecha Hasta (Identificador Integrado) */}
+        <div className="flex items-center gap-2 bg-[#0f1b2d] border border-[#1e3a5f] rounded-lg px-3 py-2 focus-within:border-blue-500 transition-colors">
+          <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider select-none">
+            Hasta:
+          </span>
+          <input
+            type="date"
+            value={hasta}
+            onChange={handleCambioFiltro(setHasta)}
+            style={{ colorScheme: "dark" }}
+            className="bg-transparent text-sm text-white outline-none w-full cursor-pointer"
+          />
+        </div>
         {tieneFiltros && (
           <button
             onClick={handleResetFiltros}
-            className="text-xs text-gray-500 hover:text-red-400 transition-colors whitespace-nowrap cursor-pointer"
+            className="text-xs text-gray-500 hover:text-red-400 transition-colors whitespace-nowrap cursor-pointer font-medium"
           >
             Limpiar filtros
           </button>
         )}
       </div>
 
-      {/* ── Tabla ── */}
-      <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl overflow-hidden">
+      {/* ── Tabla de Datos ── */}
+      <div className="bg-[#111e30] border border-[#1e3a5f] rounded-xl overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -182,7 +209,8 @@ export default function GrillaEgresos() {
                 ].map((col) => (
                   <th
                     key={col}
-                    className={`px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap ${col === "Código" ? "text-left" : col === "Acciones" ? "text-center" : "text-left"}`}
+                    className={`px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap 
+                      ${col === "Código" ? "text-left" : col === "Acciones" ? "text-center" : "text-left"}`}
                   >
                     {col}
                   </th>
@@ -192,13 +220,12 @@ export default function GrillaEgresos() {
             <tbody className="divide-y divide-[#1e3a5f]/40">
               {cargando ? (
                 <tr>
-                  <td
-                    colSpan={7}
-                    className="text-center py-16 text-gray-500"
-                  >
+                  <td colSpan={7} className="text-center py-16 text-gray-500">
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                      <span className="text-xs">Cargando egresos...</span>
+                      <span className="text-xs text-gray-400">
+                        Cargando egresos...
+                      </span>
                     </div>
                   </td>
                 </tr>
@@ -208,14 +235,14 @@ export default function GrillaEgresos() {
                     colSpan={7}
                     className="text-center py-16 text-gray-500 text-xs"
                   >
-                    No se encontraron egresos con los filtros aplicados
+                    No se encontraron egresos con los filtros aplicados.
                   </td>
                 </tr>
               ) : (
                 egresos.map((eg, i) => (
                   <tr
                     key={eg.idEgreso}
-                    className={`text-center transition-colors hover:bg-[#1a2d4a]/40 ${i % 2 === 0 ? "" : "bg-[#0f1b2d]/20"}`}
+                    className={`transition-colors hover:bg-[#1a2d4a]/40 ${i % 2 === 0 ? "" : "bg-[#0f1b2d]/20"}`}
                   >
                     <td className="text-left px-4 py-3 text-blue-400 font-mono text-xs font-medium">
                       {eg.codigoEgreso}
@@ -228,13 +255,13 @@ export default function GrillaEgresos() {
                         {eg.categoriaEgreso}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-red-400 font-mono font-bold text-sm">
+                    <td className="text-left px-4 py-3 text-red-400 font-mono font-bold text-sm whitespace-nowrap">
                       -S/. {Number(eg.monto).toFixed(2)}
                     </td>
                     <td className="text-left px-4 py-3 text-gray-400 text-xs whitespace-nowrap">
                       {eg.metodoRetiro}
                     </td>
-                    <td className="px-4 py-3 text-gray-400 font-mono text-xs whitespace-nowrap">
+                    <td className="text-left px-4 py-3 text-gray-400 font-mono text-xs whitespace-nowrap">
                       {formatearFecha(eg.fechaGasto)}
                     </td>
                     <td className="px-4 py-3">
@@ -249,6 +276,7 @@ export default function GrillaEgresos() {
                             className="w-4 h-4"
                             fill="none"
                             viewBox="0 0 24 24"
+                            Back
                             strokeWidth={2}
                             stroke="currentColor"
                           >
@@ -269,9 +297,9 @@ export default function GrillaEgresos() {
         </div>
       </div>
 
-      {/* ── Paginación ── */}
+      {/* ── Barra de Paginación Controlada ── */}
       {totalElementos > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-500">Filas por página:</span>
             <select
@@ -280,7 +308,7 @@ export default function GrillaEgresos() {
                 setTamanoPagina(Number(e.target.value));
                 setPaginaActual(0);
               }}
-              className="bg-[#0f1b2d] border border-[#1e3a5f] rounded-lg px-2 py-1 text-xs text-white outline-none cursor-pointer"
+              className="bg-[#0f1b2d] border border-[#1e3a5f] rounded-lg px-2 py-1 text-xs text-white outline-none cursor-pointer focus:border-blue-500"
             >
               {OPCIONES_PAGINA.map((op) => (
                 <option key={op} value={op}>
@@ -288,7 +316,7 @@ export default function GrillaEgresos() {
                 </option>
               ))}
             </select>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-gray-500 font-mono">
               {paginaActual * tamanoPagina + 1}–
               {Math.min((paginaActual + 1) * tamanoPagina, totalElementos)} de{" "}
               {totalElementos}
@@ -306,6 +334,7 @@ export default function GrillaEgresos() {
                 d="M18.75 19.5l-7.5-7.5 7.5-7.5m-6 15L5.25 12l7.5-7.5"
               />
             </PaginationBtn>
+
             <PaginationBtn
               onClick={() => setPaginaActual((p) => Math.max(0, p - 1))}
               disabled={paginaActual === 0}
@@ -333,10 +362,10 @@ export default function GrillaEgresos() {
                 <button
                   key={paginaIdx}
                   onClick={() => setPaginaActual(paginaIdx)}
-                  className={`w-8 h-8 rounded-lg text-xs font-medium transition-colors cursor-pointer
+                  className={`w-8 h-8 rounded-lg text-xs font-semibold transition-colors cursor-pointer
                     ${
                       paginaActual === paginaIdx
-                        ? "bg-blue-600 text-white"
+                        ? "bg-blue-600 text-white shadow-md shadow-blue-600/10"
                         : "text-gray-400 hover:text-white hover:bg-[#1e3a5f]"
                     }`}
                 >
@@ -357,6 +386,7 @@ export default function GrillaEgresos() {
                 d="M8.25 4.5l7.5 7.5-7.5 7.5"
               />
             </PaginationBtn>
+
             <PaginationBtn
               onClick={() => setPaginaActual(totalPaginas - 1)}
               disabled={paginaActual >= totalPaginas - 1}
@@ -371,7 +401,7 @@ export default function GrillaEgresos() {
         </div>
       )}
 
-      {/* ── Modal Comprobante ── */}
+      {/* ── Modal de Comprobantes Activo ── */}
       {egresoSeleccionado && (
         <ModalComprobante
           egreso={egresoSeleccionado}
