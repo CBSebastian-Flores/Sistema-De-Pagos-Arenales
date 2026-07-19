@@ -83,7 +83,7 @@ public class SecurityConfig {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of("http://localhost:5173", "https://sistema-de-pagos-arenales-1h5y3rsun-softasc.vercel.app"));
+        config.setAllowedOrigins(List.of("http://localhost:5173", "https://sistema-de-pagos-arenales.vercel.app"));
 
         config.setAllowedMethods(List.of(
                 "GET",
