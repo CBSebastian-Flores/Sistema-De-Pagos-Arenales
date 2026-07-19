@@ -24,5 +24,4 @@ public class HistorialUsuarioController {
         List<HistorialUsuarioResponseDTO> historial = historialUsuarioService.obtenerHistorialCompleto();
         return ResponseEntity.ok(historial);
     }
-
 }

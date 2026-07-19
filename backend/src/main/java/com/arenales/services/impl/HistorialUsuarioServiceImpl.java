@@ -35,6 +35,7 @@ public class HistorialUsuarioServiceImpl implements HistorialUsuarioService {
             dto.setDatosAnteriores(log.getDatosAnteriores());
             dto.setTipoAccion(log.getTipoAccion());
             dto.setMotivo(log.getMotivo());
+            dto.setFechaRegistro(log.getFechaRegistro());
             
             // Mapeamos el creador (Administrador)
             if (log.getUsuarioCreador() != null) {
