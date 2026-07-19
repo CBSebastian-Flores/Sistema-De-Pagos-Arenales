@@ -33,6 +33,9 @@ public class HistorialUsuario {
     @Column(name = "motivo", length = 255)
     private String motivo; // Justificación obligatoria del por qué de la acción
 
+    @Column(name = "fecha_registro", nullable = false)
+    private LocalDateTime fechaRegistro; // Fecha de la accion
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario_creador", nullable = false)
     private Usuario usuarioCreador; // El administrador autenticado que ejecutó la acción (OWASP)
