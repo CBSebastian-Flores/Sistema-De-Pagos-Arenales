@@ -28,6 +28,11 @@
     </scm>
     <properties>
         <java.version>21</java.version>
+        <!-- Fuerza a Maven a compilar el código en UTF-8 -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <!-- ESTA ES LA LÍNEA CLAVE: Fuerza a leer los archivos properties en UTF-8 -->
+        <project.build.resourcesEncoding>UTF-8</project.build.resourcesEncoding>
     </properties>
 
     <dependencies>
