@@ -2,7 +2,7 @@ import axios from 'axios'
 import { obtenerToken, cerrarSesion } from './loginService'
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080/sistemapagoarenales',
+  baseURL: 'https://sistema-de-gestion-ingresos-egresos.onrender.com/sistemapagoarenales',
 })
 
 // Interceptor — agrega el token automáticamente a cada petición
