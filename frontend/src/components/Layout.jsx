@@ -11,6 +11,8 @@ import TablaTesoreria from "./TablaTesoreria";
 import RegistrarEgresos from "./RegistrarEgresos";
 import VistaEgresos from "./VistaEgresos";
 import DashboardAnalitico from "./DashboardAnalitico";
+import LineaTiempoAuditoria from "./LineaTiempoAuditoria";
+import AuditoriaServicios from "./AuditoriaServicios";
 
 function Placeholder({ titulo }) {
   return (
@@ -29,6 +31,8 @@ const paginasRestringidas = {
   "Registrar Egresos": ["Administrador", "Tesorero"],
   "Vista de Egresos": ["Administrador", "Tesorero"],
   "Dashboard Analítico": ["Administrador", "Tesorero"],
+  "Auditoría de Usuarios": ["Administrador"],
+  "Auditoría de Servicios": ["Administrador"],
 };
 
 export default function Layout({ onSubmit, onCerrarSesion }) {
@@ -60,6 +64,10 @@ export default function Layout({ onSubmit, onCerrarSesion }) {
         return <RegistrarEgresos />;
       case "Vista de Egresos":
         return <VistaEgresos />;
+      case "Auditoría de Usuarios":
+        return <LineaTiempoAuditoria />;
+      case "Auditoría de Servicios":
+        return <AuditoriaServicios />;
       case "Dashboard Analítico":
         return <DashboardAnalitico />;
       default:

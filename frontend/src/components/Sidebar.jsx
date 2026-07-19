@@ -29,6 +29,8 @@ const menuItems = [
       { nombre: "Registro de Usuario", roles: ["ADMINISTRADOR"] },
       { nombre: "Mantenimiento de Usuarios", roles: ["ADMINISTRADOR"] },
       { nombre: "Mantenimiento de Servicios", roles: ["ADMINISTRADOR", "TESORERO"] },
+      { nombre: "Auditoría de Usuarios", roles: ["ADMINISTRADOR"] },
+      { nombre: "Auditoría de Servicios", roles: ["ADMINISTRADOR"] },
     ],
   },
 ];
