@@ -33,4 +33,4 @@ build/
 .vscode/
 
 # Ignorar archivo de variables local si se crea en el futuro
-.env
+*.env
