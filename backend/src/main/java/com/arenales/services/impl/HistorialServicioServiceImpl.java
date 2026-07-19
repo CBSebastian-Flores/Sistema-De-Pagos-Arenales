@@ -35,6 +35,7 @@ public class HistorialServicioServiceImpl implements HistorialServicioService {
             dto.setDatosAnteriores(log.getDatosAnteriores());
             dto.setTipoAccion(log.getTipoAccion());
             dto.setMotivo(log.getMotivo());
+            dto.setFechaRegistro(log.getFechaRegistro());
             
             if (log.getUsuarioCreador() != null) {
                 dto.setNombreUsuarioCreador(log.getUsuarioCreador().getNombres() + " " + log.getUsuarioCreador().getApellidos());

@@ -1,6 +1,8 @@
 package com.arenales.dto;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 public class HistorialServicioResponseDTO {
 
@@ -11,4 +13,5 @@ public class HistorialServicioResponseDTO {
     private String tipoAccion;
     private String motivo;
     private String nombreUsuarioCreador;
+    private LocalDateTime fechaRegistro;
 }
