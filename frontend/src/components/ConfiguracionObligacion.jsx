@@ -288,7 +288,7 @@ export default function ConfiguracionObligacion() {
               {/* FECHA DE EMISIÓN / VENCIMIENTO */}
               <div className="flex flex-col gap-2 pt-4 border-t border-[#1e3a5f]/40">
                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  {esIndividual ? "Fecha de Vencimiento" : "Fecha de Emisión"}
+                  Fecha de Emisión
                 </label>
                 <input
                   type="date"
