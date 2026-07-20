@@ -34,7 +34,12 @@ public class HistorialUsuario {
     private String motivo; // Justificación obligatoria del por qué de la acción
 
     @Column(name = "fecha_registro")
-    private LocalDateTime fechaRegistro; // Fecha de la accion
+    private LocalDateTime fechaRegistro;
+
+    @PrePersist
+    protected void onCreate() {
+        this.fechaRegistro = LocalDateTime.now();
+    }
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario_creador", nullable = false)

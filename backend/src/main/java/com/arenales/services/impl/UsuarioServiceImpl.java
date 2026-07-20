@@ -67,11 +67,6 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     @Transactional
     public Usuario registrarUsuario(UsuarioRequestDTO dto) {
-        ReniecResponseDTO dataReniec = reniecService.obtenerDatosCompletosDni(dto.getDni());
-        if (dataReniec == null) {
-            throw new RuntimeException("El DNI ingresado no es válido o no existe en los registros oficiales de la RENIEC.");
-        }
-
         if (usuarioRepository.existsByDni(dto.getDni())) {
             throw new RuntimeException("El DNI ya está registrado en el sistema.");
         }

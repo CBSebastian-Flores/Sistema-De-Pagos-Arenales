@@ -36,6 +36,11 @@ public class HistorialServicio {
     @Column(name = "fecha_registro")
     private LocalDateTime fechaRegistro;
 
+    @PrePersist
+    protected void onCreate() {
+        this.fechaRegistro = LocalDateTime.now();
+    }
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario_creador", nullable = false)
     private Usuario usuarioCreador; // El administrador que ejecutó la acción
