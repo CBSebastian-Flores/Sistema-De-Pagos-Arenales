@@ -40,6 +40,7 @@ public class SecurityConfig {
                         // AUTH
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/error").permitAll()
+                        .requestMatchers("/ping").permitAll()
 
                         // SWAGGER
                         .requestMatchers(
