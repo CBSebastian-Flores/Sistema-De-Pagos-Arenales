@@ -15,7 +15,7 @@ public class DashboardRepository {
     @SuppressWarnings("unchecked")
     public List<Object[]> obtenerUltimosCincoMovimientos() {
         // 💡 Traemos los campos reales de auditoría manteniendo el TOP 5
-        String sql = "SELECT TOP 5 * FROM (" +
+        String sqlserver = "SELECT TOP 5 * FROM (" +
                 "  (SELECT TOP 5 'INGRESO' as tipo, " +
                 "                'Pago recibido de socio' as descripcion, " +
                 "                monto_pagado as monto, " +
@@ -38,7 +38,30 @@ public class DashboardRepository {
                 ") as movimientos " +
                 "ORDER BY fecha DESC";
 
-        Query query = entityManager.createNativeQuery(sql);
+        String queryPostgres = "SELECT * FROM (" +
+                "  (SELECT 'INGRESO' as tipo, " +
+                "          'Pago recibido de socio' as descripcion, " +
+                "          monto_pagado as monto, " +
+                "          fecha_pago as fecha, " +
+                "          codigo_pago as codigo, " +
+                "          metodo_pago as metodo, " +
+                "          voucher_url as url, " +
+                "          nro_operacion as nro_operacion " +
+                "   FROM Pago ORDER BY fecha_pago DESC LIMIT 5) " +
+                "  UNION ALL " +
+                "  (SELECT 'EGRESO' as tipo, " +
+                "          descripcion, " +
+                "          monto, " +
+                "          fecha_gasto as fecha, " +
+                "          codigo_egreso as codigo, " +
+                "          metodo_retiro as metodo, " +
+                "          comprobante_url as url, " +
+                "          NULL as nro_operacion " +
+                "   FROM Egreso WHERE categoria_egreso != 'Anulado' ORDER BY fecha_gasto DESC LIMIT 5)" +
+                ") as movimientos " +
+                "ORDER BY fecha DESC LIMIT 5";
+
+        Query query = entityManager.createNativeQuery(queryPostgres);
         return query.getResultList();
     }
 }
