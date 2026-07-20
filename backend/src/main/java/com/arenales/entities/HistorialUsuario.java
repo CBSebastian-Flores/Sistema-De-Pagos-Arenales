@@ -33,7 +33,7 @@ public class HistorialUsuario {
     @Column(name = "motivo", length = 255)
     private String motivo; // Justificación obligatoria del por qué de la acción
 
-    @Column(name = "fecha_registro", nullable = false)
+    @Column(name = "fecha_registro")
     private LocalDateTime fechaRegistro; // Fecha de la accion
 
     @ManyToOne(fetch = FetchType.LAZY)

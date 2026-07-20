@@ -12,7 +12,7 @@ public class StPagosApplication {
     }
 
     //Genera codigos Bycript para varias cuentas
-    @org.springframework.context.annotation.Bean
+    /*@org.springframework.context.annotation.Bean
     public org.springframework.boot.CommandLineRunner generarClaves() {
         return args -> {
             int cantidadAGenerar = 16;
@@ -31,5 +31,5 @@ public class StPagosApplication {
 
             System.out.println("=========================================");
         };
-    }
+    }*/
 }

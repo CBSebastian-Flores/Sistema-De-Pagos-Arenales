@@ -33,7 +33,7 @@ public class HistorialServicio {
     @Column(name = "motivo", length = 255)
     private String motivo;
 
-    @Column(name = "fecha_registro", nullable = false)
+    @Column(name = "fecha_registro")
     private LocalDateTime fechaRegistro;
 
     @ManyToOne(fetch = FetchType.LAZY)
