@@ -17,8 +17,6 @@ public class ReniecServiceImpl implements ReniecService {
     @Value("${reniec.api.token}")
     private String apiToken;
 
-    String headerToken = "Bearer " + apiToken;
-
     private final String API_URL = "https://api.decolecta.com/v1/reniec/dni?numero=";
 
     @Override
@@ -26,7 +24,7 @@ public class ReniecServiceImpl implements ReniecService {
         String url = API_URL + dni;
         try {
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", headerToken);
+            headers.set("Authorization", "Bearer " + apiToken);
 
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
