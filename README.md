@@ -1,108 +1,44 @@
-# Sistema de Pagos Arenales
+# Sistema de Gestión de Pagos y Recaudación - CC Arenales
 
-Sistema web para la gestión de pagos del Centro Comercial Arenales, desarrollado con React + Spring Boot + SQL Server.
+Plataforma web integral diseñada para la administración financiera, control de recaudación por cuotas de mantenimiento, validación y liquidación de pagos, gestión de egresos y trazabilidad de acciones operativas para el Centro Comercial Arenales.
 
----
-
-## 🛠️ Tecnologías utilizadas
-
-**Frontend**
-- React 19 + Vite
-- Tailwind CSS
-- Axios
-- React Toastify
-
-**Backend**
-- Java 21
-- Spring Boot 4
-- Hibernate / JPA
-- JWT (JSON Web Tokens)
-- Spring Security
-
-**Base de datos**
-- SQL Server (SSMS)
+Proyecto concebido y desarrollado de forma colaborativa bajo marco de trabajo ágil (**Scrum**), priorizando una arquitectura desacoplada, control transaccional estricto y separación clara de responsabilidades.
 
 ---
 
-## ⚙️ Requisitos previos
+## 🛠️ Tecnologías y Arquitectura
 
-- [Node.js](https://nodejs.org/) v18 o superior
-- [JDK 21](https://adoptium.net/)
-- [SQL Server](https://www.microsoft.com/es-es/sql-server)
-- [SQL Server Management Studio (SSMS)](https://learn.microsoft.com/es-es/sql/ssms/download-sql-server-management-studio-ssms)
-- [VS Code](https://code.visualstudio.com/) con extensiones:
-  - Extension Pack for Java
-  - Spring Boot Extension Pack
+El sistema implementa una arquitectura cliente-servidor desacoplada (**SPA + RESTful API**):
 
----
+### **Backend**
+* **Lenguaje y Framework:** Java 21 con Spring Boot 3.x / 4
+* **Seguridad:** Spring Security con autenticación Stateless mediante JWT (JSON Web Tokens) y control granular de accesos por roles (`@PreAuthorize`)
+* **Persistencia y ORM:** Spring Data JPA con Hibernate
+* **Consultas Dinámicas:** JPA Specifications (`EgresoSpecification`) para filtros combinados y paginados
+* **Base de Datos:** Microsoft SQL Server
+* **Integraciones y Servicios:**
+  * Almacenamiento y gestión de comprobantes digitales (`StorageService`)
+  * Notificaciones automáticas por correo electrónico (`EmailService`)
+  * Validación de identidad y consulta de documentos (`ReniecService`)
 
-## 🗄️ Configuración de la base de datos
-
-1. Abre **SSMS** y conéctate a tu instancia de SQL Server
-2. Abre el archivo `BD_CC_Arenales.sql` ubicado en la carpeta `database/`
-3. Ejecuta el script completo
-4. Verifica que la base de datos `CC_Arenales` fue creada con las tablas `Rol` y `Usuario`
-
----
-
-## 🚀 Configuración e Instalación
-
-### ⚙️ Ejecución del Backend (Spring Boot)
-
-1. **Entrar a la carpeta:**
-```bash
-cd backend
-```
-2. **Configurar credenciales:**
-   Modifica el archivo `src/main/resources/application.properties` con tus datos de SQL Server:
-```properties
-spring.datasource.username=TU_USUARIO
-spring.datasource.password=TU_CONTRASEÑA
-```
-3. **Ejecutar el proyecto desde VS Code:**
-   Abre `src/main/java/com/arenales/StPagosApplication.java` y haz clic en **▶ Run**
-
-   *La API estará disponible en http://localhost:8080/sistemapagoarenales*
-
-### 🖥️ Ejecución del Frontend (React + Vite)
-
-1. **Entrar a la carpeta:**
-```bash
-cd frontend
-```
-2. **Instalar las librerías necesarias:**
-```bash
-npm install
-```
-3. **Iniciar el servidor de desarrollo:**
-```bash
-npm run dev
-```
-   *Por defecto, la aplicación será accesible en http://localhost:5173*
+### **Frontend**
+* **Framework:** React con Vite
+* **Estilizado:** Tailwind CSS
+* **Cliente HTTP:** Axios estructurado con interceptores para tokens JWT y captura centralizada de errores
+* **Notificaciones:** React Toastify
 
 ---
 
-## 📁 Estructura del proyecto
+## 🏛️ Estructura del Backend
 
-```
-Sistema-De-Pagos-Arenales/
-├── backend/
-│   └── src/main/java/com/arenales/
-│       ├── config/           # Configuración CORS, seguridad y JWT
-│       ├── controllers/      # Endpoints REST
-│       ├── dto/              # Objetos de transferencia de datos
-│       ├── entities/         # Entidades JPA
-│       ├── repositories/     # Repositorios JPA
-│       ├── services/         # Lógica de negocio
-│       └── utils/            # Utilidades JWT
-├── frontend/
-│   └── src/
-│       ├── components/       # RegisterForm, Sidebar, Layout
-│       ├── pages/            # Login
-│       ├── services/         # authService, loginService, axiosConfig
-│       └── utils/            # validaciones.js (Regex)
-└── database/
-    └── BD_CC_Arenales.sql    # Script de creación de base de datos
-```
-
----
+```text
+backend/src/main/java/com/arenales/
+├── config/           # Seguridad (Spring Security), CORS y filtros JWT
+├── controllers/      # Endpoints REST expuestos para la SPA
+├── dto/              # Clases DTO para validación estricta de entradas/salidas
+├── entities/         # Modelos relacionales JPA (Mapeo de base de datos)
+├── repositories/     # Interfaces JPA Repository
+├── services/         # Interfaces de servicios de negocio
+│   ├── impl/         # Implementaciones de lógica y transacciones
+├── specifications/   # Filtros dinámicos de consulta (JPA Criteria / Specifications)
+└── StPagosApplication.java
