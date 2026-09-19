@@ -32,7 +32,9 @@ El sistema implementa una arquitectura cliente-servidor desacoplada (**SPA + RES
 
 ## 🏛️ Estructura del Backend
 
+```text
 backend/src/main/java/com/arenales/
+
 ├── config/           # Seguridad (Spring Security), CORS, Swagger y filtros JWT
 ├── controllers/      # Endpoints REST expuestos para la SPA
 ├── dto/              # Clases DTO para validación estricta de entradas/salidas
@@ -57,6 +59,7 @@ backend/src/main/java/com/arenales/
 ├── specifications/   # Filtros dinámicos de consulta (JPA Criteria / Specifications)
 │   └── EgresoSpecification.java
 └── StPagosApplication.java
+```
 
 ---
 
@@ -107,6 +110,7 @@ backend/src/main/java/com/arenales/
    cd backend
 
 2. Configurar las variables de entorno en el sistema o en el archivo `.env` para resolver los valores en `src/main/resources/application.properties`:
+   ```text
    DB_URL_SQL=jdbc:sqlserver://localhost:1433;databaseName=CC_Arenales;encrypt=true;trustServerCertificate=true;
    DB_USERNAME_SQL=tu_usuario_sql
    DB_PASSWORD_SQL=tu_password_sql
@@ -116,8 +120,9 @@ backend/src/main/java/com/arenales/
    CLOUDINARY_CLOUD_NAME=tu_cloud_name
    CLOUDINARY_API_KEY=tu_api_key
    CLOUDINARY_API_SECRET=tu_api_secret
+   ```
 
-3. Ejecutar la aplicación:
+4. Ejecutar la aplicación:
    ./mvnw spring-boot:run
 
    * La API estará disponible en: http://localhost:8080/sistemapagoarenales
