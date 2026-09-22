@@ -141,3 +141,18 @@ backend/src/main/java/com/arenales/
    npm run dev
 
    * La interfaz web estará accesible en: http://localhost:5173
+
+## 🌐 Demo en Línea y Acceso Rápido
+
+* **Aplicación Web:** [`https://sistema-de-pagos-arenales.vercel.app`](https://sistema-de-pagos-arenales.vercel.app/login)
+* **Documentación API (Swagger):** [`https://tu-backend-en-render.com/sistemapagoarenales/swagger-ui.html`](https://sistema-de-gestion-ingresos-egresos.onrender.com/sistemapagoarenales/swagger-ui/index.html)
+
+### 🔑 Credenciales de Prueba (Demo Accounts)
+
+| Rol | Usuario | Contraseña | Permisos Clave |
+| :--- | :--- | :--- | :--- |
+| **Administrador** | `70710914` | `12345678` | Control total, auditoría y gestión de usuarios |
+| **Tesorero** | `05426318` | `12345678` | Validación de pagos, conciliación y egresos |
+| **Socio / Puesto** | `09421574` | `12345678` | Consulta de cuotas propias y envío de comprobantes |
+
+> **Nota de disponibilidad:** El backend está desplegado en una instancia cloud gratuita; si experimentas una breve demora en la primera petición, se debe a la reactivación automática del servicio.
